@@ -1,155 +1,240 @@
-# hsrmap · Guide Atlas V3
+# hsrmap · Guide Atlas
 
-把《崩坏：星穹铁道》官方互动地图的点位，变成**可判定「玩家照着攻略能不能拿到」**的语料库：
+[![ci](https://github.com/sdsdsssssdsd/hsrmap/actions/workflows/ci.yml/badge.svg)](https://github.com/sdsdsssssdsd/hsrmap/actions/workflows/ci.yml)
+![python](https://img.shields.io/badge/python-3.11%2B-blue)
+![license](https://img.shields.io/badge/license-MIT-green)
 
-* 官方点位是第 1 阶段的唯一标准（「到了就能拿」的点位，官方地图本身就是完整攻略）；
-* 第 2 阶段（「到了还要做事」的点位）必须有攻略写出**怎么做**——方向序列、模块步骤、触发方式；
-* 每条结论都要能回答「凭什么」：来源页、逐字片段、图解转录、推断依据，全部落账。
+An offline **interactive map + guide evidence engine** for *Honkai: Star Rail*: it turns the official
+interactive map and community guides into a corpus that can answer one question per collectible —
 
-当前状态：官方点位 **1006 / 1006** 可达（829 到点即得 + 177 含解法），`closure-check` 十项全 PASS，
-`published-audit` 的 HALLUCINATED / UNGROUNDED 都是 0。
+> **"If I follow the material we have, can I actually get this?"**
+
+If yes, the point is *complete*. If not, the engine says precisely what is missing — the **location**
+or the **solution** — and turns the gap into the next search queue. Every verdict has to show its work:
+source page, verbatim fragment, image transcription, or an explicit inference basis.
+
+Current state on the reference snapshot: **1006 / 1006 official points reachable**
+(829 "walk there and take it" + 177 requiring a solution), `closure-check` 10/10 PASS,
+and both `HALLUCINATED_STEP` and `UNGROUNDED_STEP` audits sit at **0**.
 
 ---
 
-## 快速开始
+## Screenshots
+
+**Offline map** — the official map, its labels, and your own progress, fully offline:
+
+![Offline map](docs/images/map-overview.png)
+
+**Point detail: *why* a point counts as complete** — completion requirement, location/solution evidence
+levels, the winning guide, audit status, and per-step evidence badges (official / community text /
+image transcription / cross inference):
+
+![Point evidence](docs/images/point-evidence.png)
+
+**Review console** — engine gates, the source queue grouped by map, target binding and preview:
+
+![Review console](docs/images/review-console.png)
+
+**Live monitor** — read-only process, file, database and judgement-layer telemetry:
+
+![Monitor](docs/images/monitor.png)
+
+---
+
+## Quick start
 
 ```bash
-python -m pip install -r requirements.lock.txt      # 或 pip install -e ".[dev]"
+python -m pip install -r requirements.lock.txt      # or: pip install -e ".[dev]"
 
-python -m hsrmap runtime                            # 当前运行目录/来源（第一次先看这个）
-python -m hsrmap guides completeness --markdown      # 完成度总表（默认全主题）
-python -m hsrmap guides closure-check                # 十项门禁（PASS/FAIL + 记分板）
-python -m hsrmap repo-hygiene                        # 仓库卫生（只对新增违规失败）
-python -m pytest -q                                  # 全量测试（默认不需要真实 data/）
+python -m hsrmap runtime                            # which runtime directory is in use, and why
+python -m hsrmap doctor                             # closed-loop self check (entry points, ports, first paint)
+python -m hsrmap guides completeness --markdown     # completion table across every topic
+python -m hsrmap guides closure-check               # 10-item acceptance scoreboard (PASS/FAIL)
+python -m hsrmap repo-hygiene                       # repository hygiene (fails only on *new* violations)
+python -m hsrmap dod                                # Definition of Done: 12 machine-checked items
+python -m pytest -q                                 # full suite (no real data/ required)
 ```
 
-两个本地服务（**审核台与离线地图是分开的**，互不依赖）：
+Two local services — the review console and the offline map are **separate processes on separate ports**
+and do not depend on each other:
 
-```bash
-start.bat          # 离线地图  http://127.0.0.1:8766/
-start_review.bat   # 审核台    http://127.0.0.1:8767/review
+```bat
+start.bat          :: offline map    http://127.0.0.1:8766/
+start_review.bat   :: review console http://127.0.0.1:8767/review
 ```
 
-## 架构（一条链）
+The map process only needs the snapshot (`current.json`, `snapshots/*/core.db`) and `web/dist`;
+the review process only needs `guide.db` / `published.db`. Both read the same `user.db` for your marks.
+A third read-only tool, `monitor/start_monitor.bat`, serves live telemetry on port **8768**.
 
-```text
-官方互动地图 ──sync──▶ 快照 (core.db / detail.db)          [运行时目录]
-                        │
-                        ├── official-seed ──▶ 官方点位条目（LOCATE 证据）
-社区攻略页 ──fetch/parse/import──▶ guide.db（页/条目/步骤/图/评审）
-                        │
-                        ├── audit（grounding：EXACT/FRAGMENT/ASSEMBLED/图解法转录）
-                        ├── stages（要求 × 证据 → 六状态：LOCATE_COMPLETE / SOLVE_MISSING / COMPLETE …）
-                        ├── evidence ledger（每次检索、每个候选、每条否决理由）
-                        ▼
-                  publish-snapshot（diff → hard/review gate → staging → audit+E2E → manifest → 原子切换）
-                        ▼
-                  published.db（不可变发布快照）──▶ 审核台 / 离线地图 / 报告
-```
+---
 
-关键模块（都在 `hsrmap/`）：
+## How the judgement works
 
-| 模块 | 管什么 |
+No percentages, no model in the decision path — a point falls into exactly one of six states:
+
+| Dimension | Values |
 | --- | --- |
-| `guides/stages.py` | 完成度判定层（要求 × 证据 → 六状态），不依赖模型 |
-| `guides/audit.py` | 「这一步真的在来源里吗」：grounding 四档 + `[图解法转录 sha]` 通道 |
-| `guides/evidence.py` | 检索账本：run / result / verdict（含 `NO_PUBLIC_SOURCE_FOUND`） |
-| `guides/publishing/` | 发布：diff、gate、staging、原子切换、offline E2E |
-| `guides/closure.py` | 十项闭合门禁与记分板 |
-| `runtime.py` / `paths.py` | 运行目录解析（显式 → 环境变量 → 仓库 data/ → 用户目录）与惰性路径 |
-| `hygiene.py` / `release.py` | 仓库卫生规则、按 allowlist 生成交付包 |
+| Completion requirement | `LOCATE_ONLY` (walk there and take it) · `LOCATE_AND_SOLVE` (you must do something) |
+| Evidence ability | `SCOPE` (how many exist) · `LOCATE` (can I find it) · `SOLVE` (what to do there) |
+| State | `NO_EVIDENCE` · `SCOPE_ONLY` · `LOCATE_MISSING` · `LOCATE_COMPLETE` · `SOLVE_MISSING` · `COMPLETE` |
 
-## 运行目录（数据放在哪）
+Phase 1 treats the official map as authoritative: a point existing on it *is* location evidence.
+Phase 2 requires a real solution — a direction sequence, a module order, an interaction — supplied by
+community text or by an image transcription.
 
-Git checkout **不是**运行时根目录。解析顺序（先命中先赢）：
+Each claim carries its own provenance, so a corpus-wide "1006 / 1006" can never hide how it was reached:
 
-```text
---data-dir  →  HSRMAP_DATA_DIR  →  <repo>/data（兼容窗口）  →  OS 用户数据目录
-```
-
-* `python -m hsrmap runtime` 打印当前用的是哪个、以及来源（explicit/env/repo/user）；
-* 只读命令（`completeness` / `closure-check` / `published-audit` / `ledger` …）**不会**建库：
-  库不存在就 rc=1 并说明原因；
-* 数据库打开方式显式三态：`GuideDatabase.open_readonly / open_readwrite / create`，
-  只有 `create` 允许建目录/建表/迁移；
-* 测试默认把运行目录指到临时目录（`HSRMAP_DATA_DIR`），所以 `pytest` 不会碰你的 `data/`；
-  需要真实快照的用例加 `--run-data-e2e`。
-
-## Guide Atlas 判定模型
-
-| 维度 | 取值 |
+| Evidence level | Meaning |
 | --- | --- |
-| 完成要求 | `LOCATE_ONLY`（到点即得） / `LOCATE_AND_SOLVE`（到了还要做事） |
-| 证据能力 | `SCOPE`（总共多少个） / `LOCATE`（能不能到点） / `SOLVE`（到了怎么做） |
-| 状态 | `NO_EVIDENCE` / `SCOPE_ONLY` / `LOCATE_MISSING` / `LOCATE_COMPLETE` / `SOLVE_MISSING` / `COMPLETE` |
+| `OFFICIAL` | the official map/point line itself |
+| `COMMUNITY_TEXT` | verbatim/fragment/assembled grounding in a crawled page |
+| `TRANSCRIPTION` | read off an image that is attached to that very entry (`[图解法转录 <sha>]`) |
+| `CROSS_INFERENCE` | inferred, and therefore **must** carry a machine-readable basis |
 
-判定细节与当前数据见 `docs/superpowers/sdd/2026-10-02-guide-atlas-v3/guide-completeness.md`。
+Aggregated as `direct` / `transcription` / `inference` / `missing`, and shown in the UI.
 
-## 测试与门禁
+---
 
-```bash
-python -m pytest -q                       # 单元 + 集成（不需要真实 data/）
-python -m pytest --run-data-e2e           # 需要快照/detail/guide 库的用例
-python -m ruff check hsrmap tests tools   # lint（语法/未定义名一类）
-python -m hsrmap repo-hygiene             # 仓库卫生（基线见 tools/hygiene_baseline.json）
-python -m hsrmap guides published-audit   # 已发布攻略的 grounding 审计
-python -m hsrmap guides closure-check     # 闭合门禁（退出码：0 PASS / 2 FAIL）
-python -m hsrmap dod                      # Definition of Done 12 项（a1-8 十六）
-python -m hsrmap doctor                   # 闭环自检：启动入口/端口/首屏请求与载荷预算
-```
-
-`hsrmap dod` 是整套卫生化的收口验收：命令契约、测试隔离、只读不建库、仓库边界、
-phase1 只留参考物、发布包由 allowlist 生成、每个库都有 schema 版本、临时脚本零依赖、
-每个完成点位的证据来源、分层可见、无逐点 N+1、Web 能回答「为什么算完成」。
-源码树那几项在任何 checkout 都必须过；需要真实数据的项在没有 `data/` 时如实报 SKIPPED
-（`--require-data` 可把它们升级为失败，发布验收用这个）。
-
-命令契约：**0 = 成功**（含明确的 NOOP）、**1 = 执行/环境/数据错误**、**2 = 用法或 gate 阻断**；
-只有显式 `--quiet` 允许「rc=0 且无输出」。
-
-## 发布
-
-```bash
-python -m hsrmap release --dry-run     # 先看会收录哪些文件
-python -m hsrmap release               # 生成 submit/ + submit.zip + release-manifest.json
-```
-
-收录规则 = 源码树减去卫生规则的 forbidden 集合（运行态 `data/`、镜像 `submit/`、生成报告、
-运行态 SQLite、缓存、密钥、备份、超大生成物），**唯一例外**是 `web/dist`（交付包必须自带前端构建产物）。
-zip 的 sha256 写在同名的 `.sha256` 文件里。
-
-## 仓库结构
+## Architecture
 
 ```text
-hsrmap/                 程序代码（判定层、语料层、发布层、服务层）
-hsrmap_phase1/          phase1 抓取/校准包（参考实现）
-phase1/                 不可变参考数据：endpoint_registry、calibration（golden/校准点位）、samples
-tests/                  测试（fixtures 很小、可人工核对）
-web/src/                前端源码（dist 是构建产物，由 release 带上）
-docs/
-  specs/                规格（a1 ~ a1-8）
-  runbooks/             运维手册（S1 安全化、服务拆分、基线）
-  architecture/         架构说明
-  history/              历史文档（phase1 抓取等）
-  superpowers/sdd/      分阶段实施记录（progress.md 是主线）
-tools/                  开发工具（发布/卫生/抓取）
-data/ submit/ artifacts/ logs/ reports/   ← 运行态与产物，不进源码树（.gitignore + 卫生检查）
+official interactive map ──sync──▶ snapshot (core.db / detail.db)        [runtime dir]
+                                      │
+                                      ├── official-seed ──▶ official point entries (LOCATE evidence)
+community guide pages ──fetch/parse/import──▶ guide.db (pages / entries / steps / assets / review)
+                                      │
+                                      ├── audit    (grounding: EXACT / FRAGMENT / ASSEMBLED / image transcription)
+                                      ├── stages   (requirement × evidence → six states, no model involved)
+                                      ├── ledger   (every search, candidate and rejection reason)
+                                      ▼
+                     publish-snapshot (diff → hard/review gate → staging → audit + offline E2E
+                                      → manifest → atomic switch)
+                                      ▼
+                     published.db (immutable snapshot) ──▶ review console / offline map / reports
 ```
 
-## 安全与证据纪律
+Key modules (all under `hsrmap/`):
 
-* **官方为准**：第 1 阶段只认官方点位；官方没有再补充这回事。
-* **来源可查**：每条步骤要么在它自己声明的来源页里逐字找得到，要么写明是从**哪张图**转录的
-  （`[图解法转录 <sha>]`，那张图必须挂在这条条目上）。
-* **推断留痕**：交叉推断必须写明依据，摘要里说明边界；`HALLUCINATED_STEP` 是发布硬失败。
-* **查过没有也是结论**：`source_search_run/result/verdict` 记录每次检索与否决理由。
-* **不静默**：命令要么有输出要么有退出码；只读操作不建库；测试不写仓库。
+| Module | Responsibility |
+| --- | --- |
+| `guides/stages.py` | completion model: requirement × evidence → six states |
+| `guides/audit.py` | "is this step really in its source?" — four grounding tiers plus the transcription channel |
+| `guides/claims.py` | evidence claims: level, grounding tier, asset, inference basis, digest |
+| `guides/evidence.py` | search ledger: run / result / verdict (including `NO_PUBLIC_SOURCE_FOUND`) |
+| `guides/publishing/` | diff, gates, staging, atomic switch, offline E2E, snapshot manifest |
+| `guides/closure.py` | the 10-item closure scoreboard |
+| `runtime.py`, `paths.py` | runtime directory resolution and lazy runtime paths |
+| `hygiene.py`, `release.py` | repository hygiene rules, allowlist-based release packaging |
+| `dod.py`, `doctor.py` | Definition-of-Done gate and the closed-loop self check |
 
-## 开发者工作流
+---
 
-1. 改判定/发布语义 → 先写 shadow 对比（新旧实现逐点比对，六状态必须完全一致）；
-2. 新数据操作 → 走正式入口（`hsrmap guides …` / `hsrmap release` / `hsrmap repo-hygiene`），
-   不要新增一次性脚本；
-3. 提交前：`pytest -q` + `ruff check` + `repo-hygiene` + `hsrmap dod` 四条都绿；
-4. 交付前：`hsrmap release` 重建交付包，再看 `release-manifest.json`（`dod` 第 6 项会核对
-   submit/ 与 manifest 是否完全一致——手工往交付目录里塞文件会被抓出来）。
+## Runtime directories
+
+A Git checkout is **not** a mutable state root. Resolution order (first hit wins):
+
+```text
+--data-dir  →  HSRMAP_DATA_DIR  →  <repo>/data (compat window)  →  OS user data directory
+```
+
+* `python -m hsrmap runtime` prints the chosen directory and its source (`explicit`/`env`/`repo`/`user`);
+* read-only commands never create a database — a missing DB is `rc=1` with a reason, not an empty file;
+* database opening is explicit: `open_readonly` / `open_readwrite` / `create`; only `create` may
+  create directories, tables or migrations;
+* tests point the runtime directory at a temp dir, so `pytest` never touches your `data/`;
+  cases that need the real snapshot are marked and run with `--run-data-e2e`.
+
+---
+
+## Testing & gates
+
+| Command | What it proves |
+| --- | --- |
+| `pytest -q` | unit + integration, no real data needed (~640 tests) |
+| `pytest --run-data-e2e` | snapshot/detail/guide-backed cases, including the six-state shadow comparison |
+| `ruff check hsrmap tests tools` | lint |
+| `hsrmap repo-hygiene` | no new runtime/build/secret pollution (baseline: `tools/hygiene_baseline.json`) |
+| `hsrmap guides published-audit` | grounding audit of everything published |
+| `hsrmap guides closure-check` | the acceptance scoreboard (exit code 0 PASS / 2 FAIL) |
+| `hsrmap dod` | Definition of Done: 12 machine-checked items |
+| `hsrmap doctor` | closed-loop check: entry points, ports, first-paint requests and payload budgets |
+
+**Command contract:** `0` = success (including an explicit NOOP), `1` = execution/environment/data error,
+`2` = usage error or a gate refusal. Only an explicit `--quiet` may print nothing.
+
+The hard invariant behind all of this: the six-state matrix must be **bit-identical** to the frozen
+baseline (`docs/runbooks/baseline-hygiene.json`) — evidence levels are annotations, never a second
+source of truth. The shadow test verifies this per point, for every lookup implementation.
+
+---
+
+## Release packaging
+
+```bash
+python -m hsrmap release --dry-run     # list what would ship
+python -m hsrmap release               # build submit/ + submit.zip + release-manifest.json
+python tools/privacy_scan.py submit    # privacy scan before publishing
+```
+
+The allowlist is the source tree minus the hygiene-forbidden set (runtime `data/`, the `submit/`
+mirror, generated reports, runtime SQLite, caches, secrets, backups, oversized artifacts), with a
+single exception: `web/dist` ships so that a clone runs immediately. The zip digest is written to a
+sibling `.sha256` file; `release-manifest.json` lists every shipped file, and `hsrmap dod` item 6
+verifies that the directory and the manifest agree exactly.
+
+---
+
+## Repository layout
+
+```text
+hsrmap/            application code (judgement, corpus, publishing, services)
+hsrmap_phase1/     phase-1 capture/calibration package (reference implementation)
+phase1/            immutable reference data: endpoint_registry, calibration, samples
+tests/             tests (small, human-checkable fixtures)
+web/src/           front-end source (dist is a build product, shipped by release)
+docs/              specs, runbooks, architecture notes, staging records
+tools/             developer tools (release, hygiene, privacy scan, crawlers)
+data/ submit/ artifacts/ logs/ reports/   ← runtime & build products, never in the source tree
+```
+
+---
+
+## Evidence discipline
+
+* **Official first.** Phase 1 accepts only the official map; there is no "wait for official to add more".
+* **Traceable sources.** Every step is either found verbatim (or in fragments) in the page it claims,
+  or explicitly marked as transcribed from an image attached to that entry.
+* **Inference leaves a trace.** Cross inference must record its basis, and summaries state the boundary.
+  `HALLUCINATED_STEP` is a hard publish failure.
+* **A negative result is a result.** `source_search_run/result/verdict` records every attempt and refusal.
+* **Nothing silent.** Commands print or exit non-zero; read-only operations never create databases;
+  tests never write into the repository.
+
+---
+
+## Contributing
+
+Issues and pull requests are welcome. Before opening a PR:
+
+1. judgement or publishing semantics → write a shadow comparison first (old vs new, all six states must
+   match point by point);
+2. new data operations → use the official entry points (`hsrmap guides …`, `hsrmap release`,
+   `hsrmap repo-hygiene`) instead of adding one-off scripts;
+3. before committing: `pytest -q` + `ruff check` + `repo-hygiene` + `hsrmap dod` all green;
+4. before releasing: rebuild with `hsrmap release` and check `release-manifest.json`.
+
+Design documents under `docs/` are written in Chinese; code comments follow the same convention,
+while this README and the CLI output stay in English.
+
+---
+
+## License & content notice
+
+Code is released under the [MIT License](LICENSE).
+
+This repository ships **no game data and no crawled content**: `data/`, databases, downloaded
+images and generated reports are excluded by design, and the snapshot must be built locally with your
+own credentials-free access to the official map. Guide texts, screenshots and trademarks referenced by
+the tooling belong to their respective authors and rights holders (HoYoverse / miHoYo and the original
+guide authors); the MIT license covers this project's source code only.

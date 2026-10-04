@@ -7,6 +7,8 @@ from pathlib import Path
 
 TARGET = Path(sys.argv[1] if len(sys.argv) > 1 else "submit")
 SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", ".pytest_cache", ".ruff_cache"}
+#: 这个扫描器本身要写出它要找的模式（用户名、上层目录名），所以把它自己排除掉。
+SELF_EXEMPT = {"tools/privacy_scan.py"}
 BINARY = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".db", ".zip", ".woff", ".woff2", ".ttf", ".pdf", ".pyc"}
 
 PATTERNS = [
@@ -35,7 +37,7 @@ for base, dirs, names in os.walk(TARGET):
     for name in names:
         path = Path(base) / name
         rel = path.relative_to(TARGET).as_posix()
-        if path.suffix.lower() in BINARY:
+        if rel in SELF_EXEMPT or path.suffix.lower() in BINARY:
             continue
         try:
             text = path.read_text(encoding="utf-8", errors="replace")

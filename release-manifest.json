@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-10-04T03:31:17+00:00",
+ "generated_at": "2026-10-04T03:38:24+00:00",
  "root_name": "Hoyo",
- "files": 552,
- "bytes": 5228577,
+ "files": 557,
+ "bytes": 6396238,
  "entries": [
   {
    "path": ".env.example",
@@ -17,8 +17,12 @@
    "bytes": 783
   },
   {
+   "path": "LICENSE",
+   "bytes": 1069
+  },
+  {
    "path": "README.md",
-   "bytes": 8711
+   "bytes": 11886
   },
   {
    "path": "docs/architecture/phase5c-vision-region-architecture.md",
@@ -27,6 +31,22 @@
   {
    "path": "docs/history/phase1-hoyolab-capture.md",
    "bytes": 2910
+  },
+  {
+   "path": "docs/images/map-overview.png",
+   "bytes": 351444
+  },
+  {
+   "path": "docs/images/monitor.png",
+   "bytes": 151939
+  },
+  {
+   "path": "docs/images/point-evidence.png",
+   "bytes": 462338
+  },
+  {
+   "path": "docs/images/review-console.png",
+   "bytes": 197363
   },
   {
    "path": "docs/runbooks/baseline-hygiene.json",
@@ -70,7 +90,7 @@
   },
   {
    "path": "docs/runbooks/publish-github.md",
-   "bytes": 2548
+   "bytes": 2629
   },
   {
    "path": "docs/runbooks/serve-split.md",
@@ -2098,7 +2118,7 @@
   },
   {
    "path": "tools/privacy_scan.py",
-   "bytes": 2874
+   "bytes": 3126
   },
   {
    "path": "tools/windows/open-review.html",
