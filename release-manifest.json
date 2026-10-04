@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-10-04T03:21:18+00:00",
+ "generated_at": "2026-10-04T03:31:17+00:00",
  "root_name": "Hoyo",
- "files": 550,
- "bytes": 5223155,
+ "files": 552,
+ "bytes": 5228577,
  "entries": [
   {
    "path": ".env.example",
@@ -67,6 +67,10 @@
   {
    "path": "docs/runbooks/hygiene-s9.md",
    "bytes": 5027
+  },
+  {
+   "path": "docs/runbooks/publish-github.md",
+   "bytes": 2548
   },
   {
    "path": "docs/runbooks/serve-split.md",
@@ -2091,6 +2095,10 @@
   {
    "path": "tools/hygiene_baseline.json",
    "bytes": 991
+  },
+  {
+   "path": "tools/privacy_scan.py",
+   "bytes": 2874
   },
   {
    "path": "tools/windows/open-review.html",
