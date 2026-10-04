@@ -4,6 +4,7 @@ import { api } from "../api/client";
 import type { AtlasPayload, AtlasTopic, DataSource, EvidenceOverview, EvidenceStep, GuideEntry, GreaseTopic, PointEvidencePayload, PointItem, ProgressAtlasPayload, ProgressAtlasPoint, ProgressFilter, ProgressPointState, ProgressStatus, ProgressTotals, SearchResult, SettingsInfo, TopicPayload, TreeNode, UserPoint } from "../api/types";
 import { MapCanvas } from "../map/MapCanvas";
 import { MapController } from "../map/MapController";
+import { hidesCompletedPoint, matchProgressFilter } from "../map/progress";
 import { MapNav } from "../navigation/MapNav";
 import { ancestorIds, displayChildren, firstRenderable, indexTree, pathNames, rootIdOf } from "../navigation/tree";
 import { parseHash, writeHash } from "./router";
@@ -186,6 +187,8 @@ export function App() {
   const [progressNote, setProgressNote] = useState("");
   const [remainingOpen, setRemainingOpen] = useState(false);
   const [acceptMapMark, setAcceptMapMark] = useState(false);
+  //: P6.6 增量：隐藏已标记完成的点位，默认关闭（会话内状态，与同面板的 accept_map_mark 一致）。
+  const [hideCompletedMarks, setHideCompletedMarks] = useState(false);
   const [openZones, setOpenZones] = useState<Set<string>>(new Set());
   const [openMaps, setOpenMaps] = useState<Set<string>>(new Set());
   const pendingProgress = useRef<{ mapId: string; point: ProgressAtlasPoint } | null>(null);
@@ -494,18 +497,26 @@ export function App() {
     ? "（" + Object.entries(statusStore.observations).map(([key, value]) => key + " " + value).join(" · ") + "）"
     : "";
   //: P6.6：本图口径只统计进度层认识的四个状态；states 里没有的点位按「剩余」算。
+  //: 可见数用画布同一套判定（标签 -> 过滤档 -> 隐藏已完成），避免提示与图上标记对不上。
   const mapProgress = useMemo(() => {
     let completed = 0;
     let conflict = 0;
     let unclear = 0;
+    let visible = 0;
+    let hidden = 0;
+    const selected = new Set(state.selectedLabels);
     for (const point of state.points) {
       const value = progressStates[point.source_id];
       if (value === "completed") completed += 1;
       else if (value === "conflict") conflict += 1;
       else if (value === "unclear") unclear += 1;
+      if (!point.labels.some((label) => selected.has(label.id))) continue;
+      if (!matchProgressFilter(value, progressFilter)) continue;
+      if (hidesCompletedPoint(value, hideCompletedMarks)) hidden += 1;
+      else visible += 1;
     }
-    return { total: state.points.length, completed, conflict, unclear };
-  }, [state.points, progressStates]);
+    return { total: state.points.length, completed, conflict, unclear, visible, hidden };
+  }, [state.points, progressStates, state.selectedLabels, progressFilter, hideCompletedMarks]);
   //: P6.6：selectedPointId 既可能是内部 id 也可能是 source_point_id，清单高亮统一按 source_point_id 比。
   const selectedSourceId = useMemo(() => {
     const selected = state.selectedPointId;
@@ -886,7 +897,8 @@ export function App() {
             ))}
           </div>
           <span className="hint">
-            本图 {mapProgress.total} 点 · 已完成 {mapProgress.completed} · 冲突 {mapProgress.conflict} · 说不清 {mapProgress.unclear}
+            本图 {mapProgress.total} 点 · 可见 {mapProgress.visible} · 已完成 {mapProgress.completed} · 冲突 {mapProgress.conflict} · 说不清 {mapProgress.unclear}
+            {mapProgress.hidden > 0 ? " · 已隐藏 " + mapProgress.hidden + " 个已完成" : ""}
           </span>
         </div>
         {state.worldOpen && (
@@ -913,6 +925,7 @@ export function App() {
           guideIds={Object.keys(guideIndex)}
           progressStates={progressStates}
           progressFilter={progressFilter}
+          hideCompleted={hideCompletedMarks}
           onSelect={(point) => void openDetail(point)}
           controllerRef={controllerRef}
         />
@@ -1029,6 +1042,14 @@ export function App() {
               <span>
                 <strong>把官方地图标记也算进来（仍不是游戏内已完成）</strong>
                 <span className="meta">切换后带 ?accept_map_mark={acceptMapMark ? "true" : "false"} 重新拉取 points / atlas</span>
+              </span>
+            </label>
+            <h3>地图显示</h3>
+            <label className="mode-row">
+              <input type="checkbox" checked={hideCompletedMarks} onChange={(event) => setHideCompletedMarks(event.target.checked)} />
+              <span>
+                <strong>隐藏已标记完成的点位</strong>
+                <span className="meta">只隐藏进度层判定为已完成的点位；冲突与说不清仍然显示，过滤档不受影响</span>
               </span>
             </label>
             {/* 下面这些只在 /api/v1/settings 可用时渲染，同步状态不依赖它。 */}

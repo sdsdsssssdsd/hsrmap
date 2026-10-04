@@ -15,8 +15,8 @@ CANARY = Path(__file__).parent / "fixtures" / "guides" / "canary" / "17173_multi
 
 @pytest.mark.data
 
-def test_review_edit_then_approve(tmp_path):
-    app = create_app(guide_path=tmp_path / "guide.db", guide_assets=tmp_path / "ga")
+def test_review_edit_then_approve(tmp_path, guide_dbs):
+    app = create_app(guide_path=guide_dbs / "guide.db", guide_assets=tmp_path / "ga")
     client = TestClient(app)
     created = client.post(
         "/api/v1/review/items",
@@ -69,9 +69,9 @@ def test_review_edit_then_approve(tmp_path):
 
 @pytest.mark.data
 
-def test_review_list_includes_local_page_images(tmp_path):
+def test_review_list_includes_local_page_images(tmp_path, guide_dbs):
     assets = tmp_path / "ga" / "sha256"
-    db = GuideDatabase(tmp_path / "guide.db")
+    db = GuideDatabase(guide_dbs / "guide.db")
     store = RawGuideStore(tmp_path / "guides", assets)
     html = CANARY.read_text(encoding="utf-8")
     imported = import_page(
@@ -82,7 +82,7 @@ def test_review_list_includes_local_page_images(tmp_path):
         fetch_asset=lambda src: b"PNG-" + src.encode(),
     )
     create_item(db, {"page_id": imported["page"]["id"], "source_point_id": "pending", "status": "AUTO_SUGGEST", "draft": {"steps": [{"text": "转", "images": []}]}})
-    app = create_app(guide_path=tmp_path / "guide.db", guide_assets=assets)
+    app = create_app(guide_path=guide_dbs / "guide.db", guide_assets=assets)
     client = TestClient(app)
     item = client.get("/api/v1/review/items").json()["items"][0]
     assert item["page_images"]
@@ -102,9 +102,9 @@ def test_review_list_includes_local_page_images(tmp_path):
 
 @pytest.mark.data
 
-def test_review_images_use_derived_regions(tmp_path):
+def test_review_images_use_derived_regions(tmp_path, guide_dbs):
     assets = tmp_path / "ga" / "sha256"
-    db = GuideDatabase(tmp_path / "guide.db")
+    db = GuideDatabase(guide_dbs / "guide.db")
     store = RawGuideStore(tmp_path / "guides", assets)
     html = CANARY.read_text(encoding="utf-8")
     imported = import_page(
@@ -124,7 +124,7 @@ def test_review_images_use_derived_regions(tmp_path):
         encoding="utf-8",
     )
     create_item(db, {"page_id": page_id, "source_point_id": "", "status": "AUTO_SUGGEST", "draft": {}})
-    app = create_app(guide_path=tmp_path / "guide.db", guide_assets=assets)
+    app = create_app(guide_path=guide_dbs / "guide.db", guide_assets=assets)
     item = TestClient(app).get("/api/v1/review/items").json()["items"][0]
     labeled = [img for img in item["page_images"] if img["sha"] == sha]
     assert labeled[0]["map_name"] == "海原市"
@@ -134,9 +134,9 @@ def test_review_images_use_derived_regions(tmp_path):
 
 @pytest.mark.data
 
-def test_review_one_guide_per_map(tmp_path):
+def test_review_one_guide_per_map(tmp_path, guide_dbs):
     assets = tmp_path / "ga" / "sha256"
-    db = GuideDatabase(tmp_path / "guide.db")
+    db = GuideDatabase(guide_dbs / "guide.db")
     store = RawGuideStore(tmp_path / "guides", assets)
     html = CANARY.read_text(encoding="utf-8")
 
@@ -156,7 +156,7 @@ def test_review_one_guide_per_map(tmp_path):
 
     keep = _page("https://news.17173.com/a", "keep-")
     _page("https://www.3dmgame.com/a", "dup-")
-    app = create_app(guide_path=tmp_path / "guide.db", guide_assets=assets)
+    app = create_app(guide_path=guide_dbs / "guide.db", guide_assets=assets)
     body = TestClient(app).get("/api/v1/review/items").json()
     maps = body["maps"]
     haiyuan = [row for row in maps if row["map_name"] == "海原市"]

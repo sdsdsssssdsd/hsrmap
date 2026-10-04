@@ -39,7 +39,10 @@ python -m hsrmap progress routes --max-routes 6 --actions 8
 * 绝不打印、绝不落盘、绝不进异常文本：`Credential` 的 `repr/str/format` 一律 `<redacted>`，
   `__reduce__` 直接抛 `TypeError`（pickle 不了），异常里只有脱敏后的 retcode / 端点名。
 * 观察表里只有打码 UID（`12***89`），完整 UID 不落库；`store.summary()` 里 `stores_cookie: false`。
-* 发布前跑 `python tools/privacy_scan.py submit`：命中数必须是 0。
+* 发布前跑 `python tools/privacy_scan.py submit`：**未复核命中必须是 0**（退出码 0）。
+  扫描器分三层：模式 → 形态（全大写常量名 / 公共安装路径 / 保留域名邮箱都算噪音）→ 复核白名单
+  （`tools/privacy_allowlist.json`，逐条写理由）。**凭据类命中永远不许进白名单** ——
+  白名单是为了少噪音，不是为了给真凭据放行。
 
 > 若不小心把 cookie 贴进了任何聊天窗口 / issue / 日志：**先去官网登出所有设备（并改密码）**，
 > 让那串 token 失效，再重新登录取一份新的。凭据一旦离开你的机器就按已泄漏处理。
@@ -83,7 +86,28 @@ unknown         来源说不清                  → 永远不算完成
 地图进程不持有 cookie、不发外网请求（响应里带 `viewer_network: 0`）。
 合并与同步只走 CLI —— 界面上只显示命令行文本，**没有按钮**。
 
-## 7. 本轮验证
+## 7. §18 十五条硬门 → 机器证据
+
+| # | 硬门 | 证据（可执行） |
+| ---: | --- | --- |
+| 1 | 无 Cookie 时所有现有功能完全不受影响 | `doctor` PASS（地图/审核台首屏 18 个请求全 200）；`test_without_a_cookie_the_probe_says_so_and_stops`；`test_no_network_at_import_time` |
+| 2 | Phase 1 仍然 credentials-free | `test_progress_boundary.py`：`hsrmap_phase1/client.py` 里既没有 cookie 也没有 `api_post` |
+| 3 | Cookie 不进 repo / db / logs / reports | `test_observation_store_has_no_secrets`（库里搜不到 ltoken/完整 UID）；`privacy_scan.py submit` → 0 未复核命中 |
+| 4 | HTTP 异常不包含 Cookie | `test_progress_probe.py`：`ProgressApiError` 文本里有 retcode、没有凭据 |
+| 5 | release/privacy scan 可识别凭据泄漏 | `test_privacy_scanner_flags_a_leaked_cookie`：临时目录里放一串真形状的凭据 → 扫描器 rc=2 |
+| 6 | 所有 mutating endpoint 框架层禁止 | `test_progress_reads_are_allowed_and_writes_are_refused`（`read_contract` 抛 `WriteEndpointForbidden`） |
+| 7 | remote sync 默认 read-only + dry-run | `test_merge_is_dry_run_by_default`（一个字节都不写）；`test_cli_merge_confirm_without_semantics_is_a_usage_error`（rc=2 且不建库） |
+| 8 | remote status 不静默覆盖 manual progress | `test_merge_never_flips_completed_back_to_false`；`test_diff_does_not_write_anything` |
+| 9 | unknown semantic 不允许推导 completed | `test_unverified_remote_never_derives_completed`、`test_unknown_semantic_never_derives_completed`、`test_unknown_observations_are_never_mergeable`、`test_unknown_semantics_never_reduce_the_remaining_count` |
+| 10 | app_version 自动发现失败 fail closed | `test_progress_probe.py`：`AppVersionUnavailable` → `reason=app_version_unavailable`，不继续请求 |
+| 11 | API schema drift 可检测 | `hsrmap/progress/shapes.py`（只记字段与类型）＋ `progress drift`（0 = 无漂移 / 2 = 有漂移）＋ `tests/test_progress_drift.py` |
+| 12 | CN / Global contract 分离 | `test_progress_boundary.py`：两个 realm 的 game_biz / binding_host / map_host 各自独立，不互相借用 |
+| 13 | progress import 可重复执行且 idempotent | `test_observation_upsert_is_idempotent`；`test_merge_applies_only_true_and_is_idempotent`（第二次 planned=0） |
+| 14 | 断网不破坏已有 user.db | `test_remote_failure_leaves_local_progress_untouched`；`test_progress_endpoints_make_no_outbound_connection`（堵掉出网传输后三个接口照常 200） |
+| 15 | remote failure 不改变任何 completed | 同上两条 ＋ 合并只写 `completed=1`（报告里 `wrote_completed_false` 恒为 0） |
+| 16 | Guide Atlas 现有 closure / evidence / publish gates 零退化 | `dod` = PASS（12/12）；`closure-check` PASS；六状态矩阵 sha256 == S0 基线 |
+
+## 8. 本轮验证
 
 | 项目 | 结果 |
 | --- | --- |

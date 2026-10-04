@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -104,14 +105,28 @@ def test_phase1_stays_credentials_free():
     assert "api_get" in text
 
 
+def _run_capture(args):
+    """跑子进程并**按 UTF-8 解码**。
+
+    这些子进程会打印中文：Windows 上 `text=True` 用 GBK 解码，遇到 em dash / 省略号这类
+    UTF-8 字节就会抛 UnicodeDecodeError（批量跑测试时出现过，单跑不复现）。
+    所以子进程显式要求 UTF-8 输出，父进程也显式按 UTF-8 解码。
+    """
+    env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+    result = subprocess.run(args, capture_output=True, cwd=ROOT, env=env)
+    result.stdout = result.stdout.decode("utf-8", errors="replace")
+    result.stderr = result.stderr.decode("utf-8", errors="replace")
+    return result
+
+
 def test_privacy_scanner_flags_a_leaked_cookie(tmp_path):
     """凭据泄漏必须能被既有扫描器抓到（DoD：release/privacy scan 可识别凭据泄漏）。"""
     leaked = tmp_path / "leaked.txt"
     #: 运行期写进文件的就是一串真凭据形状；源码里不出现（否则扫描器会先扫到自己人）。
     leaked.write_text("ltoken_v2" + "=abcdefghijklmnop; " + "ltuid_v2" + "=123456789\n", encoding="utf-8")
-    result = subprocess.run(
-        [sys.executable, str(ROOT / "tools" / "privacy_scan.py"), str(tmp_path)],
-        capture_output=True, text=True, cwd=ROOT,
+    result = _run_capture(
+        [sys.executable, str(ROOT / "tools" / "privacy_scan.py"), str(tmp_path),
+         "--out", str(tmp_path / "hits.json")],
     )
     assert "cookie_or_token" in result.stdout, result.stdout
     #: 未复核的凭据命中必须让扫描器**失败**（白名单对凭据类无效）。
@@ -127,6 +142,6 @@ def test_no_network_at_import_time():
         "endpoints.load_contracts(); realm.realm_for(); cookie.credential_from_env({});"
         "print('ok')"
     )
-    result = subprocess.run([sys.executable, "-c", script], capture_output=True, text=True, cwd=ROOT)
+    result = _run_capture([sys.executable, "-c", script])
     assert result.returncode == 0, result.stderr
     assert "ok" in result.stdout

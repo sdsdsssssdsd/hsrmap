@@ -25,7 +25,9 @@ def test_guides_atlas_lists_enabled_topics():
     assert topics["hidden_treasure"]["official_status"] in {"NO_OFFICIAL_TARGET", "LABEL_EXISTS_NO_POINTS"}
 
 
-def test_atlas_counts_map_label_published_routes(tmp_path):
+def test_atlas_counts_map_label_published_routes(tmp_path, make_guide_db):
+    #: viewer 只读写、不建库（a1-8 四.2）：工作库先显式建出来。
+    make_guide_db("w.db")
     published = GuideDatabase(tmp_path / "p.db")
     source = published.upsert_source({"name": "t", "domain": "t.test"})
     page = published.add_page(source["id"], {"canonical_url": "https://t.test/bird", "title": "t"})

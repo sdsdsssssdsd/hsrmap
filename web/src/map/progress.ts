@@ -12,3 +12,13 @@ export function matchProgressFilter(state: ProgressPointState | undefined, filte
   if (filter === "completed") return state === "completed";
   return state === "conflict" || state === "unclear";
 }
+
+/**
+ * P6.6 增量：是否被「隐藏已标记完成的点位」开关挡掉。
+ * 只认 completed —— remaining / conflict / unclear 一律不动：
+ * conflict（本地已完成但远端说没有）与 unclear（远端给了未证实的状态）都不等于完成。
+ * 这个条件与 matchProgressFilter 正交，两者同时成立才可见。
+ */
+export function hidesCompletedPoint(state: ProgressPointState | undefined, hideCompleted: boolean): boolean {
+  return hideCompleted && state === "completed";
+}

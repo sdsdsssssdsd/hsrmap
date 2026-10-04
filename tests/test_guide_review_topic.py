@@ -5,8 +5,9 @@ from hsrmap.viewer_app import create_app
 
 @pytest.mark.data
 
-def test_review_list_filters_by_topic(tmp_path):
-    app = create_app(guide_path=tmp_path / "guide.db", guide_assets=tmp_path / "ga")
+def test_review_list_filters_by_topic(tmp_path, guide_dbs):
+    #: viewer 只读写、不建库（a1-8 四.2）：工作库 / 发布库由夹具显式建出来。
+    app = create_app(guide_path=guide_dbs / "guide.db", guide_assets=tmp_path / "ga")
     client = TestClient(app)
     client.post(
         "/api/v1/review/items",
@@ -34,18 +35,10 @@ def test_review_list_filters_by_topic(tmp_path):
     assert grease[0]["draft"]["topic_key"] == "floating_grease"
 
 
-def _make_guide_dbs(tmp_path):
-    """viewer 不再隐式建库（a1-8 四.2）：需要库的测试自己把空库建出来。"""
-    from hsrmap.guide_db import GuideDatabase
-
-    for name in ("guide.db", "published.db"):
-        GuideDatabase.create(tmp_path / name).close()
-
-def test_review_console_mentions_topic_filter(tmp_path):
-    _make_guide_dbs(tmp_path)
+def test_review_console_mentions_topic_filter(tmp_path, guide_dbs):
     #: 这条只验证页面/脚本内容，却用默认路径建 app —— 那会在 checkout 根目录建出 data/
     #: （submit 副本里就是一次真实的目录污染）。给它一个临时库，别碰默认路径。
-    app_kwargs = {"guide_path": tmp_path / "guide.db", "user_path": tmp_path / "user.db"}
+    app_kwargs = {"guide_path": guide_dbs / "guide.db", "user_path": tmp_path / "user.db"}
     html = TestClient(create_app(**app_kwargs)).get("/review").text
     js = TestClient(create_app(**app_kwargs)).get("/review.js").text
     assert "topic" in html.lower()

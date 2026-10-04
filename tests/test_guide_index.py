@@ -8,8 +8,8 @@ import pytest
 pytestmark = pytest.mark.data
 
 
-def test_guide_index_and_guide_asset(tmp_path):
-    guide_path = tmp_path / "guide.db"
+def test_guide_index_and_guide_asset(tmp_path, guide_dbs):
+    guide_path = guide_dbs / "guide.db"
     assets = tmp_path / "guide-assets" / "sha256"
     assets.mkdir(parents=True)
     sha = "ab" + "c" * 62

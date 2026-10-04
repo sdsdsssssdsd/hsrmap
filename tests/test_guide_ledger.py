@@ -221,8 +221,11 @@ def test_a_map_is_published_when_every_one_of_its_points_is(tmp_path):
 
 @pytest.mark.data
 
-def test_gates_payload_blocked_and_exposed_on_review(tmp_path):
-    app = create_app(guide_path=tmp_path / "w.db", published_path=tmp_path / "p.db", guide_assets=tmp_path / "ga")
+def test_gates_payload_blocked_and_exposed_on_review(tmp_path, make_guide_db):
+    #: viewer 只读写、不建库（a1-8 四.2）：工作库先显式建出来。
+    app = create_app(
+        guide_path=make_guide_db("w.db"), published_path=tmp_path / "p.db", guide_assets=tmp_path / "ga"
+    )
     client = TestClient(app)
     body = client.get("/api/v1/atlas/gates").json()
     assert body["result"] == "BLOCKED"

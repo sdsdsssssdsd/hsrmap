@@ -21,9 +21,10 @@ def test_working_draft_does_not_appear_in_published_db(tmp_path):
 
 @pytest.mark.data
 
-def test_viewer_public_index_reads_published_not_working(tmp_path):
-    working = tmp_path / "guide.db"
-    published = tmp_path / "published.db"
+def test_viewer_public_index_reads_published_not_working(tmp_path, guide_dbs):
+    #: viewer 只读写、不建库（a1-8 四.2）：工作库 + 发布库都由夹具显式建出来。
+    working = guide_dbs / "guide.db"
+    published = guide_dbs / "published.db"
     GuideDatabase(working).create_entry(
         {"source_point_id": "5171", "title": "只在工作库", "status": "draft", "steps": []}
     )

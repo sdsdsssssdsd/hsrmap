@@ -1,7 +1,7 @@
 import L from "leaflet";
 import type { MapInfo, PointItem, ProgressFilter, ProgressPointState } from "../api/types";
 import { createHsrCrs } from "./crs";
-import { matchProgressFilter } from "./progress";
+import { hidesCompletedPoint, matchProgressFilter } from "./progress";
 import { addSingleImageRaster, applyRasterView } from "./raster";
 
 export class MapController {
@@ -14,6 +14,8 @@ export class MapController {
   selectedLabels = new Set<string>();
   progressStates: Record<string, ProgressPointState> = {};
   progressFilter: ProgressFilter = "all";
+  /** P6.6 增量：默认关闭，保持现有默认视图不变。 */
+  hideCompleted = false;
   lastFocusId: string | null = null;
   onSelect: ((point: PointItem) => void) | null = null;
 
@@ -101,9 +103,10 @@ export class MapController {
   }
 
   /** P6.6：进度过滤与标记徽章只影响可见性，不改画布、不改选中逻辑。 */
-  setProgress(states: Record<string, ProgressPointState>, filter: ProgressFilter) {
+  setProgress(states: Record<string, ProgressPointState>, filter: ProgressFilter, hideCompleted = false) {
     this.progressStates = states || {};
     this.progressFilter = filter;
+    this.hideCompleted = hideCompleted;
     this.applyVisibility();
   }
 
@@ -113,7 +116,9 @@ export class MapController {
   }
 
   private passesProgressFilter(id: string): boolean {
-    return matchProgressFilter(this.progressStateOf(id), this.progressFilter);
+    const state = this.progressStateOf(id);
+    // 两个正交条件同时成立才可见：先过滤档，再看「隐藏已完成」。
+    return matchProgressFilter(state, this.progressFilter) && !hidesCompletedPoint(state, this.hideCompleted);
   }
 
   private applyMarkerProgress(marker: L.Marker, id: string) {

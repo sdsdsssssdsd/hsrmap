@@ -8,8 +8,9 @@ import pytest
 pytestmark = pytest.mark.data
 
 
-def test_guide_empty_then_local_entry(tmp_path):
-    client = TestClient(create_app(guide_path=tmp_path / "guide.db"))
+def test_guide_empty_then_local_entry(guide_dbs):
+    #: viewer 只读写、不建库（a1-8 四.2）：工作库 / 发布库由夹具显式建出来。
+    client = TestClient(create_app(guide_path=guide_dbs / "guide.db"))
     empty = client.get("/api/v1/guides/by-point/5171").json()
     assert empty["entries"] == []
     created = client.post(

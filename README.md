@@ -31,6 +31,19 @@ image transcription / cross inference):
 
 ![Point evidence](docs/images/point-evidence.png)
 
+**Remaining Atlas** — *collectible − effective completed*, grouped region → map → point, with
+LOCATE/SOLVE evidence and the guide that solves each point. The All / Remaining / Completed /
+Conflict filter drives the markers; a point whose state is unknown is never shown as done:
+
+![Remaining Atlas](docs/images/progress-remaining.png)
+
+**Official-map sync status** — how many observations exist, the four-way diff
+(`both` / `local_only` / `remote_only` / `unknown`), which semantics are allowed to derive
+completion, and the plain statement that the viewer never talks to the network. Merging is a CLI
+action, so there is no button for it:
+
+![Progress sync status](docs/images/progress-sync.png)
+
 **Review console** — engine gates, the source queue grouped by map, target binding and preview:
 
 ![Review console](docs/images/review-console.png)

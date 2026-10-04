@@ -18,7 +18,15 @@ import re
 import sys
 from pathlib import Path
 
-TARGET = Path(sys.argv[1] if len(sys.argv) > 1 else "submit")
+#: 用法：privacy_scan.py [目标目录] [--out 命中清单路径]
+#: 默认目标 \`submit\`（发布包）；命中清单默认 \`artifacts/privacy-hits.json\`。
+_argv = [item for item in sys.argv[1:] if not item.startswith("--")]
+_flags = {item for item in sys.argv[1:] if item.startswith("--")}
+TARGET = Path(_argv[0]) if _argv else Path("submit")
+if "--out" in sys.argv:
+    HITS_OUT = Path(sys.argv[sys.argv.index("--out") + 1])
+else:
+    HITS_OUT = Path("artifacts/privacy-hits.json")
 SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", ".pytest_cache", ".ruff_cache"}
 #: 这两个文件按定义就要写出「命中的原文」（扫描器写出模式、白名单写下被放行的文本），
 #: 所以把它们自己排除掉；白名单里本来也不允许出现凭据类命中（见 CREDENTIAL_KINDS）。
@@ -168,9 +176,12 @@ for name, count in sorted(by_file.items(), key=lambda kv: -kv[1])[:30]:
     print("  %5d  %s" % (count, name))
 for hit in reviewed[:10]:
     print("  allowlisted: %s:%s %s" % (hit["file"], hit["line"], hit["kind"]))
-Path("artifacts").mkdir(exist_ok=True)
-Path("artifacts/privacy-hits.json").write_text(json.dumps(hits, ensure_ascii=False, indent=1), encoding="utf-8")
-print("full list -> artifacts/privacy-hits.json")
+try:
+    HITS_OUT.parent.mkdir(parents=True, exist_ok=True)
+    HITS_OUT.write_text(json.dumps(hits, ensure_ascii=False, indent=1), encoding="utf-8")
+    print("full list ->", HITS_OUT)
+except OSError as exc:  # noqa: BLE001 - 写不出清单不该改变「扫到了什么」这个结论
+    print("warn: 命中清单写不出去（不影响上面的判定）：", exc)
 if unreviewed:
     print("RESULT: FAIL —— 有未复核命中，发布前必须处理（或写进 tools/privacy_allowlist.json 并说明理由）")
     raise SystemExit(2)

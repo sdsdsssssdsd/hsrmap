@@ -258,6 +258,8 @@ def cmd_progress(args: argparse.Namespace) -> int:
         return _progress_remaining(args)
     if cmd == "routes":
         return _progress_routes(args)
+    if cmd == "drift":
+        return _progress_drift(args)
     raise SystemExit(f"unknown progress command: {cmd}")
 
 
@@ -440,6 +442,43 @@ def _progress_routes(args: argparse.Namespace) -> int:
             print(f"  {index}. #{item['source_point_id']} {item['label']}"
                   f"（{item['route_id']} · {item['readiness']}）")
     return 0
+
+
+def _progress_drift(args: argparse.Namespace) -> int:
+    """接口结构漂移：新探针报告 vs 形状基线（只比字段与类型，不比值）。"""
+    from hsrmap.progress.shapes import DEFAULT_BASELINE, drift_report, load_baseline, save_baseline, shapes_from_report
+
+    report_path = Path(str(getattr(args, "report", "") or ""))
+    if not report_path.is_file():
+        print(f"找不到探针报告：{report_path}（先跑 python -m hsrmap progress probe --out <path>）",
+              file=sys.stderr)
+        return 1
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    baseline_path = Path(str(getattr(args, "baseline", None) or DEFAULT_BASELINE))
+    current = shapes_from_report(report)
+    if not current:
+        print(json.dumps({"drift": False, "checked": 0,
+                          "note": "这份报告里没有 shapes（老版本探针？重跑一次 probe）"},
+                         ensure_ascii=False, indent=2))
+        return 0
+    if bool(getattr(args, "record", False)):
+        saved = save_baseline(baseline_path, current)
+        print(f"已记录形状基线：{saved}（{len(current)} 个端点，只含字段与类型）")
+        return 0
+    result = drift_report(report, baseline=load_baseline(baseline_path))
+    if bool(getattr(args, "json", False)):
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    else:
+        print(f"接口结构漂移检查：基线 {result['baseline']} 个端点 · 本次 {result['checked']} 个")
+        if result["note"]:
+            print("  " + result["note"])
+        for row in result["drifted"]:
+            print(f"  ⚠ {row['endpoint']}：{row.get('reason') or ''}"
+                  + (f" 少 {row.get('missing_count')} 个字段" if row.get("missing_count") else "")
+                  + (f" 多 {row.get('added_count')} 个字段" if row.get("added_count") else ""))
+        print("  " + ("发现漂移：接口结构变了，先看清楚再改合同" if result["drift"] else "无漂移"))
+    #: 契约：0 = 没有漂移；2 = 有漂移（gate 拒绝），与 dod / closure 的退出码约定一致。
+    return 2 if result["drift"] else 0
 
 
 def cmd_serve(args: argparse.Namespace) -> int:
@@ -1943,6 +1982,12 @@ def main(argv: list[str] | None = None) -> int:
     routes_cmd.add_argument("--accept-map-mark", action="store_true")
     routes_cmd.add_argument("--json", action="store_true")
     routes_cmd.set_defaults(func=cmd_progress)
+    drift_cmd = psub.add_parser("drift")
+    drift_cmd.add_argument("--report", required=True, help="探针报告 JSON（progress probe --out）")
+    drift_cmd.add_argument("--baseline", default=None, help="形状基线（默认 phase1/progress-shapes.json）")
+    drift_cmd.add_argument("--record", action="store_true", help="把这份报告的指纹记成基线")
+    drift_cmd.add_argument("--json", action="store_true")
+    drift_cmd.set_defaults(func=cmd_progress)
     guides = sub.add_parser("guides")
     guides.add_argument("--data-dir", default=None, help="运行时数据目录（同顶层开关）")
     guides.add_argument("--quiet", action="store_true", help="成功也不打印")

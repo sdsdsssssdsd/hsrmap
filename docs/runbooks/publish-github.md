@@ -15,7 +15,7 @@
 python -m hsrmap release
 
 # 2) 隐私扫描：把绝对路径、用户名、key、cookie 之类挡在包外
-python tools/privacy_scan.py submit          # 命中数必须是 0
+python tools/privacy_scan.py submit          # 退出码 0 = 没有未复核命中（2 = 必须处理）
 
 # 3) 同步到暂存仓库（/MIR 镜像，但别删 .git）
 robocopy submit <publish-workspace>\hsrmap /MIR /XD .git

@@ -33,10 +33,11 @@ def test_plan_layout_emits_collection_items():
 
 @pytest.mark.data
 
-def test_approve_map_label_without_inventing_point_id(tmp_path):
+def test_approve_map_label_without_inventing_point_id(tmp_path, guide_dbs):
+    #: viewer 只读写、不建库（a1-8 四.2）：工作库 / 发布库由夹具显式建出来。
     app = create_app(
-        guide_path=tmp_path / "guide.db",
-        published_path=tmp_path / "published.db",
+        guide_path=guide_dbs / "guide.db",
+        published_path=guide_dbs / "published.db",
         guide_assets=tmp_path / "ga",
         user_path=tmp_path / "user.db",
     )
@@ -68,10 +69,11 @@ def test_approve_map_label_without_inventing_point_id(tmp_path):
 
 @pytest.mark.data
 
-def test_approve_map_label_without_target_key_is_rejected(tmp_path):
+def test_approve_map_label_without_target_key_is_rejected(tmp_path, guide_dbs):
+    #: viewer 只读写、不建库（a1-8 四.2）：工作库 / 发布库由夹具显式建出来。
     app = create_app(
-        guide_path=tmp_path / "guide.db",
-        published_path=tmp_path / "published.db",
+        guide_path=guide_dbs / "guide.db",
+        published_path=guide_dbs / "published.db",
         guide_assets=tmp_path / "ga",
         user_path=tmp_path / "user.db",
     )
@@ -89,11 +91,10 @@ def test_approve_map_label_without_target_key_is_rejected(tmp_path):
     assert resp.status_code == 409
 
 
-def test_review_exposes_official_candidate_thumbs_and_human_bind(tmp_path):
-    _make_guide_dbs(tmp_path)
+def test_review_exposes_official_candidate_thumbs_and_human_bind(tmp_path, guide_dbs):
     app = create_app(
-        guide_path=tmp_path / "guide.db",
-        published_path=tmp_path / "published.db",
+        guide_path=guide_dbs / "guide.db",
+        published_path=guide_dbs / "published.db",
         guide_assets=tmp_path / "ga",
         user_path=tmp_path / "user.db",
     )
@@ -125,17 +126,9 @@ def test_review_exposes_official_candidate_thumbs_and_human_bind(tmp_path):
     assert "官方候选" in html
 
 
-def _make_guide_dbs(tmp_path):
-    """viewer 不再隐式建库（a1-8 四.2）：需要库的测试自己把空库建出来。"""
-    from hsrmap.guide_db import GuideDatabase
-
-    for name in ("guide.db", "published.db"):
-        GuideDatabase.create(tmp_path / name).close()
-
-def test_review_console_mentions_preview_and_target(tmp_path):
-    _make_guide_dbs(tmp_path)
+def test_review_console_mentions_preview_and_target(tmp_path, guide_dbs):
     #: 同上：页面内容测试不该用默认路径建库（会在仓库/submit 里建出 data/）。
-    app_kwargs = {"guide_path": tmp_path / "guide.db", "user_path": tmp_path / "user.db"}
+    app_kwargs = {"guide_path": guide_dbs / "guide.db", "user_path": tmp_path / "user.db"}
     html = TestClient(create_app(**app_kwargs)).get("/review").text
     js = TestClient(create_app(**app_kwargs)).get("/review.js").text
     assert "preview" in html.lower() or "预览" in html

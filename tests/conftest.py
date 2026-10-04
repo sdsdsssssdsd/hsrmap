@@ -141,3 +141,38 @@ def guide_data(snapshot_data):
     if not db.exists():
         pytest.skip("SKIPPED: guide fixture unavailable")
     return snapshot_data
+
+def create_guide_db(path: Path) -> Path:
+    """显式建出一个空的攻略库，返回它的路径。
+
+    只读 / 读写打开都**拒绝**创建不存在的库（a1-8 四.2），只有 `create()` 允许产生
+    文件系统副作用：需要「已经存在的工作库 / 发布库」的测试必须自己先把它建出来，
+    而不是指望 viewer / CLI 顺手建一个空的。
+    """
+    from hsrmap.guide_db import GuideDatabase
+
+    GuideDatabase.create(path).close()
+    return path
+
+
+@pytest.fixture
+def make_guide_db(tmp_path: Path):
+    """按名字显式建库：`make_guide_db("w.db")` → `tmp_path / "w.db"`。"""
+
+    def _make(name: str) -> Path:
+        return create_guide_db(tmp_path / name)
+
+    return _make
+
+
+@pytest.fixture
+def guide_dbs(tmp_path: Path) -> Path:
+    """把标准名的两个库（`guide.db` + `published.db`）显式建出来，返回所在目录。
+
+    `create_app()` 的审核台模式用 readwrite 打开工作库、用 readonly 打开发布库，
+    两者都不建库（a1-8 四.2）；`published.db` 也要建出来，`POST /api/v1/guides`
+    才有一条能同步过去的发布库。
+    """
+    create_guide_db(tmp_path / "guide.db")
+    create_guide_db(tmp_path / "published.db")
+    return tmp_path

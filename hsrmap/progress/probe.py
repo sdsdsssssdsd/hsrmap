@@ -30,8 +30,13 @@ from hsrmap.progress.hoyolab import (
     treasure_count,
 )
 from hsrmap.progress.realm import SrMapRealm, realm_for
+from hsrmap.progress.shapes import shape_entry
 
-PROBE_VERSION = 1
+PROBE_VERSION = 2  #: v2 起报告里带 `shapes`（结构指纹），用于 schema drift 比对
+
+
+def record_shape(report: dict[str, Any], endpoint: str, payload: Any) -> None:
+    report.setdefault("shapes", {})[endpoint] = shape_entry(payload)
 
 #: 2×2 实验（a1-9 §12）：四种操作 × 两个读数接口。语义只有跑完这张表才敢定。
 EXPERIMENT_MATRIX: tuple[dict[str, str], ...] = (
@@ -136,6 +141,8 @@ def _status_probe(client: ReadOnlyClient, *, uid: Any, map_id: Any, server: str,
         "message": response.message[:200],
         "data_keys": sorted(str(key) for key in (response.data or {})) if isinstance(response.data, Mapping) else [],
         "verified": False,
+        #: 只记形状不记值：这份指纹进得了仓库，却不含任何 UID / 状态值（a1-9 §18 schema drift）。
+        "shape": shape_entry(response.data),
     }
 
 
@@ -189,6 +196,7 @@ def run_probe(
     try:
         role_rows = roles(client)
         report["steps"]["roles"] = {"ok": True, "count": len(role_rows)}
+        record_shape(report, "binding_role_list", role_rows)
     except Exception as exc:  # noqa: BLE001 - 探针失败也要有报告
         report["steps"]["roles"] = {"ok": False, "error": f"{type(exc).__name__}: {str(exc)[:160]}"}
     role = pick_role(role_rows, uid)
@@ -221,10 +229,9 @@ def run_probe(
         report["reason"] = "no_map_id"
         return report
     try:
-        report["steps"]["treasure"] = {
-            "ok": True,
-            **treasure_count(client, uid=game_uid, map_id=chosen_map, server=server),
-        }
+        treasure = treasure_count(client, uid=game_uid, map_id=chosen_map, server=server)
+        report["steps"]["treasure"] = {"ok": True, **treasure}
+        record_shape(report, "get_user_treasure_count", treasure)
     except Exception as exc:  # noqa: BLE001
         report["steps"]["treasure"] = {"ok": False, "map_id": chosen_map,
                                        "error": f"{type(exc).__name__}: {str(exc)[:160]}"}
@@ -233,6 +240,9 @@ def run_probe(
     report["steps"]["point_status"] = _status_probe(
         client, uid=game_uid, map_id=chosen_map, server=server, point_ids=point_ids
     )
+    shape = report["steps"]["point_status"].get("shape")
+    if shape:
+        report.setdefault("shapes", {})["get_point_status"] = shape
     report["ok"] = bool(report["steps"].get("treasure", {}).get("ok"))
     report["exchanges"] = list(client.exchanges)
     report["semantics"] = {

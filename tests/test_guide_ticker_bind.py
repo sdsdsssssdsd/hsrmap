@@ -385,7 +385,7 @@ def test_bind_canary_never_approves_or_creates(tmp_path):
 
 @pytest.mark.data
 
-def test_approve_ticker_requires_candidate_and_returns_409(tmp_path):
+def test_approve_ticker_requires_candidate_and_returns_409(tmp_path, make_guide_db):
     db = GuideDatabase(tmp_path / "g.db")
     catalog = [
         {"source_point_id": "101", "map_id": "508", "label": "梦境迷钟"},
@@ -405,7 +405,8 @@ def test_approve_ticker_requires_candidate_and_returns_409(tmp_path):
     except ValueError as exc:
         assert "candidate" in str(exc)
 
-    app = create_app(guide_path=tmp_path / "app.db", guide_assets=tmp_path / "ga")
+    #: viewer 只读写、不建库（a1-8 四.2）：工作库先显式建出来。
+    app = create_app(guide_path=make_guide_db("app.db"), guide_assets=tmp_path / "ga")
     client = TestClient(app)
     created = client.post(
         "/api/v1/review/items",

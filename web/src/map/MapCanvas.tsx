@@ -11,6 +11,8 @@ interface Props {
   /** P6.6：进度层 states 按 source_point_id 索引，没有条目的点位不算已完成。 */
   progressStates?: Record<string, ProgressPointState>;
   progressFilter?: ProgressFilter;
+  /** P6.6 增量：隐藏已标记完成的点位，默认关闭。 */
+  hideCompleted?: boolean;
   onSelect: (point: PointItem) => void;
   controllerRef: { current: MapController | null };
 }
@@ -26,6 +28,7 @@ export function MapCanvas({
   guideIds = [],
   progressStates = NO_PROGRESS,
   progressFilter = "all",
+  hideCompleted = false,
   onSelect,
   controllerRef,
 }: Props) {
@@ -50,10 +53,10 @@ export function MapCanvas({
     if (focusId) controllerRef.current?.focusPoint(focusId);
   }, [points, selectedLabels.join(","), guideIds.join(","), progressStates]);
 
-  //: P6.6：切进度过滤档只改可见性，不重建标记。
+  //: P6.6：切过滤档 / 隐藏已完成只改可见性，不重建标记。
   useEffect(() => {
-    controllerRef.current?.setProgress(progressStates, progressFilter);
-  }, [progressStates, progressFilter]);
+    controllerRef.current?.setProgress(progressStates, progressFilter, hideCompleted);
+  }, [progressStates, progressFilter, hideCompleted]);
 
   useEffect(() => {
     if (focusId) controllerRef.current?.focusPoint(focusId);
