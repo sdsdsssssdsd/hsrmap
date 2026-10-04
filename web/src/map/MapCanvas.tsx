@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { MapInfo, PointItem } from "../api/types";
+import type { MapInfo, PointItem, ProgressFilter, ProgressPointState } from "../api/types";
 import { MapController } from "./MapController";
 
 interface Props {
@@ -8,11 +8,27 @@ interface Props {
   selectedLabels: string[];
   focusId?: string | null;
   guideIds?: string[];
+  /** P6.6：进度层 states 按 source_point_id 索引，没有条目的点位不算已完成。 */
+  progressStates?: Record<string, ProgressPointState>;
+  progressFilter?: ProgressFilter;
   onSelect: (point: PointItem) => void;
   controllerRef: { current: MapController | null };
 }
 
-export function MapCanvas({ info, points, selectedLabels, focusId, guideIds = [], onSelect, controllerRef }: Props) {
+/** 复用同一个空对象，避免每次渲染都换掉 progressStates 的身份。 */
+const NO_PROGRESS: Record<string, ProgressPointState> = {};
+
+export function MapCanvas({
+  info,
+  points,
+  selectedLabels,
+  focusId,
+  guideIds = [],
+  progressStates = NO_PROGRESS,
+  progressFilter = "all",
+  onSelect,
+  controllerRef,
+}: Props) {
   const elRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -20,7 +36,7 @@ export function MapCanvas({ info, points, selectedLabels, focusId, guideIds = []
     const controller = new MapController();
     controller.onSelect = onSelect;
     controller.mount(elRef.current, info);
-    controller.loadPoints(points, new Set(selectedLabels), new Set(guideIds));
+    controller.loadPoints(points, new Set(selectedLabels), new Set(guideIds), progressStates);
     controllerRef.current = controller;
     if (focusId) controller.focusPoint(focusId);
     return () => {
@@ -30,9 +46,14 @@ export function MapCanvas({ info, points, selectedLabels, focusId, guideIds = []
   }, [info?.id]);
 
   useEffect(() => {
-    controllerRef.current?.loadPoints(points, new Set(selectedLabels), new Set(guideIds));
+    controllerRef.current?.loadPoints(points, new Set(selectedLabels), new Set(guideIds), progressStates);
     if (focusId) controllerRef.current?.focusPoint(focusId);
-  }, [points, selectedLabels.join(","), guideIds.join(",")]);
+  }, [points, selectedLabels.join(","), guideIds.join(","), progressStates]);
+
+  //: P6.6：切进度过滤档只改可见性，不重建标记。
+  useEffect(() => {
+    controllerRef.current?.setProgress(progressStates, progressFilter);
+  }, [progressStates, progressFilter]);
 
   useEffect(() => {
     if (focusId) controllerRef.current?.focusPoint(focusId);

@@ -1,5 +1,5 @@
 {
-  "format_version": 1,
+  "format_version": 2,
   "game": "hsr",
   "locale": "zh-cn",
   "discovered_at": "2026-10-01T09:44:29.155004+00:00",
@@ -26,7 +26,14 @@
         "app_sn",
         "lang",
         "app_version"
-      ]
+      ],
+      "mutating": false,
+      "request": "query",
+      "response": {
+        "retcode": "int",
+        "message": "str",
+        "data": "object"
+      }
     },
     "map_info": {
       "method": "GET",
@@ -37,7 +44,14 @@
         "app_sn",
         "lang",
         "app_version"
-      ]
+      ],
+      "mutating": false,
+      "request": "query",
+      "response": {
+        "retcode": "int",
+        "message": "str",
+        "data": "object"
+      }
     },
     "label_tree": {
       "method": "GET",
@@ -48,7 +62,14 @@
         "app_sn",
         "lang",
         "app_version"
-      ]
+      ],
+      "mutating": false,
+      "request": "query",
+      "response": {
+        "retcode": "int",
+        "message": "str",
+        "data": "object"
+      }
     },
     "point_list": {
       "method": "GET",
@@ -59,7 +80,14 @@
         "app_sn",
         "lang",
         "app_version"
-      ]
+      ],
+      "mutating": false,
+      "request": "query",
+      "response": {
+        "retcode": "int",
+        "message": "str",
+        "data": "object"
+      }
     },
     "point_info": {
       "method": "GET",
@@ -70,7 +98,154 @@
         "app_sn",
         "lang",
         "app_version"
-      ]
+      ],
+      "mutating": false,
+      "request": "query",
+      "response": {
+        "retcode": "int",
+        "message": "str",
+        "data": "object"
+      }
+    },
+    "get_user_treasure_count": {
+      "method": "GET",
+      "path": "/v1/map/get_user_treasure_count",
+      "auth": "cookie",
+      "mutating": false,
+      "parameters": [
+        "uid",
+        "map_id",
+        "server"
+      ],
+      "request": "query",
+      "response": {
+        "map_all_treasure_count": "int",
+        "user_obtained_count": "int",
+        "treasure_label_id": "int|str"
+      },
+      "verified": {
+        "request": "bundle-callsite",
+        "response": "bundle-callsite"
+      },
+      "note": "调用点：getUserTreasureCount({uid: roleInfo.game_uid, map_id: currentMap.parent_id, server: roleInfo.region})"
+    },
+    "get_point_status": {
+      "method": "POST",
+      "path": "/v1/map/point/get_point_status",
+      "auth": "cookie",
+      "mutating": false,
+      "parameters": [],
+      "request": "json-body（字段名 unverified：等 probe 实测）",
+      "response": {
+        "unverified": "逐点状态表；bundle 里与 user_obtained_count 一起用于地图计数"
+      },
+      "verified": {
+        "method": "bundle-callsite",
+        "request": "unverified",
+        "response": "unverified"
+      },
+      "note": "带凭据的 POST 不等于写：语义是读，mutating=false"
+    },
+    "mark_map_point_list": {
+      "method": "POST",
+      "path": "/v1/map/point/mark_map_point_list",
+      "auth": "cookie",
+      "mutating": false,
+      "verified": {
+        "request": "unverified",
+        "response": "unverified"
+      }
+    },
+    "point_group": {
+      "method": "GET",
+      "path": "/v1/map/point_group",
+      "auth": "none",
+      "mutating": false,
+      "verified": {
+        "request": "bundle-callsite",
+        "response": "unverified"
+      },
+      "note": "bundle 里 withCredentials=false"
+    },
+    "save_point_status": {
+      "method": "POST",
+      "path": "/v1/map/point/save_point_status",
+      "auth": "cookie",
+      "mutating": true,
+      "note": "改动官方地图标记状态；progress client 必须拒绝"
+    },
+    "add_mark_map_point": {
+      "method": "POST",
+      "path": "/v1/map/point/add_mark_map_point",
+      "auth": "cookie",
+      "mutating": true
+    },
+    "del_mark_map_point": {
+      "method": "POST",
+      "path": "/v1/map/point/new_del_mark_map_point",
+      "auth": "cookie",
+      "mutating": true
+    },
+    "add_map_spot": {
+      "method": "POST",
+      "path": "/v1/map/spot/add_map_spot",
+      "auth": "cookie",
+      "mutating": true
+    },
+    "edit_map_spot": {
+      "method": "POST",
+      "path": "/v1/map/spot/edit_map_spot",
+      "auth": "cookie",
+      "mutating": true
+    },
+    "del_map_spot": {
+      "method": "POST",
+      "path": "/v1/map/spot/del_map_spot",
+      "auth": "cookie",
+      "mutating": true
+    },
+    "sync_game_spot": {
+      "method": "POST",
+      "path": "/v1/map/spot_kind/sync_game_spot",
+      "auth": "cookie",
+      "mutating": true
+    },
+    "add_route_path": {
+      "method": "POST",
+      "path": "/v1/map/add_route_path",
+      "auth": "cookie",
+      "mutating": true
+    },
+    "edit_route_path": {
+      "method": "POST",
+      "path": "/v1/map/edit_route_path",
+      "auth": "cookie",
+      "mutating": true
+    },
+    "del_route_path": {
+      "method": "POST",
+      "path": "/v1/map/del_route_path",
+      "auth": "cookie",
+      "mutating": true
+    },
+    "binding_role_list": {
+      "method": "GET",
+      "path": "/binding/api/getUserGameRolesByCookie",
+      "auth": "cookie",
+      "mutating": false,
+      "host": "binding",
+      "parameters": [
+        "game_biz"
+      ],
+      "request": "query",
+      "response": {
+        "list": "role 数组：game_uid/region/nickname/level/game_biz"
+      },
+      "verified": {
+        "request": "unverified",
+        "response": "unverified"
+      },
+      "note": "bundle 里 0 命中：角色查询属于另一个 API family（binding host）。路径来自 a1-9 §7 的第三方实现线索，必须用 probe 实测确认；确认之前不要拿它的结果去写 user.db"
     }
   },
   "schema_fingerprints": {
@@ -79,5 +254,31 @@
     "label_tree": "c3a38fee9dce347c8321e03d50535f418a503d93ebebdcdf92f66182dfc7a17d",
     "point_list": "373c1de976648934671950a71f8203acd424e4c705faedf31b615addf9627d36",
     "point_info": "ed105c4047722f6dd0a22a7130ea13b704d76a9f8d2c394c0e209bb411630a9f"
-  }
+  },
+  "endpoints_version": 2,
+  "progress_discovered_at": "2026-10-04T00:00:00+00:00",
+  "progress_evidence": "bundle bundle_b1c3be6a5806caef8417.js（sha256 与 entry.bundle_sha256 相同）里读出的调用点；request/response 里标 unverified 的字段要等 progress probe 实测后才敢写死",
+  "realms": {
+    "cn": {
+      "name": "cn",
+      "game_biz": "hkrpg_cn",
+      "channel": "official+`bilibili`",
+      "binding_host": "https://api-takumi.mihoyo.com",
+      "map_host": "https://api-takumi.mihoyo.com/common/srmap/sr_map",
+      "map_host_nocdn": "https://api-takumi.mihoyo.com/common/srmap/sr_map",
+      "entry": "https://act.mihoyo.com/sr/app/interactive-map/index.html?lang=zh-cn",
+      "verified": "unverified（等 CN probe 实测；B 服账号需在米游社绑定角色）"
+    },
+    "global": {
+      "name": "global",
+      "game_biz": "hkrpg_global",
+      "channel": "global",
+      "binding_host": "https://api-os-takumi.hoyoverse.com",
+      "map_host": "https://sg-act-public-api.hoyolab.com/common/srmap/sr_map",
+      "map_host_nocdn": "https://sg-act-public-api.hoyolab.com/common/srmap/sr_map",
+      "entry": "https://act.hoyolab.com/sr/app/interactive-map/index.html?lang=zh-cn",
+      "verified": "结构来自本项目已抓取的 bundle（hosts 段）"
+    }
+  },
+  "default_realm": "cn"
 }

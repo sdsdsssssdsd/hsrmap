@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Search, Settings, Star, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api/client";
-import type { AtlasPayload, AtlasTopic, DataSource, EvidenceOverview, EvidenceStep, GuideEntry, GreaseTopic, PointEvidencePayload, PointItem, SearchResult, SettingsInfo, TopicPayload, TreeNode, UserPoint } from "../api/types";
+import type { AtlasPayload, AtlasTopic, DataSource, EvidenceOverview, EvidenceStep, GuideEntry, GreaseTopic, PointEvidencePayload, PointItem, ProgressAtlasPayload, ProgressAtlasPoint, ProgressFilter, ProgressPointState, ProgressStatus, ProgressTotals, SearchResult, SettingsInfo, TopicPayload, TreeNode, UserPoint } from "../api/types";
 import { MapCanvas } from "../map/MapCanvas";
 import { MapController } from "../map/MapController";
 import { MapNav } from "../navigation/MapNav";
@@ -27,6 +27,49 @@ function sourceMapText(ds: DataSource) {
   if (ds.source === "live-cache") return "在线缓存";
   if (ds.mode !== "offline" && ds.stale) return "官方连接失败，正在使用本地快照";
   return "正在使用本地快照";
+}
+
+/** a1-9 Phase 6（P6.6）个人进度层的四个过滤档；冲突档同时覆盖「说不清」。 */
+const PROGRESS_FILTERS: { key: ProgressFilter; label: string; hint: string }[] = [
+  { key: "all", label: "全部", hint: "本图全部点位" },
+  { key: "remaining", label: "剩余", hint: "剩余与未同步的普通点位；未同步不等于已完成" },
+  { key: "completed", label: "已完成", hint: "进度层判定为已完成的点位" },
+  { key: "conflict", label: "冲突", hint: "冲突（本地已完成但远端说没有）与说不清（远端给了未证实的状态）都不等于完成" },
+];
+
+const PROGRESS_STATE_TEXT: Record<ProgressPointState, { mark: string; label: string }> = {
+  completed: { mark: "✓", label: "已完成" },
+  remaining: { mark: "·", label: "剩余" },
+  conflict: { mark: "!", label: "冲突" },
+  unclear: { mark: "?", label: "说不清" },
+};
+
+const GATE0_TEXT = "Gate 0 未通过：远端状态只展示，不参与完成判定";
+
+/** 证据字段可能是空串，也可能写成 missing / NONE；只有确凿值才算 ✓。 */
+function hasEvidence(value: string | null | undefined): boolean {
+  const text = (value || "").trim().toLowerCase();
+  return text !== "" && text !== "missing" && text !== "none" && text !== "unknown";
+}
+
+/** 定位/解法各自的勾叉：以证据字段为准，落地状态兜底。 */
+function locateOk(point: ProgressAtlasPoint): boolean {
+  return hasEvidence(point.locate_evidence) || point.status === "COMPLETE" || point.status === "LOCATE_COMPLETE";
+}
+
+function solveNeeded(point: ProgressAtlasPoint): boolean {
+  return point.requirement === "LOCATE_AND_SOLVE" || point.status === "SOLVE_MISSING";
+}
+
+function solveOk(point: ProgressAtlasPoint): boolean {
+  return hasEvidence(point.solve_evidence) || point.status === "COMPLETE";
+}
+
+function toggleId(prev: Set<string>, id: string): Set<string> {
+  const next = new Set(prev);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  return next;
 }
 
 /** a1-8 十三：证据等级必须一眼看得出来源，推断不能和正文引证长一个样子。 */
@@ -134,6 +177,18 @@ export function App() {
   const [sourceOpen, setSourceOpen] = useState(false);
   const [mapHash, setMapHash] = useState<string | null>(null);
   const [liveBanner, setLiveBanner] = useState("");
+  //: a1-9 Phase 6（P6.6）个人进度层：只读展示，Viewer 不联网、不发外网请求。
+  const [progressStatus, setProgressStatus] = useState<ProgressStatus | null>(null);
+  const [progressStates, setProgressStates] = useState<Record<string, ProgressPointState>>({});
+  const [progressTotals, setProgressTotals] = useState<Partial<ProgressTotals> | null>(null);
+  const [progressAtlas, setProgressAtlas] = useState<ProgressAtlasPayload | null>(null);
+  const [progressFilter, setProgressFilter] = useState<ProgressFilter>("all");
+  const [progressNote, setProgressNote] = useState("");
+  const [remainingOpen, setRemainingOpen] = useState(false);
+  const [acceptMapMark, setAcceptMapMark] = useState(false);
+  const [openZones, setOpenZones] = useState<Set<string>>(new Set());
+  const [openMaps, setOpenMaps] = useState<Set<string>>(new Set());
+  const pendingProgress = useRef<{ mapId: string; point: ProgressAtlasPoint } | null>(null);
   const index = useMemo(() => indexTree(state.tree), [state.tree]);
   //: 步骤 -> 证据声明：详情页每一步都要能说出自己凭什么（a1-8 十三）。
   const claimFor = (guideId: number, stepIndex: number): EvidenceStep | undefined =>
@@ -157,6 +212,9 @@ export function App() {
     });
     void api.dataSource().then(setDataSource);
     void api.guideIndex().then((body) => setGuideIndex(body.points));
+    //: P6.6：进度层只读拉取一次；失败时退化为「全部点位都不是已完成」。
+    void loadProgressPoints();
+    void api.progressStatus().then(setProgressStatus).catch(() => setProgressStatus(null));
   }, []);
 
   useEffect(() => {
@@ -191,7 +249,12 @@ export function App() {
       if (wanted) {
         const point = points.find((p) => String(p.id) === wanted || p.source_id === wanted);
         if (point) void openDetail(point);
+        else if (pendingProgress.current && pendingProgress.current.mapId === mapId && pendingProgress.current.point.source_point_id === wanted) {
+          // 剩余清单里有、当前快照没有可渲染标记的点位：仍然展示清单详情。
+          showProgressOnlyDetail(pendingProgress.current.point);
+        }
       }
+      if (pendingProgress.current && pendingProgress.current.mapId === mapId) pendingProgress.current = null;
       void api.mapRevision(mapId).then((rev) => setMapHash(rev.hash));
       void api.dataSource().then(setDataSource);
     }).catch(() => {
@@ -325,12 +388,131 @@ export function App() {
     setUserIndex((prev) => ({ ...prev, [sourceId]: saved }));
   }
 
+  /** P6.6：进度点位只读拉取；accept_map_mark 只改变展示口径，不写任何数据。 */
+  async function loadProgressPoints(accept = acceptMapMark) {
+    try {
+      const body = await api.progressPoints(accept);
+      setProgressStates(body.available === false ? {} : body.states || {});
+      setProgressTotals(body.totals || null);
+      if (body.available === false) setProgressNote(body.message || "进度层不可用");
+    } catch {
+      setProgressStates({});
+      setProgressTotals(null);
+      setProgressNote("进度层不可用：进度接口没有响应");
+    }
+  }
+
+  /** P6.6：剩余清单只读拉取，按大区 / 地图分组。 */
+  async function loadProgressAtlas(accept = acceptMapMark) {
+    try {
+      const body = await api.progressAtlas(accept);
+      setProgressAtlas(body.available === false ? null : body);
+      if (body.available === false) setProgressNote(body.message || "进度层不可用");
+    } catch {
+      setProgressNote("剩余清单加载失败：进度接口没有响应");
+    }
+  }
+
+  function toggleAcceptMapMark(next: boolean) {
+    setAcceptMapMark(next);
+    void loadProgressPoints(next);
+    if (progressAtlas || remainingOpen) void loadProgressAtlas(next);
+  }
+
+  function openRemaining() {
+    setAtlasOpen(false);
+    setGreaseOpen(false);
+    setActiveTopic(null);
+    setTopicMaps(null);
+    setRemainingOpen(true);
+    if (!progressAtlas) void loadProgressAtlas();
+    if (!progressStatus) void api.progressStatus().then(setProgressStatus).catch(() => null);
+  }
+
+  /** 清单里有、当前快照没有可渲染标记的点位：只按清单信息展示详情，不伪造官方说明。 */
+  function showProgressOnlyDetail(point: ProgressAtlasPoint) {
+    useViewer.getState().set({
+      selectedPointId: point.source_point_id,
+      detail: {
+        core: { point_id: point.source_point_id, source_id: point.source_point_id, map_id: point.map_id, x: point.x, y: point.y },
+        labels: [{ id: point.topic, name: point.label }],
+        detail: { state: "UNAVAILABLE", text: null, images: [] },
+      },
+    });
+    setUserPoint(null);
+    setGuides([]);
+    setPointEvidence(null);
+    controllerRef.current?.focusPoint(point.source_point_id);
+    const wanted = point.source_point_id;
+    void Promise.all([
+      api.userPoint(wanted).catch(() => null),
+      api.guides(wanted).catch(() => ({ entries: [] as GuideEntry[] })),
+      api.pointEvidence(wanted).catch(() => null),
+    ]).then(([progress, guideBody, evidence]) => {
+      if (useViewer.getState().selectedPointId !== wanted) return;
+      setUserPoint(progress);
+      setGuides(guideBody.entries);
+      setPointEvidence(evidence);
+    });
+  }
+
+  /** 剩余清单点击：能定位到标记就复用 openDetail，否则退化为只读的清单详情。 */
+  function selectProgressPoint(point: ProgressAtlasPoint) {
+    const current = useViewer.getState();
+    const live =
+      current.mapId === point.map_id
+        ? current.points.find((item) => item.source_id === point.source_point_id || String(item.id) === point.source_point_id)
+        : undefined;
+    if (live) {
+      void openDetail(live);
+      return;
+    }
+    if (current.mapId === point.map_id) {
+      // 同一张地图不会重新载入，详情不会被覆盖。
+      openMap(point.map_id, point.source_point_id);
+      showProgressOnlyDetail(point);
+      return;
+    }
+    pendingProgress.current = { mapId: point.map_id, point };
+    openMap(point.map_id, point.source_point_id);
+  }
+
   const derivedWorldId = state.mapId ? rootIdOf(state.mapId, index.parentById) : state.worldId;
   const world = state.tree.find((node) => node.id === derivedWorldId) || state.tree[0];
   const worldChildren = world?.children || [];
   const allLabelIds = state.labelGroups.flatMap((g) => g.labels.map((l) => l.id));
   const noneSelected = state.selectedLabels.length === 0;
   const navNodes = useMemo(() => displayChildren(worldChildren), [worldChildren]);
+  //: P6.6：同步状态里的可推导语义 = gate 允许的语义，空数组表示 Gate 0 未通过。
+  const statusStore = progressStatus?.store;
+  const statusDiff = progressStatus?.diff;
+  const allowedSemantics = progressStatus?.gate?.allowed_remote_semantics || statusDiff?.allowed_remote_semantics || [];
+  const profileText = progressStatus?.profiles?.length
+    ? "（" + progressStatus.profiles.map((item) => item.realm + " " + item.uid_masked).join("、") + "）"
+    : "";
+  const observationText = statusStore && Object.keys(statusStore.observations || {}).length
+    ? "（" + Object.entries(statusStore.observations).map(([key, value]) => key + " " + value).join(" · ") + "）"
+    : "";
+  //: P6.6：本图口径只统计进度层认识的四个状态；states 里没有的点位按「剩余」算。
+  const mapProgress = useMemo(() => {
+    let completed = 0;
+    let conflict = 0;
+    let unclear = 0;
+    for (const point of state.points) {
+      const value = progressStates[point.source_id];
+      if (value === "completed") completed += 1;
+      else if (value === "conflict") conflict += 1;
+      else if (value === "unclear") unclear += 1;
+    }
+    return { total: state.points.length, completed, conflict, unclear };
+  }, [state.points, progressStates]);
+  //: P6.6：selectedPointId 既可能是内部 id 也可能是 source_point_id，清单高亮统一按 source_point_id 比。
+  const selectedSourceId = useMemo(() => {
+    const selected = state.selectedPointId;
+    if (!selected) return null;
+    const found = state.points.find((point) => String(point.id) === selected || point.source_id === selected);
+    return found ? found.source_id : selected;
+  }, [state.selectedPointId, state.points]);
 
   return (
     <div className={`app${state.sidebarOpen ? "" : " sidebar-closed"}`}>
@@ -346,6 +528,7 @@ export function App() {
           className="grease-btn"
           onClick={() => {
             setAtlasOpen(true);
+            setRemainingOpen(false);
             setActiveTopic(null);
             setTopicMaps(null);
             if (!atlas) void api.atlas().then(setAtlas);
@@ -353,6 +536,9 @@ export function App() {
           }}
         >
           攻略中心
+        </button>
+        <button className={remainingOpen ? "grease-btn on" : "grease-btn"} onClick={openRemaining}>
+          剩余清单{progressTotals ? " " + (progressTotals.remaining ?? 0) + " / " + (progressTotals.collectible ?? 0) : ""}
         </button>
         {atlasOpen && !atlas ? (
           <div className="grease-panel">
@@ -535,6 +721,67 @@ export function App() {
               返回攻略中心
             </button>
           </div>
+        ) : remainingOpen ? (
+          <div className="grease-panel progress-panel">
+            <div className="grease-head">
+              <strong>剩余清单</strong>
+              <span>{progressTotals ? progressTotals.remaining + " / " + progressTotals.collectible + " 未完成" : "—"}</span>
+            </div>
+            <p className="progress-note">冲突 ! 与说不清 ? 都不等于完成；states 里没有的普通点位按「剩余」处理。</p>
+            <p className="progress-note">官方地图标记：{acceptMapMark ? "已计入（仍不是游戏内已完成）" : "未计入"}（设置 → 官方地图同步）</p>
+            {progressAtlas ? (
+              progressAtlas.regions.map((zone) => (
+                <div key={zone.zone}>
+                  <button className="zone-row" onClick={() => setOpenZones((prev) => toggleId(prev, zone.zone))}>
+                    <span>{openZones.has(zone.zone) ? "▾" : "▸"} {zone.zone}</span>
+                    <span>{zone.remaining} / {zone.collectible}{zone.remaining === 0 ? " ✓" : ""}</span>
+                  </button>
+                  {openZones.has(zone.zone) &&
+                    zone.maps.map((map) => (
+                      <div key={map.map_id}>
+                        <button className="grease-map" onClick={() => setOpenMaps((prev) => toggleId(prev, map.map_id))}>
+                          <span>{openMaps.has(map.map_id) ? "▾" : "▸"} {map.map_name}</span>
+                          <span>{map.remaining} / {map.collectible}{map.remaining === 0 ? " ✓" : ""}</span>
+                        </button>
+                        {openMaps.has(map.map_id) && (
+                          <div className="progress-points">
+                            {map.points.map((point) => (
+                              <button
+                                key={point.source_point_id}
+                                className={selectedSourceId === point.source_point_id ? "progress-point selected" : "progress-point"}
+                                onClick={() => selectProgressPoint(point)}
+                                title={point.title || "暂无图文攻略"}
+                              >
+                                <span className="pp-top">
+                                  <span className={"pp-state st-" + point.state}>
+                                    {PROGRESS_STATE_TEXT[point.state]?.mark || "?"} {PROGRESS_STATE_TEXT[point.state]?.label || point.state}
+                                  </span>
+                                  <span className="pp-label">{point.label || point.topic}</span>
+                                  <span className="pp-id">#{point.source_point_id}</span>
+                                </span>
+                                <span className="pp-bottom">
+                                  <span className={locateOk(point) ? "pp-ok" : "pp-no"} title={"定位证据 " + (point.locate_evidence || "—")}>
+                                    LOCATE {locateOk(point) ? "✓" : "✗"}
+                                  </span>
+                                  <span className={solveNeeded(point) ? (solveOk(point) ? "pp-ok" : "pp-no") : "pp-na"} title={"解法证据 " + (point.solve_evidence || "—")}>
+                                    SOLVE {solveNeeded(point) ? (solveOk(point) ? "✓" : "✗") : "—"}
+                                  </span>
+                                  <span className="pp-kind">{point.solve_kind || "NONE"}</span>
+                                </span>
+                                <span className="pp-title">{point.title || "暂无图文攻略"}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              ))
+            ) : (
+              <p className="progress-note">{progressNote || "加载中…"}</p>
+            )}
+            <button className="clear-all" onClick={() => setRemainingOpen(false)}>返回地图树</button>
+          </div>
         ) : (
           <div className="map-nav">
             <MapNav
@@ -624,6 +871,24 @@ export function App() {
         <button className="sidebar-handle" onClick={() => state.set({ sidebarOpen: !state.sidebarOpen })}>
           {state.sidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
         </button>
+        {/* P6.6：地图过滤档只过滤标记，不重建画布、不影响选中逻辑。 */}
+        <div className="progress-filter" role="group" aria-label="进度过滤">
+          <div className="seg">
+            {PROGRESS_FILTERS.map((item) => (
+              <button
+                key={item.key}
+                className={progressFilter === item.key ? "on" : ""}
+                title={item.hint}
+                onClick={() => setProgressFilter(item.key)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <span className="hint">
+            本图 {mapProgress.total} 点 · 已完成 {mapProgress.completed} · 冲突 {mapProgress.conflict} · 说不清 {mapProgress.unclear}
+          </span>
+        </div>
         {state.worldOpen && (
           <div className="world-pop">
             {state.tree.map((node) => (
@@ -646,6 +911,8 @@ export function App() {
           selectedLabels={state.selectedLabels}
           focusId={state.selectedPointId}
           guideIds={Object.keys(guideIndex)}
+          progressStates={progressStates}
+          progressFilter={progressFilter}
           onSelect={(point) => void openDetail(point)}
           controllerRef={controllerRef}
         />
@@ -669,6 +936,7 @@ export function App() {
             onClick={() => {
               setSettingsOpen((open) => !open);
               if (!settings) void api.settings().then(setSettings);
+              void api.progressStatus().then(setProgressStatus).catch(() => null);
             }}
           >
             <Settings size={16} />
@@ -724,10 +992,49 @@ export function App() {
             <button onClick={() => void reloadActiveMap(true)}>刷新当前地图</button>
           </aside>
         )}
-        {settingsOpen && settings && (
+        {settingsOpen && (
           <aside className="settings-pop">
             <h2>设置</h2>
-            <h3>在线数据</h3>
+            <h3>官方地图同步</h3>
+            {progressStatus ? (
+              <>
+                <p>观察档案　{statusStore?.profiles ?? 0} 个{profileText}</p>
+                <p>观察条数　{progressStatus.observations ?? 0}{observationText}</p>
+                <p>最后观察　{progressStatus.last_observed_at || "从未观察"}</p>
+                <div className="layers">
+                  <div className="layers-head">
+                    <strong>本地 vs 远端</strong>
+                    <span className="meta">差异四桶</span>
+                  </div>
+                  <div className="layer-row"><span>两边都有（both）</span><strong>{statusDiff?.both ?? 0}</strong></div>
+                  <div className="layer-row"><span>只有本地（local_only）</span><strong>{statusDiff?.local_only ?? 0}</strong></div>
+                  <div className="layer-row"><span>只有远端（remote_only）</span><strong>{statusDiff?.remote_only ?? 0}</strong></div>
+                  <div className="layer-row"><span>说不清（unknown）</span><strong>{statusDiff?.unknown ?? 0}</strong></div>
+                </div>
+                {progressTotals && (
+                  <p>进度口径　已完成 {progressTotals.effective_completed ?? 0} · 剩余 {progressTotals.remaining ?? 0} · 冲突 {progressTotals.conflict ?? 0} · 说不清 {progressTotals.unclear ?? 0}（共 {progressTotals.collectible ?? 0}）</p>
+                )}
+                <p>可推导语义　{allowedSemantics.length ? allowedSemantics.join(" / ") : "无"}</p>
+                {allowedSemantics.length === 0 && <p className="meta" title={progressStatus.gate?.note || ""}>{GATE0_TEXT}</p>}
+                <p className="meta">Viewer 不联网、不发任何外网请求；同步与合并只在 CLI 里显式执行。</p>
+                <p className="meta">合并命令（CLI）：{progressStatus.merge?.how || "python -m hsrmap progress merge --semantics <name> --confirm"}</p>
+                {progressStatus.message && <p className="meta">{progressStatus.message}</p>}
+                {progressNote && <p className="meta">{progressNote}</p>}
+              </>
+            ) : (
+              <p className="meta">同步状态不可用（进度接口没有响应）。</p>
+            )}
+            <label className="mode-row">
+              <input type="checkbox" checked={acceptMapMark} onChange={(event) => toggleAcceptMapMark(event.target.checked)} />
+              <span>
+                <strong>把官方地图标记也算进来（仍不是游戏内已完成）</strong>
+                <span className="meta">切换后带 ?accept_map_mark={acceptMapMark ? "true" : "false"} 重新拉取 points / atlas</span>
+              </span>
+            </label>
+            {/* 下面这些只在 /api/v1/settings 可用时渲染，同步状态不依赖它。 */}
+            {settings ? (
+              <>
+                <h3>在线数据</h3>
             <p>连接状态　{dataSource ? sourceChip(dataSource).label : "—"}</p>
             <p>官方 Bundle　{dataSource?.bundle_sha256 ? dataSource.bundle_sha256.slice(0, 12) : "—"}</p>
             <p>API 状态　{dataSource?.message || (dataSource?.source === "live" ? "正常" : dataSource?.remote_enabled ? "未探测" : "离线")}</p>
@@ -803,6 +1110,10 @@ export function App() {
             >
               导出用户数据
             </button>
+              </>
+            ) : (
+              <p className="meta">离线快照与数据模式加载中…</p>
+            )}
           </aside>
         )}
         {state.detail && (

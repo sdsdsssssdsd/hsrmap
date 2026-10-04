@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import shutil
+import sqlite3
 import sys
 from pathlib import Path
 from typing import Any
@@ -213,6 +214,232 @@ def cmd_validate_details(args: argparse.Namespace) -> int:
     core.close()
     detail.close()
     return 0 if result["passed"] else 1
+
+
+def cmd_progress(args: argparse.Namespace) -> int:
+    """个人进度层（a1-9 Phase 6）：只读诊断，不写 user.db。"""
+    from hsrmap.progress import endpoints as progress_endpoints
+    from hsrmap.progress.probe import render_probe, run_probe, write_report
+
+    cmd = str(getattr(args, "progress_cmd", "") or "")
+    if cmd == "endpoints":
+        contracts = progress_endpoints.load_contracts()
+        summary = progress_endpoints.summarise(contracts.values())
+        if bool(getattr(args, "json", False)):
+            print(json.dumps(summary, ensure_ascii=False, indent=2))
+            return 0
+        print("端点合同（progress 层只允许 readonly 那一批）")
+        print(f"  合计 ............... {summary['total']}")
+        print("  只读 ............... " + ", ".join(summary["readonly"]))
+        print("  写（框架层拒绝） ... " + ", ".join(summary["mutating"]))
+        print("  需要 cookie ........ " + ", ".join(summary["requires_cookie"]))
+        return 0
+    if cmd == "probe":
+        report = run_probe(
+            realm_name=getattr(args, "realm", None),
+            uid=getattr(args, "uid", None),
+            map_id=getattr(args, "map_id", None),
+            point_limit=int(getattr(args, "point_limit", 5) or 5),
+        )
+        out = getattr(args, "out", None)
+        if out:
+            print("report:", write_report(report, out))
+        if bool(getattr(args, "json", False)):
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        else:
+            print(render_probe(report))
+        #: 契约：1 = 环境/数据不满足（没 cookie / 没角色 / 拿不到 app_version），不是崩溃。
+        return 0 if report.get("ok") else 1
+    if cmd == "status":
+        return _progress_status(args)
+    if cmd == "merge":
+        return _progress_merge(args)
+    if cmd == "remaining":
+        return _progress_remaining(args)
+    if cmd == "routes":
+        return _progress_routes(args)
+    raise SystemExit(f"unknown progress command: {cmd}")
+
+
+class _ReadOnlyUserDb:
+    """只读句柄：`progress status` 不许因为「看一眼」就凭空建一个 user.db。"""
+
+    def __init__(self, path: Path):
+        self.path = Path(path)
+        self.conn = sqlite3.connect(f"file:{self.path}?mode=ro", uri=True)
+        self.conn.row_factory = sqlite3.Row
+
+    def close(self) -> None:
+        self.conn.close()
+
+
+def _open_user_db_readonly(path: Path):
+    """库在 → 只读句柄；库不在 → None（调用方按「还没有本地进度」处理，绝不建库）。"""
+    return _ReadOnlyUserDb(path) if Path(path).is_file() else None
+
+
+def _progress_status(args: argparse.Namespace) -> int:
+    """进度现状：本地完成 / 远端观察 / 差异四桶。纯只读，不发网络请求。"""
+    from hsrmap.paths import USER_DB
+    from hsrmap.progress import diff as progress_diff
+    from hsrmap.progress import store as progress_store
+
+    path = Path(getattr(args, "db", None) or USER_DB)
+    import_map_mark = bool(getattr(args, "accept_map_mark", False))
+    handle = _open_user_db_readonly(path)
+    if handle is None:
+        payload = {
+            "user_db": str(path),
+            "exists": False,
+            "message": "还没有 user.db：本地完成 0，远端观察 0（看一眼不会建库）",
+            "diff": progress_diff.ProgressDiff().as_dict(),
+        }
+        if bool(getattr(args, "json", False)):
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        else:
+            print(payload["message"])
+        return 0
+    try:
+        diff = progress_diff.build_diff(handle, import_map_mark=import_map_mark)
+        summary = progress_store.summary(handle)
+    finally:
+        handle.close()
+    if bool(getattr(args, "json", False)):
+        print(json.dumps({"user_db": str(path), "exists": True, "store": summary,
+                          "diff": diff.as_dict()}, ensure_ascii=False, indent=2))
+        return 0
+    print("progress status（只读；不联网、不写库）")
+    print("  " + diff.render().replace("\n", "\n  "))
+    print(f"  观察存储：{summary['profiles']} 个档案 · "
+          + ("、".join(f"{k} {v}" for k, v in sorted(summary["observations"].items())) or "暂无观察"))
+    return 0
+
+
+def _progress_merge(args: argparse.Namespace) -> int:
+    """把「仅远端」合并进本地完成：默认 dry-run，`--confirm` 才写，且必须点名语义。"""
+    from hsrmap.paths import USER_DB
+    from hsrmap.progress import diff as progress_diff
+    from hsrmap.user_db import UserDatabase
+
+    raw = str(getattr(args, "semantics", "") or "")
+    semantics = [item.strip() for item in raw.replace(";", ",").split(",") if item.strip()]
+    confirm = bool(getattr(args, "confirm", False))
+    if confirm and not semantics:
+        #: 用法错误：rc=2，且**一个字节都不写**。
+        print("merge --confirm 必须同时给出 --semantics（例如 --semantics map_mark）；"
+              "不点名语义就不许改本地进度。", file=sys.stderr)
+        return 2
+    path = Path(getattr(args, "db", None) or USER_DB)
+    profile_id = str(getattr(args, "profile_id", None) or "local")
+    import_map_mark = bool(getattr(args, "accept_map_mark", False))
+    if not confirm:
+        #: dry-run 连库都不建：看一眼计划不该在磁盘上留下任何东西。
+        handle = _open_user_db_readonly(path)
+        if handle is None:
+            report = {"planned": 0, "applied": 0, "semantics": [], "confirmed": False,
+                      "dry_run": True, "wrote_completed_false": 0}
+        else:
+            try:
+                diff = progress_diff.build_diff(handle, import_map_mark=import_map_mark)
+                report = progress_diff.merge(handle, diff, semantics=semantics, confirm=False,
+                                             profile_id=profile_id)
+            finally:
+                handle.close()
+    else:
+        database = UserDatabase(path)
+        try:
+            diff = progress_diff.build_diff(database, import_map_mark=import_map_mark)
+            report = progress_diff.merge(database, diff, semantics=semantics, confirm=True,
+                                         profile_id=profile_id)
+        finally:
+            database.close()
+    if bool(getattr(args, "json", False)):
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 0
+    mode = "已写入" if report["applied"] else ("计划（未确认，dry-run）" if report["dry_run"] else "无事可做")
+    print(f"progress merge：{mode} · 计划 {report['planned']} · 实际 {report['applied']}")
+    print("  语义 ... " + ("、".join(report["semantics"]) or "（无可推导语义）"))
+    print(f"  改回未完成 ... {report['wrote_completed_false']} 条（永远是 0）")
+    return 0
+
+
+def _progress_remaining(args: argparse.Namespace) -> int:
+    """剩余清单：remaining = 官方可收集 − 有效完成。只读本地库，不联网。"""
+    from hsrmap.paths import GUIDE_DB, USER_DB
+    from hsrmap.progress.atlas import remaining_atlas, render
+
+    guide_db_path = Path(getattr(args, "guide_db", None) or GUIDE_DB)
+    user_db_path = Path(getattr(args, "db", None) or USER_DB)
+    topics = [item for item in str(getattr(args, "topics", "") or "").replace(";", ",").split(",") if item.strip()]
+    guide_db = _open_guide_db(guide_db_path, write=False)
+    user_db = _open_user_db_readonly(user_db_path)
+    try:
+        report = remaining_atlas(
+            guide_db=guide_db,
+            user_db=user_db,
+            topics=topics or None,
+            import_map_mark=bool(getattr(args, "accept_map_mark", False)),
+        )
+    finally:
+        guide_db.close()
+        if user_db is not None:
+            user_db.close()
+    if bool(getattr(args, "json", False)):
+        print(json.dumps(report, ensure_ascii=False, indent=2))
+        return 0
+    print(render(report, limit=int(getattr(args, "limit", 12) or 12),
+                 region=getattr(args, "region", None)))
+    return 0
+
+
+def _progress_inputs(args: argparse.Namespace):
+    """remaining / routes 共用的输入：攻略库（只读）+ 用户库（只读或 None）。"""
+    from hsrmap.paths import GUIDE_DB, USER_DB
+
+    guide_db_path = Path(getattr(args, "guide_db", None) or GUIDE_DB)
+    user_db_path = Path(getattr(args, "db", None) or USER_DB)
+    topics = [item for item in str(getattr(args, "topics", "") or "").replace(";", ",").split(",") if item.strip()]
+    return guide_db_path, user_db_path, topics or None
+
+
+def _progress_routes(args: argparse.Namespace) -> int:
+    """路线规划：区域聚类 + 坐标就近排序（不估耗时、不声称真实距离）。"""
+    from hsrmap.progress.atlas import remaining_atlas
+    from hsrmap.progress.routes import next_actions, plan_routes, render
+
+    _guide_db_path, user_db_path, topics = _progress_inputs(args)
+    guide_db = _open_guide_db(_guide_db_path, write=False)
+    user_db = _open_user_db_readonly(user_db_path)
+    try:
+        atlas = remaining_atlas(
+            guide_db=guide_db,
+            user_db=user_db,
+            topics=topics,
+            import_map_mark=bool(getattr(args, "accept_map_mark", False)),
+        )
+    finally:
+        guide_db.close()
+        if user_db is not None:
+            user_db.close()
+    plan = plan_routes(
+        atlas,
+        max_points=int(getattr(args, "max_points", 12) or 12),
+        max_routes=int(getattr(args, "max_routes", 6) or 6),
+        zone=getattr(args, "zone", None),
+    )
+    actions = next_actions(plan, limit=int(getattr(args, "actions", 8) or 8))
+    if bool(getattr(args, "json", False)):
+        print(json.dumps({**plan, "next_actions": actions}, ensure_ascii=False, indent=2))
+        return 0
+    print(render(plan, limit=int(getattr(args, "limit", 4) or 4),
+                 steps=int(getattr(args, "steps", 6) or 6)))
+    if actions:
+        print("")
+        print("接下来最适合做的点位：")
+        for index, item in enumerate(actions, start=1):
+            print(f"  {index}. #{item['source_point_id']} {item['label']}"
+                  f"（{item['route_id']} · {item['readiness']}）")
+    return 0
 
 
 def cmd_serve(args: argparse.Namespace) -> int:
@@ -1664,6 +1891,58 @@ def main(argv: list[str] | None = None) -> int:
                        help="map=离线地图（8766）/ review=审核台（8767）/ all=同一个进程")
     serve.add_argument("--no-browser", action="store_true", help="只起服务，不打开浏览器")
     serve.set_defaults(func=cmd_serve)
+    progress = sub.add_parser("progress")
+    progress.add_argument("--data-dir", default=None, help="运行时数据目录（同顶层开关）")
+    progress.add_argument("--quiet", action="store_true", help="成功也不打印")
+    psub = progress.add_subparsers(dest="progress_cmd", required=True)
+    probe_cmd = psub.add_parser("probe")
+    probe_cmd.add_argument("--realm", default=None, choices=("cn", "global"), help="默认取注册表 default_realm（cn）")
+    probe_cmd.add_argument("--uid", default=None, help="多角色时指定 UID")
+    probe_cmd.add_argument("--map-id", default=None, help="默认从离线快照挑一张有点位的地图")
+    probe_cmd.add_argument("--point-limit", type=int, default=5)
+    probe_cmd.add_argument("--out", default=None, help="报告落地路径（默认只打印）")
+    probe_cmd.add_argument("--json", action="store_true", help="把报告 JSON 打到标准输出")
+    probe_cmd.set_defaults(func=cmd_progress)
+    endpoints_cmd = psub.add_parser("endpoints")
+    endpoints_cmd.add_argument("--json", action="store_true")
+    endpoints_cmd.set_defaults(func=cmd_progress)
+    status_cmd = psub.add_parser("status")
+    status_cmd.add_argument("--db", default=None, help="用户库路径（默认运行时 user.db）")
+    status_cmd.add_argument("--accept-map-mark", action="store_true",
+                            help="把官方地图标记也算进来（只影响展示；仍不是「游戏内已完成」）")
+    status_cmd.add_argument("--json", action="store_true")
+    status_cmd.set_defaults(func=cmd_progress)
+    merge_cmd = psub.add_parser("merge")
+    merge_cmd.add_argument("--db", default=None)
+    merge_cmd.add_argument("--semantics", default="",
+                           help="点名要合并的语义，逗号分隔（例如 map_mark）；不点名就不动本地进度")
+    merge_cmd.add_argument("--profile-id", default="local")
+    merge_cmd.add_argument("--accept-map-mark", action="store_true")
+    merge_cmd.add_argument("--confirm", action="store_true", help="真的写库；缺省只出计划（dry-run）")
+    merge_cmd.add_argument("--json", action="store_true")
+    merge_cmd.set_defaults(func=cmd_progress)
+    remaining_cmd = psub.add_parser("remaining")
+    remaining_cmd.add_argument("--db", default=None, help="用户库路径（默认运行时 user.db）")
+    remaining_cmd.add_argument("--guide-db", default=None, help="攻略库路径（默认运行时 guide.db）")
+    remaining_cmd.add_argument("--topics", default="", help="只看这些主题（逗号分隔）")
+    remaining_cmd.add_argument("--region", default=None, help="只看这个区域")
+    remaining_cmd.add_argument("--limit", type=int, default=12, help="逐点展示上限")
+    remaining_cmd.add_argument("--accept-map-mark", action="store_true")
+    remaining_cmd.add_argument("--json", action="store_true")
+    remaining_cmd.set_defaults(func=cmd_progress)
+    routes_cmd = psub.add_parser("routes")
+    routes_cmd.add_argument("--db", default=None)
+    routes_cmd.add_argument("--guide-db", default=None)
+    routes_cmd.add_argument("--topics", default="")
+    routes_cmd.add_argument("--zone", default=None, help="只看这个区域")
+    routes_cmd.add_argument("--max-points", type=int, default=12, help="每条路线最多排多少个点")
+    routes_cmd.add_argument("--max-routes", type=int, default=6)
+    routes_cmd.add_argument("--actions", type=int, default=8, help="「接下来做这几个」的条数")
+    routes_cmd.add_argument("--limit", type=int, default=4, help="打印几条路线")
+    routes_cmd.add_argument("--steps", type=int, default=6, help="每条路线打印几个点")
+    routes_cmd.add_argument("--accept-map-mark", action="store_true")
+    routes_cmd.add_argument("--json", action="store_true")
+    routes_cmd.set_defaults(func=cmd_progress)
     guides = sub.add_parser("guides")
     guides.add_argument("--data-dir", default=None, help="运行时数据目录（同顶层开关）")
     guides.add_argument("--quiet", action="store_true", help="成功也不打印")

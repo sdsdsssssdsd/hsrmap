@@ -1,6 +1,7 @@
 import L from "leaflet";
-import type { MapInfo, PointItem } from "../api/types";
+import type { MapInfo, PointItem, ProgressFilter, ProgressPointState } from "../api/types";
 import { createHsrCrs } from "./crs";
+import { matchProgressFilter } from "./progress";
 import { addSingleImageRaster, applyRasterView } from "./raster";
 
 export class MapController {
@@ -8,6 +9,11 @@ export class MapController {
   groups = new Map<string, L.LayerGroup>();
   markers = new Map<string, L.Marker>();
   pointLabels = new Map<string, string[]>();
+  /** source_point_id 才是进度层 states 的键，和点位自身 id 不是一回事。 */
+  pointSources = new Map<string, string>();
+  selectedLabels = new Set<string>();
+  progressStates: Record<string, ProgressPointState> = {};
+  progressFilter: ProgressFilter = "all";
   lastFocusId: string | null = null;
   onSelect: ((point: PointItem) => void) | null = null;
 
@@ -36,16 +42,26 @@ export class MapController {
     });
   }
 
-  loadPoints(points: PointItem[], selected: Set<string>, guideIds: Set<string> = new Set()) {
+  loadPoints(
+    points: PointItem[],
+    selected: Set<string>,
+    guideIds: Set<string> = new Set(),
+    progressStates: Record<string, ProgressPointState> = {},
+  ) {
     if (!this.map) return;
     for (const marker of new Set(this.markers.values())) this.map.removeLayer(marker);
     for (const group of this.groups.values()) group.remove();
     this.groups.clear();
     this.markers.clear();
     this.pointLabels.clear();
+    this.pointSources.clear();
+    this.progressStates = progressStates || {};
     for (const point of points) {
       const labelIds = point.labels.map((label) => label.id);
       this.pointLabels.set(String(point.id), labelIds);
+      this.pointLabels.set(point.source_id, labelIds);
+      this.pointSources.set(String(point.id), point.source_id);
+      this.pointSources.set(point.source_id, point.source_id);
       const labelId = labelIds[0] || "none";
       let group = this.groups.get(labelId);
       if (!group) {
@@ -84,16 +100,50 @@ export class MapController {
     if (this.lastFocusId) this.focusPoint(this.lastFocusId);
   }
 
+  /** P6.6：进度过滤与标记徽章只影响可见性，不改画布、不改选中逻辑。 */
+  setProgress(states: Record<string, ProgressPointState>, filter: ProgressFilter) {
+    this.progressStates = states || {};
+    this.progressFilter = filter;
+    this.applyVisibility();
+  }
+
+  private progressStateOf(id: string): ProgressPointState | undefined {
+    const sourceId = this.pointSources.get(id) || id;
+    return this.progressStates[sourceId];
+  }
+
+  private passesProgressFilter(id: string): boolean {
+    return matchProgressFilter(this.progressStateOf(id), this.progressFilter);
+  }
+
+  private applyMarkerProgress(marker: L.Marker, id: string) {
+    const el = marker.getElement();
+    if (!el) return;
+    const state = this.progressStateOf(id);
+    el.classList.toggle("hsr-progress-completed", state === "completed");
+    el.classList.toggle("hsr-progress-conflict", state === "conflict");
+    el.classList.toggle("hsr-progress-unclear", state === "unclear");
+  }
+
   setVisibleLabels(selected: Set<string>) {
+    this.selectedLabels = selected;
+    this.applyVisibility();
+  }
+
+  applyVisibility() {
     if (!this.map) return;
     const seen = new Set<L.Marker>();
     for (const [id, marker] of this.markers) {
       if (seen.has(marker)) continue;
       seen.add(marker);
       const labels = this.pointLabels.get(id) || [];
-      const show = labels.some((labelId) => selected.has(labelId));
-      if (show) marker.addTo(this.map);
-      else this.map.removeLayer(marker);
+      const show = labels.some((labelId) => this.selectedLabels.has(labelId)) && this.passesProgressFilter(id);
+      if (show) {
+        marker.addTo(this.map);
+        this.applyMarkerProgress(marker, id);
+      } else {
+        this.map.removeLayer(marker);
+      }
     }
   }
 
@@ -134,6 +184,7 @@ export class MapController {
     this.groups.clear();
     this.markers.clear();
     this.pointLabels.clear();
+    this.pointSources.clear();
     this.lastFocusId = null;
   }
 }

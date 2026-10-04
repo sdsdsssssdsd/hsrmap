@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import Any
 
 
-#: 用户库的 schema 版本（a1-8 十六.7）。
-SCHEMA_VERSION = 1
+#: 用户库的 schema 版本（a1-8 十六.7）；v2 = a1-9 §13 的进度观察表。
+SCHEMA_VERSION = 2
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS metadata (
     value TEXT
 );
 
+--: v1：玩家自己的勾选。**语义不变**，仍是「本地手动完成」的唯一真相。
 CREATE TABLE IF NOT EXISTS point_progress (
     source_point_id TEXT PRIMARY KEY,
     stable_key TEXT,
@@ -26,6 +27,29 @@ CREATE TABLE IF NOT EXISTS point_progress (
     note TEXT,
     updated_at TEXT NOT NULL
 );
+
+--: v2（a1-9 §13）：远端看到的东西先落成「观察」，与 point_progress 分开存。
+--: 观察不参与任何判定，要不要变成「完成」由 resolver + 用户确认决定。
+CREATE TABLE IF NOT EXISTS progress_profile (
+    profile_id TEXT PRIMARY KEY,
+    realm TEXT NOT NULL,
+    region TEXT,
+    uid_masked TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS progress_observation (
+    source_point_id TEXT NOT NULL,
+    profile_id TEXT NOT NULL,
+    source TEXT NOT NULL,
+    semantic TEXT NOT NULL,
+    completed INTEGER NOT NULL DEFAULT 0,
+    observed_at TEXT NOT NULL,
+    PRIMARY KEY (source_point_id, profile_id, source, semantic)
+);
+
+CREATE INDEX IF NOT EXISTS idx_progress_observation_profile
+    ON progress_observation(profile_id, semantic, completed);
 """
 
 
@@ -40,7 +64,15 @@ class UserDatabase:
         self.conn = sqlite3.connect(self.path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(SCHEMA)
-        self.conn.execute("INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema', '1')")
+        self.conn.execute(
+            "INSERT OR IGNORE INTO metadata(key, value) VALUES ('schema', ?)",
+            (str(SCHEMA_VERSION),),
+        )
+        #: 老库（v1）在这里被抬到 v2：只升不降，避免旧代码把版本号写回去。
+        self.conn.execute(
+            "UPDATE metadata SET value = ? WHERE key = 'schema' AND CAST(value AS INTEGER) < ?",
+            (str(SCHEMA_VERSION), SCHEMA_VERSION),
+        )
         #: 明确写进 SQLite 自己的版本位（a1-8 十六.7），与 metadata.schema 互为佐证。
         self.conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
         self.conn.commit()

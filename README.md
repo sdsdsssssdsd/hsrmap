@@ -96,6 +96,40 @@ Aggregated as `direct` / `transcription` / `inference` / `missing`, and shown in
 
 ---
 
+## Personal progress layer (Phase 6)
+
+Everything above is credentials-free. Phase 6 adds an **opt-in, read-only** view of *your own*
+official-map progress — while keeping the meanings of "done" strictly apart:
+
+| Semantic | Meaning | May derive local `completed`? |
+| --- | --- | --- |
+| `manual` | you ticked the point in this app | **yes**, always |
+| `game_obtained` | proven looted in game | only after the Gate 0 experiment |
+| `map_mark` | marked on the official interactive map | **no** by default — display only |
+| `unknown` | the source cannot say | **never** |
+
+The single switch lives in `hsrmap/progress/models.py` (`VERIFIED_SEMANTICS`, currently empty), so
+"we do not know" can never quietly become "you already have it". Remote observations land in
+`progress_profile` / `progress_observation` (user.db schema v2) and never change the semantics of
+`point_progress`.
+
+```bash
+python -m hsrmap progress endpoints          # 20 contracted endpoints; mutating ones are refused by the framework
+python -m hsrmap progress probe --realm cn   # read-only semantic probe; credential comes from the environment
+python -m hsrmap progress status             # observation store + local_only / remote_only / both / unknown
+python -m hsrmap progress merge --semantics map_mark            # dry-run: prints the plan, writes nothing
+python -m hsrmap progress merge --semantics map_mark --confirm  # writes completed = 1 only
+python -m hsrmap progress remaining          # Remaining Atlas: collectible − effective completed
+python -m hsrmap progress routes             # region clustering + nearest-neighbour ordering
+```
+
+Credential discipline: one entry point (the environment variable), held opaquely in memory —
+redacted `repr`, unpicklable, never in logs, reports or exceptions. Merging is dry-run by default
+and can only ever set `completed = 1`; the viewer serves progress through read-only endpoints and
+reports `viewer_network: 0`. Runbook: [`docs/runbooks/progress-p6.md`](docs/runbooks/progress-p6.md).
+
+---
+
 ## Architecture
 
 ```text
@@ -124,6 +158,7 @@ Key modules (all under `hsrmap/`):
 | `guides/evidence.py` | search ledger: run / result / verdict (including `NO_PUBLIC_SOURCE_FOUND`) |
 | `guides/publishing/` | diff, gates, staging, atomic switch, offline E2E, snapshot manifest |
 | `guides/closure.py` | the 10-item closure scoreboard |
+| `progress/` | read-only official-map progress: contracts, credential boundary, semantic probe, observation store, diff, Remaining Atlas, route planner |
 | `runtime.py`, `paths.py` | runtime directory resolution and lazy runtime paths |
 | `hygiene.py`, `release.py` | repository hygiene rules, allowlist-based release packaging |
 | `dod.py`, `doctor.py` | Definition-of-Done gate and the closed-loop self check |
@@ -151,7 +186,7 @@ A Git checkout is **not** a mutable state root. Resolution order (first hit wins
 
 | Command | What it proves |
 | --- | --- |
-| `pytest -q` | unit + integration, no real data needed (~640 tests) |
+| `pytest -q` | unit + integration, no real data needed (~700 tests) |
 | `pytest --run-data-e2e` | snapshot/detail/guide-backed cases, including the six-state shadow comparison |
 | `ruff check hsrmap tests tools` | lint |
 | `hsrmap repo-hygiene` | no new runtime/build/secret pollution (baseline: `tools/hygiene_baseline.json`) |

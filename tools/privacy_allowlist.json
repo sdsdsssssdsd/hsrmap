@@ -1,0 +1,22 @@
+{
+  "allow": [
+    {
+      "file": "docs/specs/a1.md",
+      "kind": "windows_path",
+      "match": "x:/mnt/data/hsr_hoyolab_map_dump.zip)",
+      "why": "规格原文里的工具包下载链接（sandbox 占位路径），不含任何本机身份信息"
+    },
+    {
+      "file": "docs/specs/a1.md",
+      "kind": "windows_path",
+      "match": "x:/mnt/data/hsr_hoyolab_map_dump/hsr_hoyolab_map_dump.py)",
+      "why": "同上：规格原文的占位链接"
+    },
+    {
+      "file": "docs/specs/a1.md",
+      "kind": "windows_path",
+      "match": "x:/mnt/data/hsr_hoyolab_map_dump/README.md)",
+      "why": "同上：规格原文的占位链接"
+    }
+  ]
+}

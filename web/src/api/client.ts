@@ -9,6 +9,9 @@ import type {
   MapInfo,
   PointDetail,
   PointItem,
+  ProgressAtlasPayload,
+  ProgressPointsPayload,
+  ProgressStatus,
   SearchResult,
   SettingsInfo,
   DataSource,
@@ -58,5 +61,14 @@ export const api = {
   evidenceOverview: () => getJson<EvidenceOverview>("/api/v1/guides/evidence"),
   guideIndex: () => getJson<{ points: Record<string, number> }>("/api/v1/guides/index"),
   createGuide: (body: unknown) => sendJson<GuideEntry>("/api/v1/guides", "POST", body),
+  //: a1-9 Phase 6（P6.6）个人进度层：三个只读接口；accept_map_mark 只改变展示口径，不写任何数据。
+  progressStatus: () => getJson<ProgressStatus>("/api/v1/progress/status"),
+  progressPoints: (acceptMapMark = false) =>
+    getJson<ProgressPointsPayload>(`/api/v1/progress/points?accept_map_mark=${acceptMapMark ? "true" : "false"}`),
+  progressAtlas: (acceptMapMark = false, region?: string) => {
+    const params = new URLSearchParams({ accept_map_mark: acceptMapMark ? "true" : "false" });
+    if (region) params.set("region", region);
+    return getJson<ProgressAtlasPayload>(`/api/v1/progress/atlas?${params.toString()}`);
+  },
   golden: () => getJson<unknown>("/api/v1/debug/golden-20"),
 };

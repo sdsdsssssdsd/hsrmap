@@ -190,3 +190,136 @@ export interface DataSource {
   message: string | null;
   snapshot_command?: string;
 }
+
+/** a1-9 Phase 6（P6.6）个人进度层：远端观察只展示，Gate 0 通过前不参与完成判定。 */
+export type ProgressPointState = "completed" | "remaining" | "conflict" | "unclear";
+
+/** 地图过滤档：conflict 档同时覆盖「冲突」与「说不清」，两者都不等于完成。 */
+export type ProgressFilter = "all" | "remaining" | "completed" | "conflict";
+
+export interface ProgressStoreInfo {
+  profiles: number;
+  observations: Record<string, number>;
+  completed_by_semantic: Record<string, number>;
+  manual_points: number;
+  stores_cookie: boolean;
+}
+
+export interface ProgressProfile {
+  profile_id: string;
+  realm: string;
+  region: string;
+  uid_masked: string;
+  created_at: string;
+}
+
+/** 本地进度与远端观察的差异四桶；dry_run 表示还没有真正合并。 */
+export interface ProgressDiff {
+  local_total: number;
+  remote_total: number;
+  both: number;
+  local_only: number;
+  remote_only: number;
+  unknown: number;
+  remote_by_semantic: Record<string, number>;
+  allowed_remote_semantics: string[];
+  dry_run: boolean;
+}
+
+export interface ProgressGate {
+  allowed_remote_semantics: string[];
+  note?: string;
+  map_mark_accepted?: boolean;
+  viewer_network?: number;
+}
+
+export interface ProgressTotals {
+  collectible: number;
+  effective_completed: number;
+  remaining: number;
+  conflict: number;
+  unclear: number;
+}
+
+export interface ProgressStatus {
+  available: boolean;
+  viewer_network: number;
+  realm: string;
+  store?: ProgressStoreInfo;
+  profiles?: ProgressProfile[];
+  last_observed_at: string;
+  diff?: ProgressDiff;
+  gate?: ProgressGate;
+  merge?: { available: boolean; how: string };
+  tables: boolean;
+  observations: number;
+  message: string;
+}
+
+/** states 的键是官方 source_point_id，取值只有四种：completed / remaining / conflict / unclear。 */
+export interface ProgressPointsPayload {
+  available: boolean;
+  viewer_network: number;
+  gate?: ProgressGate;
+  totals?: Partial<ProgressTotals>;
+  states?: Record<string, ProgressPointState>;
+  message?: string;
+}
+
+export interface ProgressAtlasPoint {
+  source_point_id: string;
+  topic: string;
+  label: string;
+  zone: string;
+  region: string;
+  map_name: string;
+  map_path: string;
+  map_id: string;
+  x: number;
+  y: number;
+  state: ProgressPointState;
+  completed: boolean;
+  status: string;
+  requirement: string;
+  solve_kind: string;
+  locate_evidence: string;
+  solve_evidence: string;
+  guide_id: number | null;
+  title: string;
+  missing: string;
+}
+
+export interface ProgressAtlasMap {
+  region: string;
+  map_name: string;
+  map_path: string;
+  map_id: string;
+  collectible: number;
+  remaining: number;
+  points: ProgressAtlasPoint[];
+}
+
+export interface ProgressAtlasRegion {
+  zone: string;
+  collectible: number;
+  remaining: number;
+  completed: number;
+  maps: ProgressAtlasMap[];
+}
+
+export interface ProgressAtlasTopic {
+  topic: string;
+  collectible: number;
+  remaining: number;
+  completed: number;
+}
+
+export interface ProgressAtlasPayload {
+  available: boolean;
+  viewer_network: number;
+  totals?: Partial<ProgressTotals>;
+  gate?: ProgressGate;
+  regions: ProgressAtlasRegion[];
+  topics: ProgressAtlasTopic[];
+  message?: string;
+}

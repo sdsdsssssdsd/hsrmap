@@ -430,6 +430,98 @@ def create_app(
             published_db=app.state.published,
         )
 
+    # ------------------------------------------------------------------ #
+    # 个人进度层（a1-9 Phase 6）：**只读**接口。
+    # 本进程不持有 cookie、不发外网请求；同步与合并只走 CLI，界面只负责展示。
+    # ------------------------------------------------------------------ #
+
+    def _progress_cache():
+        cache = getattr(app.state, "progress_cache", None)
+        if cache is None:
+            cache = {}
+            app.state.progress_cache = cache
+        return cache
+
+    def _progress_atlas(accept_map_mark: bool):
+        """Remaining Atlas（带 30 秒缓存：一次要读 1006 个点位的判定行）。"""
+        import time as _time
+
+        from hsrmap.progress.atlas import remaining_atlas
+
+        #: 缓存键必须跟着**这个进程真正打开的那个** user.db 走（测试会传临时路径）。
+        path = Path(getattr(app.state.user, "path", "") or "")
+        try:
+            stamp = path.stat().st_mtime_ns
+        except OSError:
+            stamp = 0
+        key = (bool(accept_map_mark), stamp)
+        cache = _progress_cache()
+        hit = cache.get("atlas")
+        if hit and hit[0] == key and _time.monotonic() - hit[1] < 30:
+            return hit[2]
+        payload = remaining_atlas(
+            guide_db=app.state.published,
+            user_db=app.state.user,
+            import_map_mark=accept_map_mark,
+            ctx=get_ctx(),
+        )
+        cache["atlas"] = (key, _time.monotonic(), payload)
+        return payload
+
+    @guide_router.get("/api/v1/progress/status")
+    def progress_status():
+        """官方地图同步状态：观察存储 + 差异四桶（界面只读，合并不在这里做）。"""
+        from hsrmap.progress import diff as progress_diff
+        from hsrmap.progress import store as progress_store
+
+        user = app.state.user
+        handle = progress_store.ensure_available(user)
+        diff = progress_diff.build_diff(user)
+        return {
+            "available": True,
+            "viewer_network": 0,
+            "realm": "cn",
+            "store": progress_store.summary(user),
+            "profiles": [profile.__dict__ for profile in progress_store.profiles(user)],
+            "last_observed_at": progress_store.last_observed_at(user),
+            "diff": diff.as_dict(),
+            "gate": {
+                "allowed_remote_semantics": list(diff.allowed_remote_semantics),
+                "note": "Gate 0 未通过前，远端状态只展示、不参与完成判定",
+            },
+            "merge": {"available": False, "how": "python -m hsrmap progress merge --semantics <name> --confirm"},
+            **handle,
+        }
+
+    @guide_router.get("/api/v1/progress/points")
+    def progress_points(accept_map_mark: bool = False):
+        """每个点位的进度状态（给地图过滤器）：completed / remaining / conflict / unclear。"""
+        if app.state.published is None:
+            return {"available": False, "states": {}, "totals": {}, "gate": {}}
+        atlas = _progress_atlas(accept_map_mark)
+        states: dict[str, str] = {}
+        for region in atlas.get("regions") or []:
+            for amap in region.get("maps") or []:
+                for point in amap.get("points") or []:
+                    states[str(point["source_point_id"])] = str(point["state"])
+        return {
+            "available": True,
+            "viewer_network": 0,
+            "gate": atlas.get("gate") or {},
+            "totals": atlas.get("totals") or {},
+            "states": states,
+        }
+
+    @guide_router.get("/api/v1/progress/atlas")
+    def progress_atlas(accept_map_mark: bool = False, region: str | None = None):
+        """剩余清单（按大区 / 地图分组，带坐标、LOCATE/SOLVE、攻略标题）。"""
+        if app.state.published is None:
+            return {"available": False, "totals": {}, "regions": [], "topics": []}
+        atlas = _progress_atlas(accept_map_mark)
+        if region:
+            atlas = {**atlas, "regions": [r for r in atlas.get("regions") or [] if r.get("zone") == region]}
+        return {"available": True, "viewer_network": 0, **atlas}
+
     @review_router.post("/api/v1/guides")
     def create_guide(body: dict):
         if not body.get("source_point_id"):

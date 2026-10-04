@@ -242,3 +242,65 @@ button { font: inherit; }
 .layer-row { display: flex; justify-content: space-between; font-size: 12px; }
 .layers-head { display: flex; justify-content: space-between; align-items: baseline; }
 
+/* a1-9 Phase 6（P6.6）：个人进度层——过滤档、进度徽章、官方地图同步、剩余清单。 */
+.progress-filter {
+  position: absolute; left: 16px; bottom: 22px; z-index: 40;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+}
+.progress-filter .seg { display: flex; border: 1px solid var(--border-soft); background: #fff; }
+.progress-filter .seg button {
+  border: 0; background: transparent; padding: 6px 12px; cursor: pointer;
+  font-size: 13px; color: var(--text-primary);
+}
+.progress-filter .seg button + button { border-left: 1px solid var(--border-soft); }
+.progress-filter .seg button.on { background: var(--selection-bg); color: var(--selection-text); }
+.progress-filter .hint {
+  background: rgba(255, 255, 255, .86); padding: 2px 8px; font-size: 12px;
+  color: var(--text-secondary); box-shadow: 0 1px 3px rgba(0, 0, 0, .12);
+}
+/* 进度徽章只挂在标记容器上：画布、选中与聚焦逻辑都不改。 */
+.hsr-marker::after {
+  content: ""; position: absolute; right: -1px; top: -1px; width: 9px; height: 9px;
+  border-radius: 50%; display: none; box-shadow: 0 0 0 1px #fff;
+}
+.hsr-marker.hsr-progress-completed::after { display: block; background: #2e9e5b; }
+.hsr-marker.hsr-progress-conflict::after { display: block; background: #d1483a; }
+.hsr-marker.hsr-progress-unclear::after { display: block; background: #d9a13b; }
+/* 聚焦态仍然盖过进度环，否则选中的点位看不出高亮。 */
+.hsr-marker.hsr-progress-completed:not(.hsr-marker-focus) .hsr-marker-hit { box-shadow: 0 0 0 2px rgba(46, 158, 91, .55); }
+.hsr-marker.hsr-progress-conflict:not(.hsr-marker-focus) .hsr-marker-hit { box-shadow: 0 0 0 2px rgba(209, 72, 58, .6); }
+.hsr-marker.hsr-progress-unclear:not(.hsr-marker-focus) .hsr-marker-hit { box-shadow: 0 0 0 2px rgba(217, 161, 59, .6); }
+.progress-panel { max-height: 52%; }
+.progress-note { margin: 0 0 6px; padding: 0 10px; font-size: 12px; color: var(--text-secondary); }
+.grease-btn.on { background: var(--accent-gold); color: #1a1a1a; }
+.zone-row {
+  display: flex; justify-content: space-between; width: calc(100% - 8px); margin: 2px 4px;
+  border: 0; background: var(--panel-bg-muted); padding: 8px 10px; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
+}
+.progress-points { padding: 0 4px 4px 14px; }
+.progress-point {
+  display: flex; flex-direction: column; gap: 2px; width: 100%; box-sizing: border-box;
+  border: 0; background: transparent; padding: 6px 8px; cursor: pointer;
+  text-align: left; font-size: 12px; color: var(--text-primary);
+}
+.progress-point:hover { background: var(--panel-bg-muted); }
+.progress-point.selected { background: var(--selection-bg); color: var(--selection-text); }
+.progress-point.selected .pp-id,
+.progress-point.selected .pp-title,
+.progress-point.selected .pp-bottom,
+.progress-point.selected .pp-state.st-remaining { color: rgba(245, 245, 245, .78); }
+.pp-top, .pp-bottom { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.pp-state { flex: 0 0 auto; border: 1px solid currentColor; border-radius: 8px; padding: 0 6px; font-size: 11px; }
+.pp-state.st-completed { color: #1f6b3a; }
+.pp-state.st-remaining { color: var(--text-secondary); }
+.pp-state.st-conflict { color: #b23b2e; font-weight: 600; }
+.pp-state.st-unclear { color: #8a6d1b; }
+.pp-label { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pp-id { flex: 0 0 auto; color: var(--text-secondary); }
+.pp-bottom { color: var(--text-secondary); }
+.pp-ok { color: #1f6b3a; font-weight: 600; }
+.pp-no { color: #b23b2e; font-weight: 600; }
+.pp-na { color: var(--text-secondary); }
+.pp-kind, .pp-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pp-title { color: var(--text-secondary); }
