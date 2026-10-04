@@ -776,6 +776,15 @@ def write_backfill(
             stamp = discovered_at or now_iso()
             save_edges(db.conn, plan.as_edges(stamp))
             save_point_transitions(db.conn, plan.as_transitions())
+            #: §6.11 第 1 步：树里有 350 个节点没名字（或只有占位符「特殊房间」），真名在**父容器**的
+            #: map/info → children[].name 里。顺手收进**派生库**的 node_display_names 表 ——
+            #: 只写这张派生表，core schema 与判定层（_map_path 仍用 map_nodes.name）都不动。
+            names_written = 0
+            raw_dir = source.parent / "raw" / "map_info"
+            if raw_dir.is_dir():
+                from hsrmap.graph_names import collect as collect_names, write as write_names
+
+                names_written = write_names(db.conn, collect_names(raw_dir))
             counts = {
                 "map_edges": int(db.conn.execute("SELECT COUNT(*) FROM map_edges").fetchone()[0]),
                 "point_transitions": int(db.conn.execute("SELECT COUNT(*) FROM point_transitions").fetchone()[0]),
@@ -814,6 +823,7 @@ def write_backfill(
         "by_type": by_type,
         "by_discovery_source": by_source,
         "orphan_transitions": orphan_transitions,
+        "node_display_names": names_written,
         "source_db": str(source),
         "source_sha256_before": before_sha,
         "source_sha256_after": after_sha,
@@ -829,6 +839,7 @@ def render_write_result(result: Mapping[str, Any]) -> str:
         f"  输出库 .......... {result['out']}（{result['mode']}）",
         f"  map_edges ....... {result['map_edges']}",
         f"  point_transitions {result['point_transitions']}",
+        f"  节点真名 ........ {result.get('node_display_names', 0)}",
         "  按类型：" + ", ".join(f"{key}={value}" for key, value in sorted((result.get("by_type") or {}).items())),
         "  按出处：" + ", ".join(
             f"{key}={value}" for key, value in sorted((result.get("by_discovery_source") or {}).items())

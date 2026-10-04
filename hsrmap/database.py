@@ -289,12 +289,26 @@ class CoreDatabase:
 
     def _insert_map_nodes(self, nodes: Iterable[dict[str, Any]]) -> None:
         for node in nodes:
+            #: UPSERT 而不是 INSERT OR REPLACE：REPLACE 靠「删旧行 + 插新行」实现，rowid 会变，
+            #: 而 maps.node_id 指着它 → 带 PRAGMA foreign_keys=ON 时直接 FK 约束失败。
+            #: 这条路只在 sync --resume（maps 已经落库）时会走到，实测炸过一次。
             self.conn.execute(
                 """
-                INSERT OR REPLACE INTO map_nodes
+                INSERT INTO map_nodes
                 (source_id, parent_source_id, node_type, name, depth, sort_order, is_renderable,
                  tree_leaf, render_probe_state, discovery_method, raw_json)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(source_id) DO UPDATE SET
+                    parent_source_id = excluded.parent_source_id,
+                    node_type = excluded.node_type,
+                    name = excluded.name,
+                    depth = excluded.depth,
+                    sort_order = excluded.sort_order,
+                    is_renderable = excluded.is_renderable,
+                    tree_leaf = excluded.tree_leaf,
+                    render_probe_state = excluded.render_probe_state,
+                    discovery_method = excluded.discovery_method,
+                    raw_json = excluded.raw_json
                 """,
                 (
                     node["source_id"],
@@ -318,11 +332,21 @@ class CoreDatabase:
 
     def _insert_label_nodes(self, nodes: Iterable[dict[str, Any]]) -> None:
         for node in nodes:
+            #: 同 map_nodes：UPSERT 保 rowid（point_labels.label_id 指着它），
+            #: 而且不碰 icon_asset_sha256 —— 那是资源阶段写的，重跑不该把它抹掉。
             self.conn.execute(
                 """
-                INSERT OR REPLACE INTO label_nodes
+                INSERT INTO label_nodes
                 (source_id, parent_source_id, name, is_category, is_selectable, sort_order, icon_remote_url, raw_json)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(source_id) DO UPDATE SET
+                    parent_source_id = excluded.parent_source_id,
+                    name = excluded.name,
+                    is_category = excluded.is_category,
+                    is_selectable = excluded.is_selectable,
+                    sort_order = excluded.sort_order,
+                    icon_remote_url = excluded.icon_remote_url,
+                    raw_json = excluded.raw_json
                 """,
                 (
                     node["source_id"],
@@ -372,12 +396,26 @@ class CoreDatabase:
 
     def _insert_map(self, mapped: dict[str, Any], map_info_sha256: str | None = None) -> int:
         node = self.conn.execute("SELECT id FROM map_nodes WHERE source_id = ?", (mapped["source_id"],)).fetchone()
+        #: 同 map_nodes：UPSERT 保 rowid（points.map_id 指着它）。
+        #: 特意**不更新** display_name / name_source：那是 M7.3 的真名，由 update_map_names 管，
+        #: 重跑 map/info 不该把它冲成 NULL。
         cur = self.conn.execute(
             """
-            INSERT OR REPLACE INTO maps
+            INSERT INTO maps
             (source_id, node_id, name, canvas_width, canvas_height, origin_x, origin_y,
              padding_json, fragment_count, map_info_sha256, coordinate_transform)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(source_id) DO UPDATE SET
+                node_id = excluded.node_id,
+                name = excluded.name,
+                canvas_width = excluded.canvas_width,
+                canvas_height = excluded.canvas_height,
+                origin_x = excluded.origin_x,
+                origin_y = excluded.origin_y,
+                padding_json = excluded.padding_json,
+                fragment_count = excluded.fragment_count,
+                map_info_sha256 = excluded.map_info_sha256,
+                coordinate_transform = excluded.coordinate_transform
             """,
             (
                 mapped["source_id"],
@@ -450,11 +488,19 @@ class CoreDatabase:
             map_row = self.conn.execute("SELECT id FROM maps WHERE source_id = ?", (point["map_source_id"],)).fetchone()
             if not map_row:
                 raise ValueError(f"missing map {point['map_source_id']}")
+            #: 同 map_nodes：UPSERT 保 rowid（point_labels.point_id 指着它）。
             cur = self.conn.execute(
                 """
-                INSERT OR REPLACE INTO points
+                INSERT INTO points
                 (source_id, map_id, x_pos, y_pos, z_pos, raster_x, raster_y, raw_json)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(map_id, source_id) DO UPDATE SET
+                    x_pos = excluded.x_pos,
+                    y_pos = excluded.y_pos,
+                    z_pos = excluded.z_pos,
+                    raster_x = excluded.raster_x,
+                    raster_y = excluded.raster_y,
+                    raw_json = excluded.raw_json
                 """,
                 (
                     point["source_id"],

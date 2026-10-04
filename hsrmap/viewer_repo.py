@@ -219,6 +219,46 @@ def point_detail(ctx: ViewerContext, core_point_id: int) -> dict[str, Any] | Non
     }
 
 
+def _node_display_names(ctx: ViewerContext) -> dict[str, str]:
+    """节点真名（派生表 `node_display_names`）——**两个来源都看**，都没有就空字典。
+
+    为什么要两个：图句柄优先用「core.db 自带 map_edges」的那一份（新快照就是这样），
+    而真名是**派生表**、只存在于旁挂库 —— 只查句柄会在新快照上把名字全丢掉。
+    顺序：句柄连接 → 旁挂库；两者都没有那张表就返回空（树退回原来的显示，行为不变）。
+    """
+    try:
+        from hsrmap.graph_names import load as load_names
+    except Exception:  # noqa: BLE001 - 任何毛病都不该让树长不出来
+        return {}
+
+    connections: list[Any] = []
+    handle = graph_handle(ctx) if "graph_handle" in globals() else None
+    conn = getattr(handle, "conn", None) if handle is not None else None
+    if conn is not None:
+        connections.append(conn)
+    try:
+        from hsrmap.graph_nav import sidecar_graph_path
+        from hsrmap.paths import DATA
+
+        sidecar = sidecar_graph_path(DATA)
+        if sidecar.is_file() and (conn is None or Path(getattr(conn, "path", "") or "") != sidecar):
+            import sqlite3 as _sqlite3
+
+            extra = _sqlite3.connect(f"file:{sidecar}?mode=ro", uri=True)
+            extra.row_factory = _sqlite3.Row
+            connections.append(extra)
+    except Exception:  # noqa: BLE001 - 没有运行态路径就只查句柄
+        pass
+
+    merged: dict[str, str] = {}
+    for connection in connections:
+        try:
+            merged.update(load_names(connection))
+        except Exception:  # noqa: BLE001
+            continue
+    return merged
+
+
 def map_tree_payload(ctx: ViewerContext) -> list[dict[str, Any]]:
     rows = list(
         ctx.core.conn.execute(
@@ -229,11 +269,23 @@ def map_tree_payload(ctx: ViewerContext) -> list[dict[str, Any]]:
             """
         )
     )
+    #: §6.11 第 1 步：树里 350 个节点是空名或占位符（「特殊房间」），真名在**父容器**的
+    #: map/info → children[].name 里，已由 graph backfill 收进**派生库**的 node_display_names。
+    #: 这里只改**显示名**（name/name_source）；判定层（_map_path）继续用 map_nodes.name。
+    display_names = _node_display_names(ctx)
     by_id: dict[str, dict[str, Any]] = {}
     for row in rows:
+        tree_name = str(row["name"] or "")
+        display = display_names.get(str(row["source_id"])) or tree_name or str(row["source_id"])
         by_id[row["source_id"]] = {
             "id": row["source_id"],
-            "name": row["name"] or row["source_id"],
+            "name": display,
+            #: 名字从哪来（tree / graph:node_display_names / id）—— 前端要能如实说明。
+            "name_source": (
+                "graph:node_display_names" if display_names.get(str(row["source_id"]))
+                else ("tree" if tree_name else "id")
+            ),
+            "tree_name": tree_name,
             "type": "map" if row["is_renderable"] else "folder",
             "renderable": bool(row["is_renderable"]),
             "children": [],

@@ -17,6 +17,10 @@ python -m hsrmap release
 # 2) 隐私扫描：把绝对路径、用户名、key、cookie 之类挡在包外
 python tools/privacy_scan.py submit          # 退出码 0 = 没有未复核命中（2 = 必须处理）
 
+# 2.5) 地图验收（Map Graph，a1-8-1 §24）：计数 / map-info 指纹 / 图门禁 / canary / 判定层 digest
+python tools/m7_acceptance.py                # 0 = 全过；2 = 有检查不过；1 = 环境问题
+#      想断言指针已切到某个新快照：python tools/m7_acceptance.py --expect-snapshot <id>
+
 # 3) 同步到暂存仓库（/MIR 镜像，但别删 .git）
 robocopy submit <publish-workspace>\hsrmap /MIR /XD .git
 

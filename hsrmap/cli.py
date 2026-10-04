@@ -55,7 +55,10 @@ def _load_current() -> dict:
     if not _P.CURRENT_PATH.exists():
         raise SystemExit(f"没有当前快照指针：{_P.CURRENT_PATH}（先跑一次 hsrmap sync）")
     try:
-        payload = json.loads(_P.CURRENT_PATH.read_text(encoding="utf-8"))
+        #: `utf-8-sig`：Windows 上的编辑器/脚本很容易给 JSON 加 BOM（PowerShell 的
+        #: `Set-Content -Encoding utf8` 就带），而 BOM 会让 `json.loads` 直接抛。
+        #: 指针文件是全项目的数据入口，这种小事不该让它整条链断掉。
+        payload = json.loads(_P.CURRENT_PATH.read_text(encoding="utf-8-sig"))
     except ValueError as exc:
         raise SystemExit(f"当前快照指针不是合法 JSON：{_P.CURRENT_PATH}（{exc}）") from exc
     if not isinstance(payload, dict) or not str(payload.get("core_db") or "").strip():

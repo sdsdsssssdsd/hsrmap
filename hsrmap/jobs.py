@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
 import threading
+import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -40,14 +42,31 @@ class JobStore:
     def _key(self, job_type: str, resource_id: str) -> str:
         return f"{job_type}:{resource_id}"
 
+    #: os.replace 在 Windows 上偶尔会碰到瞬时占用（并发读者 / 杀软扫描）：退避重试几次。
+    _SAVE_RETRY_DELAYS: tuple[float, ...] = (0.0, 0.2, 0.5, 1.0, 2.0)
+
     def save(self) -> None:
+        """原子写 jobs.json（tmp + os.replace）。
+
+        这里曾经是 unlink() + rename()：中间有一个「文件不存在」的窗口，而且 Windows 上
+        unlink 会被并发读者/杀软顶成 WinError 32 —— 实测踩到过一次，整个 sync 在资源阶段
+        崩掉、一个新快照都没发布。os.replace 是原子的：不会出现半个文件，也不会让读者
+        看到「文件消失」。
+        """
         with self._lock:
             payload = {"jobs": [asdict(job) for job in self._jobs.values()]}
             tmp = self.path.with_name(self.path.name + ".tmp")
             tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-            if self.path.exists():
-                self.path.unlink()
-            tmp.rename(self.path)
+            last_error: OSError | None = None
+            for delay in self._SAVE_RETRY_DELAYS:
+                if delay:
+                    time.sleep(delay)
+                try:
+                    os.replace(tmp, self.path)
+                    return
+                except OSError as exc:  # noqa: PERF203 - 就是要把每一次都试完
+                    last_error = exc
+            raise RuntimeError(f"无法原子写入 {self.path}（重试 5 次仍被占用）：{last_error}")
 
     def close(self) -> None:
         self.save()

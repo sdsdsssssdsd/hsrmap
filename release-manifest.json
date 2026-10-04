@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-10-04T06:22:43+00:00",
+ "generated_at": "2026-10-04T06:45:57+00:00",
  "root_name": "Hoyo",
- "files": 618,
- "bytes": 9909970,
+ "files": 620,
+ "bytes": 9937813,
  "entries": [
   {
    "path": ".env.example",
@@ -126,7 +126,7 @@
   },
   {
    "path": "docs/runbooks/map-graph-m7.md",
-   "bytes": 18745
+   "bytes": 21582
   },
   {
    "path": "docs/runbooks/progress-p6.md",
@@ -134,7 +134,7 @@
   },
   {
    "path": "docs/runbooks/publish-github.md",
-   "bytes": 2662
+   "bytes": 2984
   },
   {
    "path": "docs/runbooks/serve-split.md",
@@ -314,7 +314,7 @@
   },
   {
    "path": "docs/superpowers/sdd/2026-10-02-phase-7-map-graph/progress.md",
-   "bytes": 9157
+   "bytes": 11293
   },
   {
    "path": "docs/superpowers/specs/2026-10-02-phase-5c-vision-region-design.md",
@@ -350,11 +350,11 @@
   },
   {
    "path": "hsrmap/cli.py",
-   "bytes": 118156
+   "bytes": 118450
   },
   {
    "path": "hsrmap/database.py",
-   "bytes": 20893
+   "bytes": 23664
   },
   {
    "path": "hsrmap/detail_db.py",
@@ -402,11 +402,15 @@
   },
   {
    "path": "hsrmap/graph_audit.py",
-   "bytes": 33718
+   "bytes": 34199
   },
   {
    "path": "hsrmap/graph_backfill.py",
-   "bytes": 36289
+   "bytes": 37059
+  },
+  {
+   "path": "hsrmap/graph_names.py",
+   "bytes": 4505
   },
   {
    "path": "hsrmap/graph_nav.py",
@@ -1170,7 +1174,7 @@
   },
   {
    "path": "hsrmap/jobs.py",
-   "bytes": 3536
+   "bytes": 4590
   },
   {
    "path": "hsrmap/live_assets.py",
@@ -1330,7 +1334,7 @@
   },
   {
    "path": "hsrmap/viewer_repo.py",
-   "bytes": 43293
+   "bytes": 45808
   },
   {
    "path": "hsrmap_phase1/__init__.py",
@@ -1765,6 +1769,10 @@
    "bytes": 1819
   },
   {
+   "path": "tests/test_graph_names.py",
+   "bytes": 2687
+  },
+  {
    "path": "tests/test_guide_adapters.py",
    "bytes": 1522
   },
@@ -2130,7 +2138,7 @@
   },
   {
    "path": "tests/test_jobs.py",
-   "bytes": 725
+   "bytes": 2819
   },
   {
    "path": "tests/test_labels.py",
@@ -2150,11 +2158,11 @@
   },
   {
    "path": "tests/test_map_graph_canary.py",
-   "bytes": 5853
+   "bytes": 5958
   },
   {
    "path": "tests/test_map_graph_deep_sync.py",
-   "bytes": 14288
+   "bytes": 18260
   },
   {
    "path": "tests/test_map_graph_discovery.py",
@@ -2342,7 +2350,7 @@
   },
   {
    "path": "tools/m7_acceptance.py",
-   "bytes": 8765
+   "bytes": 10065
   },
   {
    "path": "tools/privacy_allowlist.json",

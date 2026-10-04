@@ -705,8 +705,15 @@ def render_audit(report: Mapping[str, Any]) -> str:
     naming = report.get("naming") or {}
     if naming:
         lines.append(
-            f"  名字缺口 ............. 可渲染 {naming.get('renderables_without_name')} / "
+            f"  名字缺口（树名） ..... 可渲染 {naming.get('renderables_without_name')} / "
             f"跳转目标 {naming.get('jump_targets_without_name')}"
+        )
+        #: M7.3：真名（maps.display_name）补完之后剩下的才是真缺口。两个口径都打印，
+        #: 免得「树名 341」这一行看起来像是补名字那一步没做。
+        lines.append(
+            f"  名字缺口（真名后） ... 可渲染 {naming.get('renderables_without_any_name')} / "
+            f"跳转目标 {naming.get('jump_targets_without_any_name')}"
+            f"（display_name {naming.get('display_names')} 条）"
         )
     chains = report.get("transition_chains")
     if chains:

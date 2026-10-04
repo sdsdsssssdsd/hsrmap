@@ -155,7 +155,7 @@ Scanner 扫 8370 条引用（过滤「0/空串」10672 个），**未认领候�
 | 4 | point → map transition 已建模 | ✅ | `point_transitions` 187 条；`PointTransition.as_viewer()`（§十三 形状） |
 | 5 | related map / map group 已建模 | ✅ | RELATED_MAP 204 / MAP_GROUP 36（回填实测） |
 | 6 | transition target 递归进入 discovery queue | ✅ | `discovery.scan_id_references` + `graph.closure`：visited 923 / frontier 0 / 未认领候选 0 |
-| 7 | deep map 有 map/info | ⏳ | **M7.3 在做**：抓取范围从 624 叶子扩到 923 节点（含 299 容器），补 535 条真名 |
+| 7 | deep map 有 map/info | ✅ | 新快照 `20261004T060003Z`：**923/923 个节点都抓了 map/info**（`render_probe VALID 624 / INVALID 299（容器无 raster）`），验收工具实测「每张地图都有 map/info 指纹：缺 0 张」 |
 | 8 | deep map raster 完整 | ✅ | 187/187 跳转目标都有 `map_fragments` 且本地切片文件存在（missing 0） |
 | 9 | deep map point/list 完整 | ✅ | canary：`target_points_readable`（979 有 2 个点）；187/187 可读 |
 | 10 | deep map 可进入 Viewer | ✅ | API：`GET /api/v1/maps/943/transitions` → 200（`POINT_JUMP → 979「前往对应地图」`，source_point 5637，来源只读旁挂库）；前端：**CDP 真机实测** 943 → point 5637 → 进入 979（`__HSRMAP_NET.blocked === []`） |
@@ -163,7 +163,7 @@ Scanner 扫 8370 条引用（过滤「0/空串」10672 个），**未认领候�
 | 12 | Guide Matcher 能识别 navigation path | ✅ | 两条真实路径都接了：① 地图 API 的 `navigation_context`；② 审核队列候选点的 `navigation` 紧凑块（`review/service.py::navigation_for_candidates`，只对深层地图加、普通图逐字段不变）。`candidates.py` 的 `navigation_conn` 钩子缺省**原样返回同一列表**，「命中集合不变」有专项测试 |
 | 13 | Progress 查询使用 graph map set | ✅ | `progress/atlas.py::graph_coverage`（624 可渲染 / 187 可导航 / 5330 点位 / unresolved 0），`remaining_atlas(..., core_conn=, graph_conn=)` |
 | 14 | 所有 unresolved target 都进入报告 | ✅ | `reports/map_graph_audit.json` 的 `unresolved_targets_total`；Scanner 的 UNRESOLVED 分类 |
-| 15 | unresolved renderable target > 0 时禁止发布 | ⏳ | `hsrmap graph audit --gate` 已可执行；**M7.3 正在把它接进 sync 的发布校验**（gate 不过 → 不许切 current.json），并要求一条「门禁能挡住发布」的单测 |
+| 15 | unresolved renderable target > 0 时禁止发布 | ✅ | 已接进 `sync._decide_publication`（gate 不过 → `SystemExit(2)`、`_publish` 一次都不调用、staging 保留可 resume）；**真实世界证据**：14:37 那次 sync 在资源阶段崩掉（`JobStore.save()` 的 `unlink+rename`），崩点在 `_validate` 之前 → 指针自动没动；修复后 resume 通过门禁才切到 `20261004T060003Z` |
 | 16 | JUMP deep-map canary 永久通过 | ✅ | `tests/test_map_graph_canary.py`（4 条，七步链 + gate 输入 + 结构边单列） |
 
 发布 invariant 的可执行形式（§6.3）：`∀ edge ∈ NAVIGABLE_EDGE_TYPES: target ∈ synced_renderable_maps`；
@@ -223,6 +223,9 @@ python -m hsrmap dod                          # 12/12 PASS
 python -m hsrmap doctor                       # 首屏闭环 PASS
 ```
 
+**切完指针记得重启服务进程**：`viewer_app.get_ctx()` 把 `ViewerContext` 缓存在 `app.state.ctx` 里，
+**没有失效机制** —— 正在跑的 8766/8767/8776 会继续用**旧快照**直到重启（否则你会以为「新名字没生效」）。
+
 **判定标准**：1) 计数与 golden 不变；2) gate PASS 且 `unresolved_navigable_targets = 0`；
 3) canary 两个来源都绿；4) closure digest 不变（**变了就是有东西渗进判定层，停下来查**）；
 5) 四个门禁全绿。任何一条不过 → 用 §6.7 的回滚把指针改回去，再查原因。
@@ -237,6 +240,30 @@ python -m hsrmap doctor                       # 首屏闭环 PASS
 | `test_serve_evidence::test_map_app_serves_the_read_only_guide_surface` | 同时跑 `vite build`（`web/dist` 正在被重写，`/` 取不到 `index.html`） | 单独跑必过；构建期间如实视为环境噪声，别当成代码回归 |
 
 判定方法：**单独跑一遍**（`pytest -q tests/test_serve_evidence.py`）与**等构建/同步结束后再跑全量**，两次都过就不是回归。
+
+## 6.10 生成的报告放在哪、会不会带出去
+
+* `reports/*.json`（`map_graph_audit.json` / `m72-backfill*.json`）是**本地报告**：`.gitignore` 里有 `/reports/`，
+  发布 allowlist 也不含它 —— 实测 `submit/reports` 与暂存仓库都不存在这两个目录。
+* 报告里**会写绝对路径**（`snapshot` / `source_db` / `out`），这是给本机排查用的（要能立刻知道用的是哪个快照/库）。
+  因为不进发布包，它不触发任何隐私门；但**手工外发报告前先看一眼**，别把本机目录结构带出去。
+* 想让报告也能安全外发，最小改法是写 `root_name` + 相对路径（release-manifest 已经是这个口径）——本轮没做，记录在此。
+
+## 6.11 待办：容器/深层节点的「真名」还没进树（显示层缺口）
+
+实测（staging，2026-10-04）：**350 个树节点名字为空** —— 341 个是可渲染地图（已有 `maps.display_name`，如 979 → 「1」），
+9 个是容器（1016/1018/1020…）；另有节点树名是占位符「特殊房间」，真名只在**父容器**的 `map/info.children` 里。
+
+* **症状**：Viewer 左侧树读 `map_nodes.name`，这些节点显示成裸 id（截图里的 1016/1018/… 就是它们）。
+* **第 1 步已做完（派生层，2026-10-04）**：`hsrmap/graph_names.py` 从 `<snapshot>/raw/map_info/*.json` 的
+  `data.info.children[].name` 收真名 → 写进**派生库** `data/graph/core.db` 的 `node_display_names` 表
+  （`graph backfill --write` 顺带写）；`viewer_repo.map_tree_payload` 合并显示名
+  （`派生库真名 → 树名 → id`，并给出 `name_source`；**句柄连接与旁挂库两处都查**）。
+  实测新快照 raw：**914 条真名**（`1016 → 生研院1`、`955 → 千星城中心区7`、`979 → 1`）。
+  **没有**改 core schema，也不需要第二次全量 sync。
+* **第 2 步（判定层，必须带回归）**：`viewer_repo._map_path()` 用 `map_nodes.name`，官方点位的 `map_path`/`region` 都来自它 ——
+  换成真名会让「特殊房间」变「千星城中心区7」这类名字，**可能改变 Guide 的区域匹配**；要单独跑 `closure-check`
+  （digest 基线 `cd08466d868cc25d`、1006/1006）与 Guide 测试，**不许放宽断言**。
 
 ## 7. 没查清的（如实）
 

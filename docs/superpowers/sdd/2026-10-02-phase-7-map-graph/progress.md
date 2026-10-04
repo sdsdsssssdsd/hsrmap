@@ -82,6 +82,30 @@ display_name 非空 624/624（来源全部是 map_info:children[].name）
 **口径提醒**：`map_nodes.name` 里仍是 341 条空名 —— 这是**故意**的（`maps.display_name` 不覆盖树名）。
 判断「还有没有名字」必须用 `display_name ∪ maps.name ∪ 树名`，否则修好之后还会一直看到 341。
 
+## 第一次真实 sync 的两个真 bug（2026-10-04，均已定位并在修）
+
+1. **资源阶段最后一条 asset 崩掉（退出码 1）**：`hsrmap/jobs.py::JobStore.save()` 用 `unlink()+rename()`，
+   Windows 上抛 `PermissionError [WinError 32]（另一个程序正在使用此文件: jobs.json）`。
+   修法：`os.replace(tmp, path)`（原子，没有「文件先消失」的窗口）+ 退避重试。
+   **崩溃发生在 `_validate`/门禁之前 → 没有发布、`current.json` 没动** —— 这是 §二十四 #15「门禁不过不许发布」
+   的一次**真实世界证据**（不是构造出来的用例）。
+2. **`sync --resume` 本来就是坏的**：`database.py::_insert_map_nodes` 用 `INSERT OR REPLACE INTO map_nodes`，
+   UNIQUE 冲突时**删旧行插新行 → rowid 变了**，而 `maps.node_id` 还指着旧 rowid →
+   `sqlite3.IntegrityError: FOREIGN KEY constraint failed`（resume 5.5 秒即失败）。
+   修法：`map_nodes / maps / label_nodes / points` 四处的 `INSERT OR REPLACE` 全换成
+   `ON CONFLICT(...) DO UPDATE`（rowid 不变 → FK 安全；顺带不再抹掉 `icon_asset_sha256` 与已写好的 `display_name`）。
+
+资源不需要重下：`jobs.json` 里 asset SUCCESS 1629/1630（剩 1 条 RUNNING 会被重置重下），`map_fragments` 624/624 有 sha；
+staging 库经查未损坏（`foreign_key_check` 空、悬空 `maps.node_id` 0、923/624/5330/1016/1341/187 全对）。
+
+## §6.11 第 1 步完成（派生层补名，2026-10-04）
+
+树里 350 个节点没名字（或占位符「特殊房间」）导致 Viewer 显示裸 id。现在：
+`hsrmap/graph_names.py` 收 `map/info → children[].name` 的真名写进**派生库** `node_display_names`，
+`graph backfill --write` 顺带写，`viewer_repo.map_tree_payload` 合并显示名（两处都查：句柄 + 旁挂库）。
+新快照 raw 实测 **914 条真名**（`1016 → 生研院1`、`955 → 千星城中心区7`、`979 → 1`）；**未改 core schema**。
+第 2 步（判定层 `_map_path` 也改用真名）**未做**，必须带 `closure-check`（digest `cd08466d868cc25d`、1006/1006）回归。
+
 ## 本轮数字（可复现）
 
 * `pytest -q` → 792 passed / 106 skipped（0 failed）

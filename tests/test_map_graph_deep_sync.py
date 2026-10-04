@@ -23,6 +23,7 @@ import pytest
 
 from hsrmap.database import CoreDatabase, table_columns
 from hsrmap.graph import POINT_JUMP, RELATED_MAP, TREE_CHILD, Edge, closure, save_edges
+from hsrmap.normalize import flatten_map_nodes
 from hsrmap.sync import (
     GATE_FAILURE,
     NAME_SOURCE_CHILDREN,
@@ -266,6 +267,103 @@ def test_legacy_core_db_gains_the_name_columns_additively(tmp_path) -> None:
         assert row["name_source"] is None
     finally:
         db.close()
+
+
+# --------------------------------------------------------------------------- #
+# 2b) resume：重跑落库必须保 rowid、不许抹掉已经写好的东西
+# --------------------------------------------------------------------------- #
+
+
+def _tree_payload() -> list[dict]:
+    return [
+        {
+            "id": 938,
+            "name": "千星城",
+            "node_type": 1,
+            "depth": 1,
+            "children": [{"id": 943, "name": "2层", "node_type": 2, "depth": 2}],
+        }
+    ]
+
+
+def _mapped_map(source_id: str, name: str) -> dict:
+    return {
+        "source_id": source_id,
+        "name": name,
+        "canvas_width": 4096,
+        "canvas_height": 4096,
+        "origin_x": 0.0,
+        "origin_y": 0.0,
+        "fragment_count": 1,
+        "coordinate_transform": "origin_translation_v1",
+        "fragments": [
+            {
+                "index": 0,
+                "remote_url": f"https://example.test/{source_id}.png",
+                "source_width": 4096,
+                "source_height": 4096,
+                "x": 0,
+                "y": 0,
+                "width": 4096,
+                "height": 4096,
+            }
+        ],
+    }
+
+
+def _label_row() -> dict:
+    return {
+        "source_id": "836",
+        "parent_source_id": None,
+        "name": "二次元JUMP!",
+        "is_category": False,
+        "is_selectable": True,
+        "sort_order": 0,
+        "icon_remote_url": "https://example.test/836.png",
+        "raw_json": {},
+    }
+
+
+def test_resume_keeps_rowids_foreign_keys_and_written_names(tmp_path) -> None:
+    """sync --resume 的真正前提：同一批 payload 再落一次，rowid 不许漂。
+
+    真实事故：老实现用 INSERT OR REPLACE，UNIQUE 冲突靠「删旧行 + 插新行」实现，
+    rowid 变了，而 maps.node_id 还指着旧 rowid → PRAGMA foreign_keys=ON 直接
+    IntegrityError，sync --resume 从第一天起就是坏的。
+    顺带钉住：重跑不许抹掉 icon_asset_sha256（资源阶段写的）与 display_name（真名）。
+    """
+    sync = _sync(tmp_path)
+    sync.db.insert_map_nodes(flatten_map_nodes(_tree_payload()))
+    sync.db.insert_label_nodes([_label_row()])
+    sync.db.conn.execute("UPDATE label_nodes SET icon_asset_sha256 = 'deadbeef' WHERE source_id = '836'")
+    sync.db.insert_map(_mapped_map("943", "2层"))
+    sync.db.update_map_names([{"source_id": "943", "display_name": "1", "name_source": NAME_SOURCE_CHILDREN}])
+    before = {
+        row["source_id"]: (row["id"], row["display_name"], row["name_source"])
+        for row in sync.db.conn.execute("SELECT id, source_id, display_name, name_source FROM maps")
+    }
+    node_before = {
+        row["source_id"]: row["id"] for row in sync.db.conn.execute("SELECT id, source_id FROM map_nodes")
+    }
+
+    #: —— resume：同一批 payload 再落一遍 ——
+    sync.db.insert_map_nodes(flatten_map_nodes(_tree_payload()))
+    sync.db.insert_label_nodes([_label_row()])
+    sync.db.insert_map(_mapped_map("943", "2层"))
+
+    node_after = {
+        row["source_id"]: row["id"] for row in sync.db.conn.execute("SELECT id, source_id FROM map_nodes")
+    }
+    assert node_after == node_before, "map_nodes 的 rowid 漂了：maps.node_id 会变成悬空引用"
+    row = sync.db.conn.execute(
+        "SELECT id, node_id, name, display_name, name_source FROM maps WHERE source_id = '943'"
+    ).fetchone()
+    assert row["id"] == before["943"][0], "maps 的 rowid 漂了：points.map_id 会变成悬空引用"
+    assert row["display_name"] == "1" and row["name_source"] == NAME_SOURCE_CHILDREN, "真名被重跑抹掉了"
+    assert row["node_id"] == node_after["943"]
+    icon = sync.db.conn.execute("SELECT icon_asset_sha256 FROM label_nodes WHERE source_id = '836'").fetchone()
+    assert icon["icon_asset_sha256"] == "deadbeef", "图标 sha 被重跑抹掉了"
+    assert list(sync.db.conn.execute("PRAGMA foreign_key_check")) == []
 
 
 # --------------------------------------------------------------------------- #

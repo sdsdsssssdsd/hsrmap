@@ -4,6 +4,7 @@
     python tools/m7_acceptance.py                # 人类可读
     python tools/m7_acceptance.py --json         # 机器可读
     python tools/m7_acceptance.py --expect-snapshot 20261004T060003Z
+    python tools/m7_acceptance.py --data-dir <另一个数据根>   # 例如拿 staging 快照做「切换前演练」
 
 退出码：0 = 全部通过；2 = 有检查不过（发布前必须处理）；1 = 环境问题（例如库打不开）。
 
@@ -48,15 +49,18 @@ def _count(conn: sqlite3.Connection, table: str) -> int:
         return -1
 
 
-def _graph_conn(core: sqlite3.Connection) -> tuple[sqlite3.Connection, bool]:
+def _graph_conn(core: sqlite3.Connection, data_root: Path | None = None) -> tuple[sqlite3.Connection, bool]:
+    """图库连接（只读）：core 自带 `map_edges` 就用它，否则用 `<data_root>/graph/core.db`。"""
     from hsrmap.graph_nav import open_graph_connection
 
-    return open_graph_connection(core)
+    return open_graph_connection(core, data_root=data_root)
 
 
-def collect(expect_snapshot: str | None = None) -> dict:
+def collect(expect_snapshot: str | None = None, data_dir: str | None = None) -> dict:
     checks: list[dict] = []
-    data = Path(DATA)
+    #: `--data-dir` 指向另一个数据根时，连发布快照与旁挂图库也一起挪过去 ——
+    #: 这样能在**指针真正切换之前**拿 staging 快照演练一遍（本轮就是这么验证的）。
+    data = Path(data_dir) if data_dir else Path(DATA)
     current_path = data / "current.json"
 
     def check(name: str, ok: bool, detail: str) -> None:
@@ -95,7 +99,7 @@ def collect(expect_snapshot: str | None = None) -> dict:
         ).fetchone()[0])
         check("每张地图都有 map/info（§24 #7）", missing_info == 0, f"缺 {missing_info} 张")
 
-        graph_conn, owned = _graph_conn(core)
+        graph_conn, owned = _graph_conn(core, None if data_dir is None else data)
         try:
             if graph_conn is None:
                 check("图库可用", False, "core.db 没有 map_edges，旁挂库也没有")
@@ -137,7 +141,7 @@ def collect(expect_snapshot: str | None = None) -> dict:
     #: 这一条比任何计数都硬 —— 名字/边/坐标怎么变都行，判定结论不能变。
     from hsrmap.paths import GUIDE_PUBLISHED_DB
 
-    published = Path(GUIDE_PUBLISHED_DB)
+    published = (data / "guides" / "published.db") if data_dir else Path(GUIDE_PUBLISHED_DB)
     if published.is_file():
         from hsrmap.guide_db import GuideDatabase
         from hsrmap.guides.claims import claim_digest
@@ -145,8 +149,15 @@ def collect(expect_snapshot: str | None = None) -> dict:
         guide_db = GuideDatabase.open_readonly(published)
         try:
             digest = claim_digest(guide_db)
+            #: 六状态闭包（硬门「不得回归」）：完成点位必须仍是 1006/1006。
+            from hsrmap.guides.stages import completeness_report
+
+            completeness = completeness_report(guide_db)
         finally:
             guide_db.close()
+        check("六状态完成点位 1006/1006", int(completeness["done"]) == 1006 and int(completeness["points"]) == 1006,
+              f"{completeness['done']}/{completeness['points']}"
+              f"（到点即得 {completeness['locate_complete']} + 含解法 {completeness['complete']}）")
         #: closure-check 打印的是**前 16 位**（digest_of_claims 本身是 64 位十六进制），
         #: 所以基线也按前缀比 —— 把 16 位基线拿去和 64 位全量比会永远失败（这里踩过一次）。
         check("证据 digest（判定层零退化）", digest[:16] == CLOSURE_DIGEST,
@@ -168,9 +179,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="M7 整合验收（只读）")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--expect-snapshot", default=None)
+    parser.add_argument("--data-dir", default=None, help="另一个数据根（默认取运行态 DATA）")
     args = parser.parse_args()
     try:
-        result = collect(args.expect_snapshot)
+        result = collect(args.expect_snapshot, args.data_dir)
     except Exception as exc:  # noqa: BLE001 - 环境问题如实报，不吐 traceback
         print(f"验收跑不起来：{type(exc).__name__}: {exc}", file=sys.stderr)
         return 1

@@ -55,7 +55,8 @@ def _graph_sources() -> list[tuple[str, Path]]:
     current = Path(DATA) / "current.json"
     if current.is_file():
         try:
-            payload = json.loads(current.read_text(encoding="utf-8"))
+            #: utf-8-sig：指针文件带 BOM 时也要读得出来（Windows 脚本很常见）。
+            payload = json.loads(current.read_text(encoding="utf-8-sig"))
         except (OSError, ValueError):
             payload = {}
         snapshot_db = Path(DATA) / str(payload.get("core_db") or "")
