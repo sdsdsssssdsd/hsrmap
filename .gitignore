@@ -5,6 +5,7 @@
 /artifacts/
 /reports/
 /submit/
+/web/dist/
 
 # ── 交付物与临时物
 *.bak
@@ -44,5 +45,3 @@ _bundle.js
 .idea/
 .vscode/
 *.swp
-
-# 本仓库是发布包：web/dist 属于交付内容，故意不忽略（clone 即可运行）。

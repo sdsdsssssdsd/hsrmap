@@ -14,6 +14,9 @@ dependencies = [
     "httpx>=0.27",
     "pillow>=10",
     "pyyaml>=6",
+    #: numpy 在感知哈希（assets/phash.py）里是**模块级** import：少装它整套语料/资产层都 import 不了。
+    #: CI 第一次跑就是这么挂的（10 个测试模块 collection error）。
+    "numpy>=1.26",
 ]
 
 [project.optional-dependencies]
@@ -21,6 +24,9 @@ dev = [
     "pytest>=8",
     "ruff>=0.6",
 ]
+#: 以下两个是**惰性**依赖：代码里都在函数内 try/except ImportError，装不上只是对应能力不可用。
+vision = ["opencv-python-headless>=4.10"]   # guides/matching/cv.py：模板匹配
+phase1-live = ["playwright>=1.40"]          # hsrmap_phase1/live_reference.py：读官方地图实时坐标
 
 [tool.setuptools]
 packages = ["hsrmap", "hsrmap_phase1"]

@@ -132,8 +132,14 @@ def check_repo_has_no_runtime(root: Path) -> dict[str, Any]:
             "新增违规：" + ", ".join(item.path for item in report["new"][:6]),
         )
     ignore = (root / ".gitignore").read_text(encoding="utf-8") if (root / ".gitignore").is_file() else ""
-    required = ("data/", "submit/", "artifacts/", "logs/", "reports/", "web/dist/", "*.db", "*.bak", ".env")
+    #: 运行态与密钥必须被忽略；构建产物（web/dist）两条正路都行：
+    #: 源码树里忽略它、或者它本来就是 release 白名单里的交付内容（发布包故意跟踪它，clone 即可运行）。
+    from hsrmap.release import RELEASE_KEEP
+
+    required = ["data/", "submit/", "artifacts/", "logs/", "reports/", "*.db", "*.bak", ".env"]
     missing = [pattern for pattern in required if pattern not in ignore]
+    if "web/dist" not in RELEASE_KEEP and "web/dist/" not in ignore:
+        missing.append("web/dist/")
     if missing:
         return _fail("repo-has-no-runtime", f".gitignore 缺边界规则：{missing}")
     return _ok(

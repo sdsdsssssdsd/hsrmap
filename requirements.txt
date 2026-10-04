@@ -4,4 +4,10 @@ uvicorn>=0.32
 httpx>=0.27
 pillow>=10
 pyyaml>=6
+#: phash 模块级 import numpy —— 不在这个清单里，干净环境连测试都收集不起来。
+numpy>=1.26
 pytest>=8
+
+# 惰性依赖（函数内 try/except ImportError，缺了只是对应能力不可用；要就 pip install -r requirements-vision.txt）：
+#   opencv-python-headless   guides/matching/cv.py 模板匹配
+#   playwright               hsrmap_phase1/live_reference.py 读官方地图实时坐标

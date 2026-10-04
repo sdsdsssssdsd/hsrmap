@@ -1,0 +1,5 @@
+# 惰性依赖（可选能力）：不装也能跑完整测试，只是对应功能返回「不可用」。
+#   opencv-python-headless  guides/matching/cv.py 的模板匹配
+#   playwright              hsrmap_phase1/live_reference.py 读官方地图实时坐标
+opencv-python-headless>=4.10
+playwright>=1.40

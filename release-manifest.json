@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-10-04T03:05:24+00:00",
+ "generated_at": "2026-10-04T03:21:18+00:00",
  "root_name": "Hoyo",
- "files": 549,
- "bytes": 5221499,
+ "files": 550,
+ "bytes": 5223155,
  "entries": [
   {
    "path": ".env.example",
@@ -294,7 +294,7 @@
   },
   {
    "path": "hsrmap/dod.py",
-   "bytes": 23643
+   "bytes": 24014
   },
   {
    "path": "hsrmap/guide_db.py",
@@ -1366,15 +1366,19 @@
   },
   {
    "path": "pyproject.toml",
-   "bytes": 1418
+   "bytes": 1970
+  },
+  {
+   "path": "requirements-vision.txt",
+   "bytes": 308
   },
   {
    "path": "requirements.lock.txt",
-   "bytes": 457
+   "bytes": 470
   },
   {
    "path": "requirements.txt",
-   "bytes": 196
+   "bytes": 608
   },
   {
    "path": "start.bat",
