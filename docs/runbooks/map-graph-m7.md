@@ -7,6 +7,11 @@
 > 已在真实快照上逐项复现（**源快照 sha256 未变**），回填库在 «data/graph/core.db»。
 > 交接文档：«docs/superpowers/sdd/2026-10-02-phase-7-map-graph/m72-discovery.md»；
 > M7.1 schema：«…/m71-graph-schema.md»。
+>
+> **M7.3 深层同步已完成（2026-10-04，联网）**：新快照 **20261004T060003Z** 自带
+> map_edges 1341 / point_transitions 187 / maps.display_name 624；四项计数一个没变
+> （923 / 624 / 5330 / 1016），名字缺口 **341/624 + 142/187 → 0 + 0**，发布门禁 PASS，
+> 冻结快照 20261001T105105Z 的 sha256 前后一致。详见 §6.4.1 与 «…/m73-deep-sync.md»。
 
 ## 0. 最重要的一条结论（先纠正前提）
 
@@ -133,6 +138,42 @@ TREE_CHILD **914** / RELATED_MAP **204** / MAP_GROUP **36** / POINT_JUMP **187**
 Scanner 扫 8370 条引用（过滤「0/空串」10672 个），**未认领候选 = 0**；
 `closure` 收敛（visited 923 / frontier 0），预期内互指 18（= related_group_map 的 18 对），意外 cycle 0。
 **名字缺口（M7.3 的硬数字）**：341/624 可渲染地图在树里没名字、142/187 跳转目标没名字。
+
+## 6.4.1 M7.3 实测（新快照 20261004T060003Z，2026-10-04）
+
+**四项计数一个都没变**：map_nodes **923** / is_renderable=1 **624** / points **5330** /
+label_nodes **1016**；maps 624、map_fragments 624、assets 879。
+
+| 图与名字 | 实测 |
+| --- | --- |
+| map_edges | **1341** = TREE_CHILD 914 / RELATED_MAP 204 / MAP_GROUP 36 / POINT_JUMP 187 |
+| point_transitions | **187** |
+| maps.display_name | **624** 条，name_source 全部 = map_info:children[].name（185 条的 children 名 ≠ 自己 info 名，后者基本是占位符「特殊房间」） |
+| 可渲染地图无名 | **341/624 → 0/624** |
+| 跳转目标无名 | **142/187 → 0/187** |
+| 树节点无名（没动，属 §6.11 显示层） | 350 → 350 |
+| render probe | **VALID 624 / INVALID 299（容器无 raster，有证据） / UNKNOWN 0** |
+| 闭包 | seeds 923 / visited 923 / steps 1768 / cycles 514 / frontier [] / unevidenced [] / converged true |
+| Scanner | 未认领候选 **0**（覆盖全部新 payload：923 map/info + 624 point/list + 187 point/info + 树） |
+| graph audit gate | **PASS**（unresolved 0 / 孤儿 0 / render 缺口 0 / 闭包收敛） |
+| canary | **PASS**（点名样本 943 → point 5637 → 979） |
+| 跳转链 | 187/187 通过（47 条 target 自身没有点位） |
+| graph_coverage.unresolved_navigable_targets | **0** |
+| 冻结快照 sha256 | bb3b5569…d7629aa **前后一致** |
+
+**抓取**：API 请求 = map/info **923** + point/list **624** + point/info **187** + 树/preflight 约 9
+（≈ **1743**）；资源 = **1630** 个 unique URL（624 切片 + 1006 图标）→ 合计 **≈ 3373** 次 HTTP。
+**耗时**：首轮 14:00:03 → 14:37（崩在资源阶段，见下）≈ 37 min；--resume 20.1 s（全部命中 staging 缓存）。
+
+**±20% 基线门一次都没触发**：failures [] / warnings [] / golden mean=0 max=0 / smoke 7/7 PASS。
+新增的基线常量只增不改（tree_nodes 923 / points 5330 / map_edges 1341 / point_transitions 187）。
+
+**顺手修掉两个比 M7 更老的缺陷**（详见 «m73-deep-sync.md» §8）：
+
+1. JobStore.save() 的 unlink()+rename() 在 Windows 上会抛 WinError 32 —— 实测让首轮 sync 在资源阶段崩掉
+   （崩点在 _validate 与门禁**之前** → 指针自动没动，这是 §24 #15 的真实世界证据）；现在 os.replace() + 退避重试。
+2. 四处 INSERT OR REPLACE 让 rowid 漂移 → maps.node_id 外键炸 —— **这就是 sync --resume 一直是坏的原因**；
+   现在改成 ON CONFLICT(...) DO UPDATE。
 
 ## 6.5 已知问题（与 M7 相邻，别丢）
 

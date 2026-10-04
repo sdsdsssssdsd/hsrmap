@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-10-04T06:45:57+00:00",
+ "generated_at": "2026-10-04T08:16:13+00:00",
  "root_name": "Hoyo",
- "files": 620,
- "bytes": 9937813,
+ "files": 621,
+ "bytes": 9950650,
  "entries": [
   {
    "path": ".env.example",
@@ -126,7 +126,7 @@
   },
   {
    "path": "docs/runbooks/map-graph-m7.md",
-   "bytes": 21582
+   "bytes": 24522
   },
   {
    "path": "docs/runbooks/progress-p6.md",
@@ -311,6 +311,10 @@
   {
    "path": "docs/superpowers/sdd/2026-10-02-phase-7-map-graph/m72-discovery.md",
    "bytes": 9822
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-phase-7-map-graph/m73-deep-sync.md",
+   "bytes": 9897
   },
   {
    "path": "docs/superpowers/sdd/2026-10-02-phase-7-map-graph/progress.md",
