@@ -23,6 +23,7 @@ from hsrmap.graph import (
 )
 from hsrmap.graph_audit import incoming_degree, reachable_from, reciprocal_cycles, self_loops, tree_roots
 from hsrmap.graph_nav import navigation_context
+from typing import Mapping  # noqa: E402  (仅用于 _map_path 的类型标注)
 from hsrmap.paths import ASSETS
 from hsrmap.viewer_bind import ViewerContext
 from hsrmap.viewer_crs import get_max_bounds, get_raster_bounds
@@ -37,13 +38,28 @@ def _map_parents(ctx: ViewerContext) -> dict[str, Any]:
     }
 
 
-def _map_path(parents: dict[str, Any], source_id: str) -> str:
+def _map_path(
+    parents: dict[str, Any],
+    source_id: str,
+    *,
+    names: Mapping[str, str] | None = None,
+) -> str:
+    """地图路径「根 / … / 本级」。
+
+    `names` 是**显示名**（派生库 `node_display_names`）：给了就用真名，没给就沿用树名。
+    两种口径共用这一段代码，**调用方各自决定用哪种** —— 判定层（Guide 匹配吃的 `map_path`/`region`）
+    与显示层（界面上的面包屑）不是一回事，不能偷偷一起换。
+    `names` 里没有的节点照旧退回树名 / id（不编）。
+    """
     parts: list[str] = []
     current: str | None = source_id
     seen: set[str] = set()
     while current and current in parents and current not in seen:
         seen.add(current)
-        parts.append(parents[current]["name"] or current)
+        label = ""
+        if names:
+            label = str(names.get(current) or "").strip()
+        parts.append(label or parents[current]["name"] or current)
         current = parents[current]["parent_source_id"]
     return " / ".join(reversed(parts))
 

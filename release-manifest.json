@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-10-04T08:16:13+00:00",
+ "generated_at": "2026-10-04T08:21:17+00:00",
  "root_name": "Hoyo",
  "files": 621,
- "bytes": 9950650,
+ "bytes": 9952147,
  "entries": [
   {
    "path": ".env.example",
@@ -126,7 +126,7 @@
   },
   {
    "path": "docs/runbooks/map-graph-m7.md",
-   "bytes": 24522
+   "bytes": 24790
   },
   {
    "path": "docs/runbooks/progress-p6.md",
@@ -1018,7 +1018,7 @@
   },
   {
    "path": "hsrmap/guides/topics/official.py",
-   "bytes": 8284
+   "bytes": 8807
   },
   {
    "path": "hsrmap/guides/topics/origami_bird/golden.json",
@@ -1338,7 +1338,7 @@
   },
   {
    "path": "hsrmap/viewer_repo.py",
-   "bytes": 45808
+   "bytes": 46514
   },
   {
    "path": "hsrmap_phase1/__init__.py",

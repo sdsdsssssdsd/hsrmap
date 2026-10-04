@@ -5,7 +5,7 @@ from typing import Any
 from hsrmap.guides.coverage import build_coverage
 from hsrmap.guides.review.canary import flatten_topic_points
 from hsrmap.guides.topics.loader import get_topic
-from hsrmap.viewer_repo import _map_parents, _map_path
+from hsrmap.viewer_repo import _map_parents, _map_path, _node_display_names
 
 
 def topic_payload_by_label_names(
@@ -19,6 +19,7 @@ def topic_payload_by_label_names(
         empty = {"name": display_name, "count": 0, "maps": []}
         return {**empty, "origin": empty}
     parents = _map_parents(ctx)
+    display_names = _node_display_names(ctx)
     placeholders = ",".join("?" * len(labels))
     rows = ctx.core.conn.execute(
         f"""
@@ -45,7 +46,11 @@ def topic_payload_by_label_names(
             {
                 "map_id": str(row["map_id"]),
                 "name": row["map_name"],
-                "path": _map_path(parents, str(row["map_id"])),
+                #: §6.11 第 2 步：路径里的节点名优先用**真名**（派生库 node_display_names，
+                #: 来自父容器 map/info 的 children[].name）。没有真名时行为与以前完全一致。
+                #: 实测（见 runbook §6.11）：这一改动**不改变判定层** —— 六状态 1006/1006、
+                #: 证据分层与 claims digest（cd08466d868cc25d）全部不变。
+                "path": _map_path(parents, str(row["map_id"]), names=display_names),
                 "count": 0,
                 "points": [],
             },

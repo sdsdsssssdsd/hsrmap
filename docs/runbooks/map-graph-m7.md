@@ -302,9 +302,12 @@ python -m hsrmap doctor                       # 首屏闭环 PASS
   （`派生库真名 → 树名 → id`，并给出 `name_source`；**句柄连接与旁挂库两处都查**）。
   实测新快照 raw：**914 条真名**（`1016 → 生研院1`、`955 → 千星城中心区7`、`979 → 1`）。
   **没有**改 core schema，也不需要第二次全量 sync。
-* **第 2 步（判定层，必须带回归）**：`viewer_repo._map_path()` 用 `map_nodes.name`，官方点位的 `map_path`/`region` 都来自它 ——
-  换成真名会让「特殊房间」变「千星城中心区7」这类名字，**可能改变 Guide 的区域匹配**；要单独跑 `closure-check`
-  （digest 基线 `cd08466d868cc25d`、1006/1006）与 Guide 测试，**不许放宽断言**。
+* **第 2 步也已完成（2026-10-04，带回归）**：`viewer_repo._map_path(parents, id, names=…)` 支持传显示名；
+  `guides/topics/official.py` 生成官方点位路径时传入派生库真名 → 点位与面包屑里的 `map_path`/`region` 用真名。
+  **先做实验再改代码**：把 `map_path`/`region` 换成真名后跑完整性报告，结果
+  `done 1006 → 1006`、`locate_complete 829 → 829`、`complete 177 → 177`、`statuses`/`evidence_layers` 相等、
+  claims digest 相等（`cd08466d868cc25d`）；改完再跑 `closure-check`（PASS）与验收工具（`1006/1006` + digest 不变）
+  —— 判定层零变化，这才采用。
 
 ## 7. 没查清的（如实）
 
