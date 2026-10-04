@@ -1,0 +1,14 @@
+{
+  "topic_key": "miracle_orb",
+  "level": 1,
+  "sections": [
+    {
+      "id": "miracle_orb-l1",
+      "source_page": "weak_text.html",
+      "map_name": "云端遗堡",
+      "section_start": "云端遗堡",
+      "step_count": 0,
+      "image_roles": {}
+    }
+  ]
+}

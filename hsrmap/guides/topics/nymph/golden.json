@@ -1,0 +1,14 @@
+{
+  "topic_key": "nymph",
+  "level": 1,
+  "sections": [
+    {
+      "id": "nymph-l1",
+      "source_page": "weak_text.html",
+      "map_name": "辉痕圣林",
+      "section_start": "辉痕圣林",
+      "step_count": 0,
+      "image_roles": {}
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5697,
+      "map_id": 842,
+      "label_id": 956,
+      "x_pos": -259.0501400738849,
+      "y_pos": 224.48773520750956,
+      "expansion": "",
+      "display_state": 1,
+      "version": 2,
+      "editor": "",
+      "editor_name": "呆头鹅波比",
+      "author": "",
+      "author_name": "喵喵超级虎",
+      "ctime": "2026-08-26 14:50:46",
+      "content": "位于此处地面上拾取。",
+      "img": "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/1fb0b2a0d68b58155dfa473662433d2e_6559772195406084384.png",
+      "url_list": [],
+      "record_id": "13475",
+      "point_num": 1,
+      "related_jump_id": "0",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-08-26 14:50:46"
+  }
+}

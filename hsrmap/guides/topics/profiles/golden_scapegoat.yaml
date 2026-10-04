@@ -1,0 +1,37 @@
+topic_key: golden_scapegoat
+display_name: 黄金替罪羊
+guide_kind: PUZZLE
+scope: POINT
+official_labels:
+  names:
+    - 黄金替罪羊
+priority: 88
+enabled: true
+unit_builder:
+  type: region_ordinal
+matcher:
+  profile: puzzle_point_v2
+layout:
+  profile: puzzle_steps_v1
+discovery:
+  queries:
+    - "{map} 黄金替罪羊"
+    - 黄金替罪羊 图文攻略
+vision_profile:
+  generic_roles:
+    - LOCATION_MAP
+    - PUZZLE_STEP
+    - RESULT
+
+#: 这个主题的解谜是什么类型，以及文字攻略能不能承载它（决定搜索与证据策略）。
+evidence_form:
+  kind: INPUT_SEQUENCE
+  text_sufficient: true
+  reason: 解谜只需上下左右四个方向键，方向序列用文字就能完整表达
+
+#: 完成一个点位需要走到哪一步（与 evidence_form.kind 正交）：
+#: LOCATE_ONLY = 到达即得；LOCATE_AND_SOLVE = 到达后还要解。点级证据可以上调。
+completion:
+  requirement: LOCATE_AND_SOLVE
+  solve_kind: INPUT_SEQUENCE
+  reason: 找到机关只是第一步，之后要按完整方向序列通关

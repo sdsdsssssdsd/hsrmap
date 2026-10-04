@@ -1,0 +1,10 @@
+# 这一次 closure / 全量测试实际跑的环境（a1-8 十：下限表达兼容范围，锁文件表达「到底装了哪一套」）。
+# 生成方式：python -m pip list 里取直接依赖与开发依赖的精确版本。
+# 更新方式：升完依赖后跑一遍 python -m pytest -q + python -m hsrmap repo-hygiene，再改这里的版本号。
+fastapi==0.142.2
+uvicorn==0.54.0
+httpx==0.28.1
+pillow==11.3.0
+PyYAML==6.0.2
+pytest==9.1.0
+ruff==0.16.7

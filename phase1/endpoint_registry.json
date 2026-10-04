@@ -1,0 +1,83 @@
+{
+  "format_version": 1,
+  "game": "hsr",
+  "locale": "zh-cn",
+  "discovered_at": "2026-10-01T09:44:29.155004+00:00",
+  "entry": {
+    "url": "https://act.hoyolab.com/sr/app/interactive-map/index.html?lang=zh-cn",
+    "bundle_url": "https://act.hoyolab.com/sr/app/interactive-map/bundle_b1c3be6a5806caef8417.js",
+    "bundle_sha256": "e5cefc8fccf6e5473d056e37f8a48636dbfc85d411d7d2a2142b932f58afdd1c"
+  },
+  "client": {
+    "app_version": "de16a09fca4e0ab89acf69fe0c12514f",
+    "map_version": null
+  },
+  "hosts": {
+    "public": "https://sg-act-public-api-static.hoyolab.com/common/srmap/sr_map",
+    "authenticated": "https://sg-act-public-api.hoyolab.com/common/srmap/sr_map"
+  },
+  "endpoints": {
+    "map_tree": {
+      "method": "GET",
+      "path": "/v1/map/tree",
+      "auth": "none",
+      "parameters": [
+        "map_id",
+        "app_sn",
+        "lang",
+        "app_version"
+      ]
+    },
+    "map_info": {
+      "method": "GET",
+      "path": "/v1/map/info",
+      "auth": "none",
+      "parameters": [
+        "map_id",
+        "app_sn",
+        "lang",
+        "app_version"
+      ]
+    },
+    "label_tree": {
+      "method": "GET",
+      "path": "/v1/map/label/tree",
+      "auth": "none",
+      "parameters": [
+        "map_id",
+        "app_sn",
+        "lang",
+        "app_version"
+      ]
+    },
+    "point_list": {
+      "method": "GET",
+      "path": "/v1/map/point/list",
+      "auth": "none",
+      "parameters": [
+        "map_id",
+        "app_sn",
+        "lang",
+        "app_version"
+      ]
+    },
+    "point_info": {
+      "method": "GET",
+      "path": "/v1/map/point/info",
+      "auth": "none",
+      "parameters": [
+        "point_id",
+        "app_sn",
+        "lang",
+        "app_version"
+      ]
+    }
+  },
+  "schema_fingerprints": {
+    "map_tree": "aff06cb3fb0cf79b1ad2879b94ab6c848e4ac6efcb2f02ef1db8a8bd52d2b509",
+    "map_info": "d411fb3cb75c5e2878747ca8108051244926cc719bd6c0eb2b2449b60a52b603",
+    "label_tree": "c3a38fee9dce347c8321e03d50535f418a503d93ebebdcdf92f66182dfc7a17d",
+    "point_list": "373c1de976648934671950a71f8203acd424e4c705faedf31b615addf9627d36",
+    "point_info": "ed105c4047722f6dd0a22a7130ea13b704d76a9f8d2c394c0e209bb411630a9f"
+  }
+}

@@ -1,0 +1,6 @@
+guides:
+  llm:
+    provider: fake
+    text_model: deepseek-chat
+    vision_model: deepseek-flash
+    endpoint: https://api.deepseek.com/chat/completions

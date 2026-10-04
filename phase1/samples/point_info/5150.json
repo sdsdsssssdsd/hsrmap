@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5150,
+      "map_id": 842,
+      "label_id": 838,
+      "x_pos": 821,
+      "y_pos": -333.5,
+      "expansion": "",
+      "display_state": 1,
+      "version": 2,
+      "editor": "",
+      "editor_name": "呆头鹅波比",
+      "author": "",
+      "author_name": "LetterT",
+      "ctime": "2026-04-21 13:24:52",
+      "content": "由无名尘灵维护的特殊游戏机。",
+      "img": "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/d2679282e049951c3d61eb82ce4a024f_7887744354091062679.png",
+      "url_list": [],
+      "record_id": "12680",
+      "point_num": 1,
+      "related_jump_id": "0",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-04-21 13:24:52"
+  }
+}

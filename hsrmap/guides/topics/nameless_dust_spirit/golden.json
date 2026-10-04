@@ -1,0 +1,14 @@
+{
+  "topic_key": "nameless_dust_spirit",
+  "level": 1,
+  "sections": [
+    {
+      "id": "nameless_dust_spirit-l1",
+      "source_page": "weak_text.html",
+      "map_name": "绘世学院",
+      "section_start": "绘世学院",
+      "step_count": 0,
+      "image_roles": {}
+    }
+  ]
+}

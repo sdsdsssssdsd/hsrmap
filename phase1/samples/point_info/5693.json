@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5693,
+      "map_id": 842,
+      "label_id": 952,
+      "x_pos": -638.049811782515,
+      "y_pos": -20.482721231221603,
+      "expansion": "",
+      "display_state": 1,
+      "version": 2,
+      "editor": "",
+      "editor_name": "呆头鹅波比",
+      "author": "",
+      "author_name": "喵喵超级虎",
+      "ctime": "2026-08-26 14:50:46",
+      "content": "在此处与「小黄鸭零嘴」交互后获取。",
+      "img": "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/3ec8bf2b7a5c8ea671ff2deb890ea387_3929361697873864799.png",
+      "url_list": [],
+      "record_id": "13471",
+      "point_num": 1,
+      "related_jump_id": "0",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-08-26 14:50:46"
+  }
+}

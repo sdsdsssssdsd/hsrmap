@@ -1,0 +1,2218 @@
+{
+ "generated_at": "2026-10-04T03:05:24+00:00",
+ "root_name": "Hoyo",
+ "files": 549,
+ "bytes": 5221499,
+ "entries": [
+  {
+   "path": ".env.example",
+   "bytes": 19
+  },
+  {
+   "path": ".github/workflows/ci.yml",
+   "bytes": 737
+  },
+  {
+   "path": ".gitignore",
+   "bytes": 783
+  },
+  {
+   "path": "README.md",
+   "bytes": 8711
+  },
+  {
+   "path": "docs/architecture/phase5c-vision-region-architecture.md",
+   "bytes": 13879
+  },
+  {
+   "path": "docs/history/phase1-hoyolab-capture.md",
+   "bytes": 2910
+  },
+  {
+   "path": "docs/runbooks/baseline-hygiene.json",
+   "bytes": 753
+  },
+  {
+   "path": "docs/runbooks/entry-closed-loop.md",
+   "bytes": 5631
+  },
+  {
+   "path": "docs/runbooks/hygiene-s1.md",
+   "bytes": 4772
+  },
+  {
+   "path": "docs/runbooks/hygiene-s3.md",
+   "bytes": 3988
+  },
+  {
+   "path": "docs/runbooks/hygiene-s4.md",
+   "bytes": 4077
+  },
+  {
+   "path": "docs/runbooks/hygiene-s5.md",
+   "bytes": 4802
+  },
+  {
+   "path": "docs/runbooks/hygiene-s6.md",
+   "bytes": 6285
+  },
+  {
+   "path": "docs/runbooks/hygiene-s7.md",
+   "bytes": 5496
+  },
+  {
+   "path": "docs/runbooks/hygiene-s8.md",
+   "bytes": 4423
+  },
+  {
+   "path": "docs/runbooks/hygiene-s9.md",
+   "bytes": 5027
+  },
+  {
+   "path": "docs/runbooks/serve-split.md",
+   "bytes": 3662
+  },
+  {
+   "path": "docs/specs/a1-1.md",
+   "bytes": 51407
+  },
+  {
+   "path": "docs/specs/a1-2.md",
+   "bytes": 14477
+  },
+  {
+   "path": "docs/specs/a1-3.md",
+   "bytes": 85014
+  },
+  {
+   "path": "docs/specs/a1-4.md",
+   "bytes": 34088
+  },
+  {
+   "path": "docs/specs/a1-5.md",
+   "bytes": 88351
+  },
+  {
+   "path": "docs/specs/a1-6.md",
+   "bytes": 44175
+  },
+  {
+   "path": "docs/specs/a1-7.md",
+   "bytes": 14205
+  },
+  {
+   "path": "docs/specs/a1-8.md",
+   "bytes": 27896
+  },
+  {
+   "path": "docs/specs/a1.md",
+   "bytes": 137545
+  },
+  {
+   "path": "docs/specs/t0.md",
+   "bytes": 368
+  },
+  {
+   "path": "docs/superpowers/plans/2026-10-02-guide-atlas-v3.md",
+   "bytes": 1257
+  },
+  {
+   "path": "docs/superpowers/plans/2026-10-02-phase-4l-live-data-layer.md",
+   "bytes": 5550
+  },
+  {
+   "path": "docs/superpowers/plans/2026-10-02-phase-5-guide-overlay.md",
+   "bytes": 4404
+  },
+  {
+   "path": "docs/superpowers/plans/2026-10-02-phase-5b-real-corpus.md",
+   "bytes": 2415
+  },
+  {
+   "path": "docs/superpowers/plans/2026-10-02-phase-5c-region-vision.md",
+   "bytes": 8460
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/acceptance.md",
+   "bytes": 6177
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/adr.md",
+   "bytes": 5390
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/crawler-guard-hosts.md",
+   "bytes": 3511
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/golden-levels.md",
+   "bytes": 1480
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/guide-completeness.md",
+   "bytes": 14284
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/image-relevance.md",
+   "bytes": 1510
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/official-point-details.md",
+   "bytes": 3624
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/p1-asset-smoke.md",
+   "bytes": 2091
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/p3-signature-merge.md",
+   "bytes": 1996
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/p4-snapshot-gate.md",
+   "bytes": 2437
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/p5-published-audit.md",
+   "bytes": 2221
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/p6-closure-tools.md",
+   "bytes": 8146
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/post-closure-ai-cache-admin.md",
+   "bytes": 2975
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/progress.md",
+   "bytes": 226377
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/sprint2-identity.md",
+   "bytes": 4688
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/sprint3-intelligence.md",
+   "bytes": 14712
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/sprint4-productionization.md",
+   "bytes": 7030
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-guide-atlas-v3/topic-evidence-forms.md",
+   "bytes": 3868
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-phase-4l-live-data-layer/progress.md",
+   "bytes": 1672
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-phase-5-guide-overlay/progress.md",
+   "bytes": 1819
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-phase-5b-real-corpus/progress.md",
+   "bytes": 1320
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-phase-5c-region-vision/progress.md",
+   "bytes": 2252
+  },
+  {
+   "path": "docs/superpowers/specs/2026-10-02-phase-5c-vision-region-design.md",
+   "bytes": 13879
+  },
+  {
+   "path": "framework/architecture.json",
+   "bytes": 47408
+  },
+  {
+   "path": "framework/build.py",
+   "bytes": 39392
+  },
+  {
+   "path": "framework/index.html",
+   "bytes": 64694
+  },
+  {
+   "path": "framework/start.bat",
+   "bytes": 467
+  },
+  {
+   "path": "hsrmap/__init__.py",
+   "bytes": 97
+  },
+  {
+   "path": "hsrmap/__main__.py",
+   "bytes": 626
+  },
+  {
+   "path": "hsrmap/assets.py",
+   "bytes": 3065
+  },
+  {
+   "path": "hsrmap/cli.py",
+   "bytes": 88605
+  },
+  {
+   "path": "hsrmap/database.py",
+   "bytes": 13740
+  },
+  {
+   "path": "hsrmap/detail_db.py",
+   "bytes": 14037
+  },
+  {
+   "path": "hsrmap/detail_enrich.py",
+   "bytes": 24384
+  },
+  {
+   "path": "hsrmap/detail_lock.py",
+   "bytes": 1588
+  },
+  {
+   "path": "hsrmap/detail_normalize.py",
+   "bytes": 4243
+  },
+  {
+   "path": "hsrmap/detail_offline.py",
+   "bytes": 2678
+  },
+  {
+   "path": "hsrmap/detail_queue.py",
+   "bytes": 4317
+  },
+  {
+   "path": "hsrmap/detail_rebuild.py",
+   "bytes": 1269
+  },
+  {
+   "path": "hsrmap/doctor.py",
+   "bytes": 12335
+  },
+  {
+   "path": "hsrmap/dod.py",
+   "bytes": 23643
+  },
+  {
+   "path": "hsrmap/guide_db.py",
+   "bytes": 38362
+  },
+  {
+   "path": "hsrmap/guides/INBOX.md",
+   "bytes": 442
+  },
+  {
+   "path": "hsrmap/guides/__init__.py",
+   "bytes": 62
+  },
+  {
+   "path": "hsrmap/guides/admin.py",
+   "bytes": 6571
+  },
+  {
+   "path": "hsrmap/guides/ai_cache.py",
+   "bytes": 9050
+  },
+  {
+   "path": "hsrmap/guides/assets/__init__.py",
+   "bytes": 726
+  },
+  {
+   "path": "hsrmap/guides/assets/cache.py",
+   "bytes": 7612
+  },
+  {
+   "path": "hsrmap/guides/assets/fetcher.py",
+   "bytes": 13778
+  },
+  {
+   "path": "hsrmap/guides/assets/phash.py",
+   "bytes": 4533
+  },
+  {
+   "path": "hsrmap/guides/assets/relevance.py",
+   "bytes": 5467
+  },
+  {
+   "path": "hsrmap/guides/assets/smoke.py",
+   "bytes": 4776
+  },
+  {
+   "path": "hsrmap/guides/audit.py",
+   "bytes": 20799
+  },
+  {
+   "path": "hsrmap/guides/claims.py",
+   "bytes": 30425
+  },
+  {
+   "path": "hsrmap/guides/closure.py",
+   "bytes": 16125
+  },
+  {
+   "path": "hsrmap/guides/config.yaml",
+   "bytes": 159
+  },
+  {
+   "path": "hsrmap/guides/corpus.py",
+   "bytes": 19443
+  },
+  {
+   "path": "hsrmap/guides/coverage.py",
+   "bytes": 2126
+  },
+  {
+   "path": "hsrmap/guides/crawler/__init__.py",
+   "bytes": 0
+  },
+  {
+   "path": "hsrmap/guides/crawler/base.py",
+   "bytes": 6492
+  },
+  {
+   "path": "hsrmap/guides/crawler/fetch.py",
+   "bytes": 706
+  },
+  {
+   "path": "hsrmap/guides/crawler/guard.py",
+   "bytes": 4037
+  },
+  {
+   "path": "hsrmap/guides/crawler/hosts.py",
+   "bytes": 6696
+  },
+  {
+   "path": "hsrmap/guides/crawler/identity.py",
+   "bytes": 8845
+  },
+  {
+   "path": "hsrmap/guides/crawler/miyoushe.py",
+   "bytes": 5259
+  },
+  {
+   "path": "hsrmap/guides/crawler/pagination.py",
+   "bytes": 1650
+  },
+  {
+   "path": "hsrmap/guides/crawler/render.py",
+   "bytes": 6419
+  },
+  {
+   "path": "hsrmap/guides/crawler/robots.py",
+   "bytes": 978
+  },
+  {
+   "path": "hsrmap/guides/dedup.py",
+   "bytes": 2221
+  },
+  {
+   "path": "hsrmap/guides/dedupe.py",
+   "bytes": 7302
+  },
+  {
+   "path": "hsrmap/guides/derived.py",
+   "bytes": 1523
+  },
+  {
+   "path": "hsrmap/guides/discover.py",
+   "bytes": 3053
+  },
+  {
+   "path": "hsrmap/guides/evidence.py",
+   "bytes": 11017
+  },
+  {
+   "path": "hsrmap/guides/extract/__init__.py",
+   "bytes": 0
+  },
+  {
+   "path": "hsrmap/guides/extract/blocks.py",
+   "bytes": 9663
+  },
+  {
+   "path": "hsrmap/guides/extract/deterministic.py",
+   "bytes": 473
+  },
+  {
+   "path": "hsrmap/guides/extract/refresh.py",
+   "bytes": 3354
+  },
+  {
+   "path": "hsrmap/guides/golden.py",
+   "bytes": 8487
+  },
+  {
+   "path": "hsrmap/guides/ingest.py",
+   "bytes": 16008
+  },
+  {
+   "path": "hsrmap/guides/inventory/__init__.py",
+   "bytes": 131
+  },
+  {
+   "path": "hsrmap/guides/inventory/classifier.py",
+   "bytes": 3423
+  },
+  {
+   "path": "hsrmap/guides/inventory/reports.py",
+   "bytes": 2808
+  },
+  {
+   "path": "hsrmap/guides/jobs.py",
+   "bytes": 18940
+  },
+  {
+   "path": "hsrmap/guides/layout/__init__.py",
+   "bytes": 155
+  },
+  {
+   "path": "hsrmap/guides/layout/planner.py",
+   "bytes": 937
+  },
+  {
+   "path": "hsrmap/guides/layout/render.py",
+   "bytes": 1252
+  },
+  {
+   "path": "hsrmap/guides/ledger.py",
+   "bytes": 14642
+  },
+  {
+   "path": "hsrmap/guides/llm/__init__.py",
+   "bytes": 0
+  },
+  {
+   "path": "hsrmap/guides/llm/client.py",
+   "bytes": 356
+  },
+  {
+   "path": "hsrmap/guides/llm/config.py",
+   "bytes": 1481
+  },
+  {
+   "path": "hsrmap/guides/llm/deepseek.py",
+   "bytes": 10523
+  },
+  {
+   "path": "hsrmap/guides/llm/extract.py",
+   "bytes": 1086
+  },
+  {
+   "path": "hsrmap/guides/llm/fake.py",
+   "bytes": 4343
+  },
+  {
+   "path": "hsrmap/guides/llm/provider.py",
+   "bytes": 2855
+  },
+  {
+   "path": "hsrmap/guides/llm/vision.py",
+   "bytes": 450
+  },
+  {
+   "path": "hsrmap/guides/matching/__init__.py",
+   "bytes": 0
+  },
+  {
+   "path": "hsrmap/guides/matching/candidates.py",
+   "bytes": 5171
+  },
+  {
+   "path": "hsrmap/guides/matching/cv.py",
+   "bytes": 3647
+  },
+  {
+   "path": "hsrmap/guides/matching/image_similarity.py",
+   "bytes": 1110
+  },
+  {
+   "path": "hsrmap/guides/matching/inset.py",
+   "bytes": 2732
+  },
+  {
+   "path": "hsrmap/guides/matching/matcher.py",
+   "bytes": 5832
+  },
+  {
+   "path": "hsrmap/guides/matching/registry.py",
+   "bytes": 2856
+  },
+  {
+   "path": "hsrmap/guides/matching/rematch.py",
+   "bytes": 16553
+  },
+  {
+   "path": "hsrmap/guides/matching/scenes.py",
+   "bytes": 3153
+  },
+  {
+   "path": "hsrmap/guides/matching/spatial.py",
+   "bytes": 6429
+  },
+  {
+   "path": "hsrmap/guides/matching/ticker.py",
+   "bytes": 4141
+  },
+  {
+   "path": "hsrmap/guides/nops.py",
+   "bytes": 6253
+  },
+  {
+   "path": "hsrmap/guides/official.py",
+   "bytes": 12239
+  },
+  {
+   "path": "hsrmap/guides/pipeline.py",
+   "bytes": 3891
+  },
+  {
+   "path": "hsrmap/guides/planner.py",
+   "bytes": 22113
+  },
+  {
+   "path": "hsrmap/guides/prompts/article_classifier_v1.txt",
+   "bytes": 210
+  },
+  {
+   "path": "hsrmap/guides/prompts/article_extract_v1.txt",
+   "bytes": 223
+  },
+  {
+   "path": "hsrmap/guides/prompts/dream_ticker_scene_v1.txt",
+   "bytes": 390
+  },
+  {
+   "path": "hsrmap/guides/prompts/dream_ticker_v1.txt",
+   "bytes": 579
+  },
+  {
+   "path": "hsrmap/guides/prompts/image_classifier_v1.txt",
+   "bytes": 150
+  },
+  {
+   "path": "hsrmap/guides/prompts/image_classify_v1.txt",
+   "bytes": 101
+  },
+  {
+   "path": "hsrmap/guides/prompts/image_region_v1.txt",
+   "bytes": 634
+  },
+  {
+   "path": "hsrmap/guides/prompts/image_role_v2.txt",
+   "bytes": 288
+  },
+  {
+   "path": "hsrmap/guides/prompts/point_match_assist_v1.txt",
+   "bytes": 163
+  },
+  {
+   "path": "hsrmap/guides/prompts/point_match_v1.txt",
+   "bytes": 100
+  },
+  {
+   "path": "hsrmap/guides/prompts/section_extractor_v1.txt",
+   "bytes": 317
+  },
+  {
+   "path": "hsrmap/guides/publish/__init__.py",
+   "bytes": 0
+  },
+  {
+   "path": "hsrmap/guides/publish/lookup.py",
+   "bytes": 2811
+  },
+  {
+   "path": "hsrmap/guides/publish/publisher.py",
+   "bytes": 1587
+  },
+  {
+   "path": "hsrmap/guides/publishing/__init__.py",
+   "bytes": 594
+  },
+  {
+   "path": "hsrmap/guides/publishing/atomic.py",
+   "bytes": 9918
+  },
+  {
+   "path": "hsrmap/guides/publishing/diff.py",
+   "bytes": 47289
+  },
+  {
+   "path": "hsrmap/guides/publishing/sync.py",
+   "bytes": 4888
+  },
+  {
+   "path": "hsrmap/guides/qa.py",
+   "bytes": 4915
+  },
+  {
+   "path": "hsrmap/guides/rebuild.py",
+   "bytes": 15873
+  },
+  {
+   "path": "hsrmap/guides/regions/__init__.py",
+   "bytes": 256
+  },
+  {
+   "path": "hsrmap/guides/regions/official.py",
+   "bytes": 872
+  },
+  {
+   "path": "hsrmap/guides/regions/resolver.py",
+   "bytes": 5363
+  },
+  {
+   "path": "hsrmap/guides/regions/sections.py",
+   "bytes": 8268
+  },
+  {
+   "path": "hsrmap/guides/regions/units.py",
+   "bytes": 6715
+  },
+  {
+   "path": "hsrmap/guides/reingest.py",
+   "bytes": 4153
+  },
+  {
+   "path": "hsrmap/guides/review/__init__.py",
+   "bytes": 0
+  },
+  {
+   "path": "hsrmap/guides/review/canary.py",
+   "bytes": 1791
+  },
+  {
+   "path": "hsrmap/guides/review/console.html",
+   "bytes": 3672
+  },
+  {
+   "path": "hsrmap/guides/review/console.js",
+   "bytes": 11819
+  },
+  {
+   "path": "hsrmap/guides/review/merge.py",
+   "bytes": 6555
+  },
+  {
+   "path": "hsrmap/guides/review/queue.py",
+   "bytes": 972
+  },
+  {
+   "path": "hsrmap/guides/review/service.py",
+   "bytes": 93568
+  },
+  {
+   "path": "hsrmap/guides/revive.py",
+   "bytes": 6863
+  },
+  {
+   "path": "hsrmap/guides/seeds.yaml",
+   "bytes": 841
+  },
+  {
+   "path": "hsrmap/guides/semantic/__init__.py",
+   "bytes": 96
+  },
+  {
+   "path": "hsrmap/guides/semantic/classifier.py",
+   "bytes": 761
+  },
+  {
+   "path": "hsrmap/guides/signature.py",
+   "bytes": 6544
+  },
+  {
+   "path": "hsrmap/guides/sources/__init__.py",
+   "bytes": 0
+  },
+  {
+   "path": "hsrmap/guides/sources/gamersky.py",
+   "bytes": 701
+  },
+  {
+   "path": "hsrmap/guides/sources/generic.py",
+   "bytes": 211
+  },
+  {
+   "path": "hsrmap/guides/sources/miyoushe.py",
+   "bytes": 249
+  },
+  {
+   "path": "hsrmap/guides/sources/site17173.py",
+   "bytes": 511
+  },
+  {
+   "path": "hsrmap/guides/sources/taptap.py",
+   "bytes": 615
+  },
+  {
+   "path": "hsrmap/guides/sources/three_dm.py",
+   "bytes": 694
+  },
+  {
+   "path": "hsrmap/guides/stages.py",
+   "bytes": 34812
+  },
+  {
+   "path": "hsrmap/guides/store.py",
+   "bytes": 2651
+  },
+  {
+   "path": "hsrmap/guides/targets.py",
+   "bytes": 9748
+  },
+  {
+   "path": "hsrmap/guides/topics/__init__.py",
+   "bytes": 204
+  },
+  {
+   "path": "hsrmap/guides/topics/backfill.py",
+   "bytes": 1973
+  },
+  {
+   "path": "hsrmap/guides/topics/dimensional_trotter/golden.json",
+   "bytes": 290
+  },
+  {
+   "path": "hsrmap/guides/topics/dimensional_trotter/seeds.yaml",
+   "bytes": 1535
+  },
+  {
+   "path": "hsrmap/guides/topics/dream_ticker/__init__.py",
+   "bytes": 95
+  },
+  {
+   "path": "hsrmap/guides/topics/dream_ticker/bind.py",
+   "bytes": 12814
+  },
+  {
+   "path": "hsrmap/guides/topics/dream_ticker/canary.py",
+   "bytes": 1975
+  },
+  {
+   "path": "hsrmap/guides/topics/dream_ticker/freeze.py",
+   "bytes": 2160
+  },
+  {
+   "path": "hsrmap/guides/topics/dream_ticker/golden.json",
+   "bytes": 4217
+  },
+  {
+   "path": "hsrmap/guides/topics/dream_ticker/observe.py",
+   "bytes": 5649
+  },
+  {
+   "path": "hsrmap/guides/topics/dream_ticker/report.py",
+   "bytes": 955
+  },
+  {
+   "path": "hsrmap/guides/topics/dream_ticker/seeds.yaml",
+   "bytes": 1153
+  },
+  {
+   "path": "hsrmap/guides/topics/evidence.py",
+   "bytes": 3757
+  },
+  {
+   "path": "hsrmap/guides/topics/floating_grease/golden.json",
+   "bytes": 106
+  },
+  {
+   "path": "hsrmap/guides/topics/floating_grease/seeds.yaml",
+   "bytes": 139
+  },
+  {
+   "path": "hsrmap/guides/topics/golden_scapegoat/golden.json",
+   "bytes": 293
+  },
+  {
+   "path": "hsrmap/guides/topics/golden_scapegoat/seeds.yaml",
+   "bytes": 667
+  },
+  {
+   "path": "hsrmap/guides/topics/hanu/golden.json",
+   "bytes": 289
+  },
+  {
+   "path": "hsrmap/guides/topics/hanu/seeds.yaml",
+   "bytes": 522
+  },
+  {
+   "path": "hsrmap/guides/topics/jump/golden.json",
+   "bytes": 285
+  },
+  {
+   "path": "hsrmap/guides/topics/jump/seeds.yaml",
+   "bytes": 527
+  },
+  {
+   "path": "hsrmap/guides/topics/king_bucket/golden.json",
+   "bytes": 280
+  },
+  {
+   "path": "hsrmap/guides/topics/king_bucket/seeds.yaml",
+   "bytes": 1133
+  },
+  {
+   "path": "hsrmap/guides/topics/loader.py",
+   "bytes": 1104
+  },
+  {
+   "path": "hsrmap/guides/topics/magnetic_puzzle/golden.json",
+   "bytes": 98
+  },
+  {
+   "path": "hsrmap/guides/topics/magnetic_puzzle/seeds.yaml",
+   "bytes": 239
+  },
+  {
+   "path": "hsrmap/guides/topics/miracle_orb/golden.json",
+   "bytes": 283
+  },
+  {
+   "path": "hsrmap/guides/topics/miracle_orb/seeds.yaml",
+   "bytes": 483
+  },
+  {
+   "path": "hsrmap/guides/topics/nameless_dust_spirit/golden.json",
+   "bytes": 301
+  },
+  {
+   "path": "hsrmap/guides/topics/nameless_dust_spirit/seeds.yaml",
+   "bytes": 1347
+  },
+  {
+   "path": "hsrmap/guides/topics/nymph/golden.json",
+   "bytes": 271
+  },
+  {
+   "path": "hsrmap/guides/topics/nymph/seeds.yaml",
+   "bytes": 1550
+  },
+  {
+   "path": "hsrmap/guides/topics/official.py",
+   "bytes": 8284
+  },
+  {
+   "path": "hsrmap/guides/topics/origami_bird/golden.json",
+   "bytes": 5657
+  },
+  {
+   "path": "hsrmap/guides/topics/origami_bird/seeds.yaml",
+   "bytes": 899
+  },
+  {
+   "path": "hsrmap/guides/topics/pioneer_fairy/golden.json",
+   "bytes": 96
+  },
+  {
+   "path": "hsrmap/guides/topics/pioneer_fairy/seeds.yaml",
+   "bytes": 418
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/dimensional_trotter.yaml",
+   "bytes": 861
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/dream_ticker.yaml",
+   "bytes": 1244
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/floating_grease.yaml",
+   "bytes": 1275
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/golden_scapegoat.yaml",
+   "bytes": 1082
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/hanu.yaml",
+   "bytes": 1119
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/hidden_treasure.yaml",
+   "bytes": 927
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/jump.yaml",
+   "bytes": 1350
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/king_bucket.yaml",
+   "bytes": 1052
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/magnetic_puzzle.yaml",
+   "bytes": 1069
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/miracle_orb.yaml",
+   "bytes": 1056
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/nameless_dust_spirit.yaml",
+   "bytes": 1164
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/nymph.yaml",
+   "bytes": 1092
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/origami_bird.yaml",
+   "bytes": 1092
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/pioneer_fairy.yaml",
+   "bytes": 917
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/unworldly_material.yaml",
+   "bytes": 984
+  },
+  {
+   "path": "hsrmap/guides/topics/profiles/zagreus_hand.yaml",
+   "bytes": 954
+  },
+  {
+   "path": "hsrmap/guides/topics/seed.py",
+   "bytes": 4604
+  },
+  {
+   "path": "hsrmap/guides/topics/unworldly_material/golden.json",
+   "bytes": 101
+  },
+  {
+   "path": "hsrmap/guides/topics/unworldly_material/seeds.yaml",
+   "bytes": 303
+  },
+  {
+   "path": "hsrmap/guides/topics/zagreus_hand/golden.json",
+   "bytes": 279
+  },
+  {
+   "path": "hsrmap/guides/topics/zagreus_hand/seeds.yaml",
+   "bytes": 316
+  },
+  {
+   "path": "hsrmap/guides/units/__init__.py",
+   "bytes": 103
+  },
+  {
+   "path": "hsrmap/guides/units/collectible.py",
+   "bytes": 1815
+  },
+  {
+   "path": "hsrmap/guides/units/registry.py",
+   "bytes": 976
+  },
+  {
+   "path": "hsrmap/guides/vision/__init__.py",
+   "bytes": 160
+  },
+  {
+   "path": "hsrmap/guides/vision/generic_roles.py",
+   "bytes": 738
+  },
+  {
+   "path": "hsrmap/guides/vision/region_reader.py",
+   "bytes": 1784
+  },
+  {
+   "path": "hsrmap/guides/vision/roles.py",
+   "bytes": 2182
+  },
+  {
+   "path": "hsrmap/guides/vision/sanitize.py",
+   "bytes": 354
+  },
+  {
+   "path": "hsrmap/guides/vision/slicer.py",
+   "bytes": 1311
+  },
+  {
+   "path": "hsrmap/guides/vision/variants.py",
+   "bytes": 1345
+  },
+  {
+   "path": "hsrmap/guides/workflows.py",
+   "bytes": 9155
+  },
+  {
+   "path": "hsrmap/http.py",
+   "bytes": 3545
+  },
+  {
+   "path": "hsrmap/hygiene.py",
+   "bytes": 8037
+  },
+  {
+   "path": "hsrmap/inspect_map.py",
+   "bytes": 2332
+  },
+  {
+   "path": "hsrmap/jobs.py",
+   "bytes": 3536
+  },
+  {
+   "path": "hsrmap/live_assets.py",
+   "bytes": 824
+  },
+  {
+   "path": "hsrmap/normalize.py",
+   "bytes": 4888
+  },
+  {
+   "path": "hsrmap/paths.py",
+   "bytes": 2937
+  },
+  {
+   "path": "hsrmap/preflight.py",
+   "bytes": 2542
+  },
+  {
+   "path": "hsrmap/providers/__init__.py",
+   "bytes": 90
+  },
+  {
+   "path": "hsrmap/providers/base.py",
+   "bytes": 726
+  },
+  {
+   "path": "hsrmap/providers/factory.py",
+   "bytes": 1937
+  },
+  {
+   "path": "hsrmap/providers/hybrid.py",
+   "bytes": 9470
+  },
+  {
+   "path": "hsrmap/providers/live.py",
+   "bytes": 8651
+  },
+  {
+   "path": "hsrmap/providers/snapshot.py",
+   "bytes": 1569
+  },
+  {
+   "path": "hsrmap/rebuild.py",
+   "bytes": 1689
+  },
+  {
+   "path": "hsrmap/release.py",
+   "bytes": 6025
+  },
+  {
+   "path": "hsrmap/reports.py",
+   "bytes": 5217
+  },
+  {
+   "path": "hsrmap/request_key.py",
+   "bytes": 465
+  },
+  {
+   "path": "hsrmap/runtime.py",
+   "bytes": 6720
+  },
+  {
+   "path": "hsrmap/schema.py",
+   "bytes": 2149
+  },
+  {
+   "path": "hsrmap/serve.py",
+   "bytes": 6394
+  },
+  {
+   "path": "hsrmap/sync.py",
+   "bytes": 21160
+  },
+  {
+   "path": "hsrmap/transform.py",
+   "bytes": 572
+  },
+  {
+   "path": "hsrmap/user_db.py",
+   "bytes": 4710
+  },
+  {
+   "path": "hsrmap/validate.py",
+   "bytes": 2227
+  },
+  {
+   "path": "hsrmap/viewer_app.py",
+   "bytes": 28874
+  },
+  {
+   "path": "hsrmap/viewer_bind.py",
+   "bytes": 2412
+  },
+  {
+   "path": "hsrmap/viewer_crs.py",
+   "bytes": 981
+  },
+  {
+   "path": "hsrmap/viewer_repo.py",
+   "bytes": 19924
+  },
+  {
+   "path": "hsrmap_phase1/__init__.py",
+   "bytes": 78
+  },
+  {
+   "path": "hsrmap_phase1/client.py",
+   "bytes": 2483
+  },
+  {
+   "path": "hsrmap_phase1/fingerprint.py",
+   "bytes": 692
+  },
+  {
+   "path": "hsrmap_phase1/labels.py",
+   "bytes": 1379
+  },
+  {
+   "path": "hsrmap_phase1/live_extract.js",
+   "bytes": 1418
+  },
+  {
+   "path": "hsrmap_phase1/live_reference.py",
+   "bytes": 1287
+  },
+  {
+   "path": "hsrmap_phase1/points.py",
+   "bytes": 2153
+  },
+  {
+   "path": "hsrmap_phase1/preview.py",
+   "bytes": 3305
+  },
+  {
+   "path": "hsrmap_phase1/raster.py",
+   "bytes": 2085
+  },
+  {
+   "path": "hsrmap_phase1/recalibrate.py",
+   "bytes": 3625
+  },
+  {
+   "path": "hsrmap_phase1/run.py",
+   "bytes": 24114
+  },
+  {
+   "path": "hsrmap_phase1/transform.py",
+   "bytes": 2128
+  },
+  {
+   "path": "hsrmap_phase1/tree.py",
+   "bytes": 3862
+  },
+  {
+   "path": "monitor/index.html",
+   "bytes": 23017
+  },
+  {
+   "path": "monitor/monitor_server.py",
+   "bytes": 26471
+  },
+  {
+   "path": "monitor/start_monitor.bat",
+   "bytes": 612
+  },
+  {
+   "path": "monitor/stop_monitor.bat",
+   "bytes": 197
+  },
+  {
+   "path": "phase1/README.md",
+   "bytes": 958
+  },
+  {
+   "path": "phase1/calibration/alignment-preview-inspect.png",
+   "bytes": 295359
+  },
+  {
+   "path": "phase1/calibration/golden_guides.json",
+   "bytes": 4081
+  },
+  {
+   "path": "phase1/calibration/golden_guides_real.json",
+   "bytes": 168
+  },
+  {
+   "path": "phase1/calibration/points_normalized.json",
+   "bytes": 11515
+  },
+  {
+   "path": "phase1/calibration/points_source.json",
+   "bytes": 5991
+  },
+  {
+   "path": "phase1/calibration/semantic_labels.json",
+   "bytes": 288
+  },
+  {
+   "path": "phase1/calibration/transform.json",
+   "bytes": 456
+  },
+  {
+   "path": "phase1/calibration/validation-report.json",
+   "bytes": 6257
+  },
+  {
+   "path": "phase1/endpoint_registry.json",
+   "bytes": 2291
+  },
+  {
+   "path": "phase1/samples/label_tree.json",
+   "bytes": 722189
+  },
+  {
+   "path": "phase1/samples/map_info.json",
+   "bytes": 773
+  },
+  {
+   "path": "phase1/samples/map_tree.json",
+   "bytes": 480890
+  },
+  {
+   "path": "phase1/samples/point_info/5146.json",
+   "bytes": 890
+  },
+  {
+   "path": "phase1/samples/point_info/5150.json",
+   "bytes": 856
+  },
+  {
+   "path": "phase1/samples/point_info/5151.json",
+   "bytes": 843
+  },
+  {
+   "path": "phase1/samples/point_info/5152.json",
+   "bytes": 825
+  },
+  {
+   "path": "phase1/samples/point_info/5163.json",
+   "bytes": 868
+  },
+  {
+   "path": "phase1/samples/point_info/5166.json",
+   "bytes": 846
+  },
+  {
+   "path": "phase1/samples/point_info/5169.json",
+   "bytes": 879
+  },
+  {
+   "path": "phase1/samples/point_info/5170.json",
+   "bytes": 879
+  },
+  {
+   "path": "phase1/samples/point_info/5171.json",
+   "bytes": 879
+  },
+  {
+   "path": "phase1/samples/point_info/5172.json",
+   "bytes": 841
+  },
+  {
+   "path": "phase1/samples/point_info/5260.json",
+   "bytes": 692
+  },
+  {
+   "path": "phase1/samples/point_info/5691.json",
+   "bytes": 881
+  },
+  {
+   "path": "phase1/samples/point_info/5692.json",
+   "bytes": 880
+  },
+  {
+   "path": "phase1/samples/point_info/5693.json",
+   "bytes": 900
+  },
+  {
+   "path": "phase1/samples/point_info/5694.json",
+   "bytes": 887
+  },
+  {
+   "path": "phase1/samples/point_info/5695.json",
+   "bytes": 878
+  },
+  {
+   "path": "phase1/samples/point_info/5696.json",
+   "bytes": 881
+  },
+  {
+   "path": "phase1/samples/point_info/5697.json",
+   "bytes": 879
+  },
+  {
+   "path": "phase1/samples/point_info/5698.json",
+   "bytes": 880
+  },
+  {
+   "path": "phase1/samples/point_info/5699.json",
+   "bytes": 879
+  },
+  {
+   "path": "phase1/samples/point_list.json",
+   "bytes": 27854
+  },
+  {
+   "path": "phase1/schema-report.md",
+   "bytes": 11325
+  },
+  {
+   "path": "pyproject.toml",
+   "bytes": 1418
+  },
+  {
+   "path": "requirements.lock.txt",
+   "bytes": 457
+  },
+  {
+   "path": "requirements.txt",
+   "bytes": 196
+  },
+  {
+   "path": "start.bat",
+   "bytes": 630
+  },
+  {
+   "path": "start_review.bat",
+   "bytes": 623
+  },
+  {
+   "path": "tests/conftest.py",
+   "bytes": 5453
+  },
+  {
+   "path": "tests/fixtures/crawler/17173/mirror.html",
+   "bytes": 367
+  },
+  {
+   "path": "tests/fixtures/crawler/17173/pagination.html",
+   "bytes": 625
+  },
+  {
+   "path": "tests/fixtures/crawler/17173/pagination_2.html",
+   "bytes": 408
+  },
+  {
+   "path": "tests/fixtures/crawler/3dm/single_page.html",
+   "bytes": 1246
+  },
+  {
+   "path": "tests/fixtures/crawler/9game/html_as_image.html",
+   "bytes": 132
+  },
+  {
+   "path": "tests/fixtures/crawler/9game/status_403.html",
+   "bytes": 157
+  },
+  {
+   "path": "tests/fixtures/crawler/9game/status_404.html",
+   "bytes": 169
+  },
+  {
+   "path": "tests/fixtures/crawler/manifest.json",
+   "bytes": 1326
+  },
+  {
+   "path": "tests/fixtures/guides/canary/17173_multipoint.html",
+   "bytes": 886
+  },
+  {
+   "path": "tests/fixtures/guides/canary/3dm_reprint.html",
+   "bytes": 439
+  },
+  {
+   "path": "tests/fixtures/guides/canary/ads_heavy.html",
+   "bytes": 582
+  },
+  {
+   "path": "tests/fixtures/guides/canary/gamersky_long.html",
+   "bytes": 589
+  },
+  {
+   "path": "tests/fixtures/guides/canary/hanu_goldenage.html",
+   "bytes": 377
+  },
+  {
+   "path": "tests/fixtures/guides/canary/jump_challenge.html",
+   "bytes": 345
+  },
+  {
+   "path": "tests/fixtures/guides/canary/king_dawn.html",
+   "bytes": 367
+  },
+  {
+   "path": "tests/fixtures/guides/canary/manifest.json",
+   "bytes": 830
+  },
+  {
+   "path": "tests/fixtures/guides/canary/miyoushe_author.html",
+   "bytes": 351
+  },
+  {
+   "path": "tests/fixtures/guides/canary/origami_dreamscape.html",
+   "bytes": 335
+  },
+  {
+   "path": "tests/fixtures/guides/canary/origami_pinocchio.html",
+   "bytes": 2108
+  },
+  {
+   "path": "tests/fixtures/guides/canary/taptap_images.html",
+   "bytes": 390
+  },
+  {
+   "path": "tests/fixtures/guides/canary/ticker_dreamscape.html",
+   "bytes": 349
+  },
+  {
+   "path": "tests/fixtures/guides/canary/ticker_pinocchio.html",
+   "bytes": 1694
+  },
+  {
+   "path": "tests/fixtures/guides/canary/trotter_scaly.html",
+   "bytes": 364
+  },
+  {
+   "path": "tests/fixtures/guides/canary/weak_text.html",
+   "bytes": 257
+  },
+  {
+   "path": "tests/fixtures/guides/sample_17173.html",
+   "bytes": 637
+  },
+  {
+   "path": "tests/fixtures/guides/sample_3dm.html",
+   "bytes": 336
+  },
+  {
+   "path": "tests/fixtures/guides/sample_gamersky.html",
+   "bytes": 374
+  },
+  {
+   "path": "tests/fixtures/guides/sample_taptap.html",
+   "bytes": 326
+  },
+  {
+   "path": "tests/test_assets.py",
+   "bytes": 807
+  },
+  {
+   "path": "tests/test_canary_ids.py",
+   "bytes": 1357
+  },
+  {
+   "path": "tests/test_claims.py",
+   "bytes": 5111
+  },
+  {
+   "path": "tests/test_claims_gate.py",
+   "bytes": 15517
+  },
+  {
+   "path": "tests/test_claims_shadow.py",
+   "bytes": 3318
+  },
+  {
+   "path": "tests/test_cli_entrypoints.py",
+   "bytes": 1734
+  },
+  {
+   "path": "tests/test_core_readonly.py",
+   "bytes": 747
+  },
+  {
+   "path": "tests/test_data_source.py",
+   "bytes": 518
+  },
+  {
+   "path": "tests/test_data_source_hybrid.py",
+   "bytes": 3767
+  },
+  {
+   "path": "tests/test_data_source_rebuild.py",
+   "bytes": 586
+  },
+  {
+   "path": "tests/test_detail_jobs.py",
+   "bytes": 961
+  },
+  {
+   "path": "tests/test_detail_lock.py",
+   "bytes": 469
+  },
+  {
+   "path": "tests/test_detail_normalize.py",
+   "bytes": 2570
+  },
+  {
+   "path": "tests/test_detail_queue.py",
+   "bytes": 3224
+  },
+  {
+   "path": "tests/test_detail_rebuild.py",
+   "bytes": 1225
+  },
+  {
+   "path": "tests/test_detail_resave.py",
+   "bytes": 1105
+  },
+  {
+   "path": "tests/test_detail_stats.py",
+   "bytes": 1845
+  },
+  {
+   "path": "tests/test_doctor.py",
+   "bytes": 8020
+  },
+  {
+   "path": "tests/test_dod.py",
+   "bytes": 4222
+  },
+  {
+   "path": "tests/test_fingerprint.py",
+   "bytes": 1426
+  },
+  {
+   "path": "tests/test_full_map_coverage.py",
+   "bytes": 1819
+  },
+  {
+   "path": "tests/test_guide_adapters.py",
+   "bytes": 1522
+  },
+  {
+   "path": "tests/test_guide_admin.py",
+   "bytes": 4772
+  },
+  {
+   "path": "tests/test_guide_ai_cache.py",
+   "bytes": 5693
+  },
+  {
+   "path": "tests/test_guide_approve_grounded.py",
+   "bytes": 7335
+  },
+  {
+   "path": "tests/test_guide_approve_guard.py",
+   "bytes": 2050
+  },
+  {
+   "path": "tests/test_guide_asset_fetcher.py",
+   "bytes": 8700
+  },
+  {
+   "path": "tests/test_guide_atlas_api.py",
+   "bytes": 2144
+  },
+  {
+   "path": "tests/test_guide_atomic_publish.py",
+   "bytes": 6908
+  },
+  {
+   "path": "tests/test_guide_audit.py",
+   "bytes": 18048
+  },
+  {
+   "path": "tests/test_guide_backfill_topics.py",
+   "bytes": 1921
+  },
+  {
+   "path": "tests/test_guide_blocks.py",
+   "bytes": 7738
+  },
+  {
+   "path": "tests/test_guide_candidates.py",
+   "bytes": 6022
+  },
+  {
+   "path": "tests/test_guide_cli.py",
+   "bytes": 1860
+  },
+  {
+   "path": "tests/test_guide_closure.py",
+   "bytes": 2587
+  },
+  {
+   "path": "tests/test_guide_corpus.py",
+   "bytes": 11354
+  },
+  {
+   "path": "tests/test_guide_coverage.py",
+   "bytes": 2433
+  },
+  {
+   "path": "tests/test_guide_crawler_fixtures.py",
+   "bytes": 4670
+  },
+  {
+   "path": "tests/test_guide_crawler_guard.py",
+   "bytes": 2603
+  },
+  {
+   "path": "tests/test_guide_db_modes.py",
+   "bytes": 3221
+  },
+  {
+   "path": "tests/test_guide_db_v2.py",
+   "bytes": 2460
+  },
+  {
+   "path": "tests/test_guide_db_v3.py",
+   "bytes": 1986
+  },
+  {
+   "path": "tests/test_guide_dedupe.py",
+   "bytes": 4867
+  },
+  {
+   "path": "tests/test_guide_evidence.py",
+   "bytes": 4694
+  },
+  {
+   "path": "tests/test_guide_gate_a.py",
+   "bytes": 3472
+  },
+  {
+   "path": "tests/test_guide_golden.py",
+   "bytes": 802
+  },
+  {
+   "path": "tests/test_guide_golden_levels.py",
+   "bytes": 1865
+  },
+  {
+   "path": "tests/test_guide_host_scheduler.py",
+   "bytes": 5591
+  },
+  {
+   "path": "tests/test_guide_identity.py",
+   "bytes": 4634
+  },
+  {
+   "path": "tests/test_guide_image_relevance.py",
+   "bytes": 2451
+  },
+  {
+   "path": "tests/test_guide_image_role.py",
+   "bytes": 1971
+  },
+  {
+   "path": "tests/test_guide_image_similarity.py",
+   "bytes": 410
+  },
+  {
+   "path": "tests/test_guide_image_variants.py",
+   "bytes": 709
+  },
+  {
+   "path": "tests/test_guide_import.py",
+   "bytes": 1195
+  },
+  {
+   "path": "tests/test_guide_index.py",
+   "bytes": 1416
+  },
+  {
+   "path": "tests/test_guide_ingest.py",
+   "bytes": 2381
+  },
+  {
+   "path": "tests/test_guide_inventory.py",
+   "bytes": 2580
+  },
+  {
+   "path": "tests/test_guide_jobs.py",
+   "bytes": 8379
+  },
+  {
+   "path": "tests/test_guide_layout_render.py",
+   "bytes": 1449
+  },
+  {
+   "path": "tests/test_guide_ledger.py",
+   "bytes": 7995
+  },
+  {
+   "path": "tests/test_guide_live_smoke.py",
+   "bytes": 1869
+  },
+  {
+   "path": "tests/test_guide_llm.py",
+   "bytes": 1221
+  },
+  {
+   "path": "tests/test_guide_llm_provider.py",
+   "bytes": 2688
+  },
+  {
+   "path": "tests/test_guide_long_image.py",
+   "bytes": 1073
+  },
+  {
+   "path": "tests/test_guide_map_resolver.py",
+   "bytes": 1018
+  },
+  {
+   "path": "tests/test_guide_match.py",
+   "bytes": 3577
+  },
+  {
+   "path": "tests/test_guide_miyoushe.py",
+   "bytes": 2949
+  },
+  {
+   "path": "tests/test_guide_nops.py",
+   "bytes": 4023
+  },
+  {
+   "path": "tests/test_guide_official.py",
+   "bytes": 9497
+  },
+  {
+   "path": "tests/test_guide_official_topic.py",
+   "bytes": 5146
+  },
+  {
+   "path": "tests/test_guide_page_topics.py",
+   "bytes": 537
+  },
+  {
+   "path": "tests/test_guide_pagination.py",
+   "bytes": 1868
+  },
+  {
+   "path": "tests/test_guide_perf.py",
+   "bytes": 3093
+  },
+  {
+   "path": "tests/test_guide_phash.py",
+   "bytes": 4348
+  },
+  {
+   "path": "tests/test_guide_planner.py",
+   "bytes": 13737
+  },
+  {
+   "path": "tests/test_guide_point_set.py",
+   "bytes": 6697
+  },
+  {
+   "path": "tests/test_guide_publish.py",
+   "bytes": 1228
+  },
+  {
+   "path": "tests/test_guide_published_split.py",
+   "bytes": 1922
+  },
+  {
+   "path": "tests/test_guide_qa.py",
+   "bytes": 2531
+  },
+  {
+   "path": "tests/test_guide_qa_gate.py",
+   "bytes": 6931
+  },
+  {
+   "path": "tests/test_guide_real_parse.py",
+   "bytes": 3038
+  },
+  {
+   "path": "tests/test_guide_rebuild.py",
+   "bytes": 7446
+  },
+  {
+   "path": "tests/test_guide_refresh_text.py",
+   "bytes": 2666
+  },
+  {
+   "path": "tests/test_guide_region_reader.py",
+   "bytes": 922
+  },
+  {
+   "path": "tests/test_guide_region_sections.py",
+   "bytes": 6796
+  },
+  {
+   "path": "tests/test_guide_region_set.py",
+   "bytes": 69680
+  },
+  {
+   "path": "tests/test_guide_rematch.py",
+   "bytes": 15484
+  },
+  {
+   "path": "tests/test_guide_render.py",
+   "bytes": 4655
+  },
+  {
+   "path": "tests/test_guide_review_api.py",
+   "bytes": 15177
+  },
+  {
+   "path": "tests/test_guide_review_target.py",
+   "bytes": 5468
+  },
+  {
+   "path": "tests/test_guide_review_topic.py",
+   "bytes": 2371
+  },
+  {
+   "path": "tests/test_guide_revive.py",
+   "bytes": 4297
+  },
+  {
+   "path": "tests/test_guide_robots.py",
+   "bytes": 1005
+  },
+  {
+   "path": "tests/test_guide_scope_lookup.py",
+   "bytes": 2174
+  },
+  {
+   "path": "tests/test_guide_signature.py",
+   "bytes": 6874
+  },
+  {
+   "path": "tests/test_guide_snapshot_diff.py",
+   "bytes": 15763
+  },
+  {
+   "path": "tests/test_guide_snapshot_manifest.py",
+   "bytes": 11974
+  },
+  {
+   "path": "tests/test_guide_spatial.py",
+   "bytes": 3147
+  },
+  {
+   "path": "tests/test_guide_stages.py",
+   "bytes": 11596
+  },
+  {
+   "path": "tests/test_guide_stale_jobs.py",
+   "bytes": 1401
+  },
+  {
+   "path": "tests/test_guide_store.py",
+   "bytes": 911
+  },
+  {
+   "path": "tests/test_guide_targets.py",
+   "bytes": 5683
+  },
+  {
+   "path": "tests/test_guide_ticker_bind.py",
+   "bytes": 18704
+  },
+  {
+   "path": "tests/test_guide_ticker_golden.py",
+   "bytes": 768
+  },
+  {
+   "path": "tests/test_guide_topic_golden.py",
+   "bytes": 1849
+  },
+  {
+   "path": "tests/test_guide_topics.py",
+   "bytes": 17044
+  },
+  {
+   "path": "tests/test_guide_unit_registry.py",
+   "bytes": 1801
+  },
+  {
+   "path": "tests/test_guide_units.py",
+   "bytes": 5199
+  },
+  {
+   "path": "tests/test_guide_vision_provider.py",
+   "bytes": 1089
+  },
+  {
+   "path": "tests/test_guide_wave1_topics.py",
+   "bytes": 972
+  },
+  {
+   "path": "tests/test_guides.py",
+   "bytes": 1133
+  },
+  {
+   "path": "tests/test_jobs.py",
+   "bytes": 725
+  },
+  {
+   "path": "tests/test_labels.py",
+   "bytes": 1591
+  },
+  {
+   "path": "tests/test_live_assets.py",
+   "bytes": 929
+  },
+  {
+   "path": "tests/test_marker_css.py",
+   "bytes": 643
+  },
+  {
+   "path": "tests/test_normalize.py",
+   "bytes": 3294
+  },
+  {
+   "path": "tests/test_phase1_fixture.py",
+   "bytes": 1908
+  },
+  {
+   "path": "tests/test_point_info_schema.py",
+   "bytes": 1353
+  },
+  {
+   "path": "tests/test_points.py",
+   "bytes": 957
+  },
+  {
+   "path": "tests/test_provider_hybrid.py",
+   "bytes": 7568
+  },
+  {
+   "path": "tests/test_provider_live.py",
+   "bytes": 4138
+  },
+  {
+   "path": "tests/test_provider_snapshot.py",
+   "bytes": 1072
+  },
+  {
+   "path": "tests/test_raster.py",
+   "bytes": 2190
+  },
+  {
+   "path": "tests/test_rebuild.py",
+   "bytes": 1096
+  },
+  {
+   "path": "tests/test_release_build.py",
+   "bytes": 3618
+  },
+  {
+   "path": "tests/test_repo_hygiene.py",
+   "bytes": 3225
+  },
+  {
+   "path": "tests/test_request_key.py",
+   "bytes": 541
+  },
+  {
+   "path": "tests/test_required_schema.py",
+   "bytes": 766
+  },
+  {
+   "path": "tests/test_runtime_paths.py",
+   "bytes": 3264
+  },
+  {
+   "path": "tests/test_serve.py",
+   "bytes": 958
+  },
+  {
+   "path": "tests/test_serve_evidence.py",
+   "bytes": 6898
+  },
+  {
+   "path": "tests/test_serve_split.py",
+   "bytes": 3474
+  },
+  {
+   "path": "tests/test_settings.py",
+   "bytes": 818
+  },
+  {
+   "path": "tests/test_smoke_descendants.py",
+   "bytes": 1300
+  },
+  {
+   "path": "tests/test_transform.py",
+   "bytes": 1523
+  },
+  {
+   "path": "tests/test_tree.py",
+   "bytes": 1796
+  },
+  {
+   "path": "tests/test_user_state.py",
+   "bytes": 1407
+  },
+  {
+   "path": "tests/test_viewer_api.py",
+   "bytes": 2747
+  },
+  {
+   "path": "tests/test_viewer_bind.py",
+   "bytes": 1430
+  },
+  {
+   "path": "tests/test_viewer_crs.py",
+   "bytes": 1221
+  },
+  {
+   "path": "tests/test_viewer_grease.py",
+   "bytes": 1549
+  },
+  {
+   "path": "tests/test_viewer_search.py",
+   "bytes": 625
+  },
+  {
+   "path": "tests/test_viewer_smoke.py",
+   "bytes": 2063
+  },
+  {
+   "path": "tests/test_viewer_tree.py",
+   "bytes": 2554
+  },
+  {
+   "path": "tests/test_workflows.py",
+   "bytes": 6900
+  },
+  {
+   "path": "tools/hsr_hoyolab_map_dump.py",
+   "bytes": 15099
+  },
+  {
+   "path": "tools/hygiene_baseline.json",
+   "bytes": 991
+  },
+  {
+   "path": "tools/windows/open-review.html",
+   "bytes": 584
+  },
+  {
+   "path": "web/dist/app/index-CV9lyJAN.js",
+   "bytes": 414976
+  },
+  {
+   "path": "web/dist/app/index-D6QF721R.css",
+   "bytes": 23618
+  },
+  {
+   "path": "web/dist/index.html",
+   "bytes": 398
+  },
+  {
+   "path": "web/index.html",
+   "bytes": 306
+  },
+  {
+   "path": "web/package-lock.json",
+   "bytes": 60719
+  },
+  {
+   "path": "web/package.json",
+   "bytes": 513
+  },
+  {
+   "path": "web/src/api/client.ts",
+   "bytes": 3374
+  },
+  {
+   "path": "web/src/api/types.ts",
+   "bytes": 5176
+  },
+  {
+   "path": "web/src/app/App.tsx",
+   "bytes": 41876
+  },
+  {
+   "path": "web/src/app/router.ts",
+   "bytes": 1075
+  },
+  {
+   "path": "web/src/app/store.ts",
+   "bytes": 1116
+  },
+  {
+   "path": "web/src/crs.ts",
+   "bytes": 530
+  },
+  {
+   "path": "web/src/guard.ts",
+   "bytes": 828
+  },
+  {
+   "path": "web/src/main.ts",
+   "bytes": 5132
+  },
+  {
+   "path": "web/src/main.tsx",
+   "bytes": 666
+  },
+  {
+   "path": "web/src/map/MapCanvas.tsx",
+   "bytes": 1487
+  },
+  {
+   "path": "web/src/map/MapController.ts",
+   "bytes": 5104
+  },
+  {
+   "path": "web/src/map/crs.ts",
+   "bytes": 546
+  },
+  {
+   "path": "web/src/map/raster.ts",
+   "bytes": 861
+  },
+  {
+   "path": "web/src/navigation/MapNav.tsx",
+   "bytes": 1900
+  },
+  {
+   "path": "web/src/navigation/tree.ts",
+   "bytes": 2682
+  },
+  {
+   "path": "web/src/raster.ts",
+   "bytes": 1342
+  },
+  {
+   "path": "web/src/style.css",
+   "bytes": 553
+  },
+  {
+   "path": "web/src/styles/layout.css",
+   "bytes": 9428
+  },
+  {
+   "path": "web/src/styles/tokens.css",
+   "bytes": 373
+  },
+  {
+   "path": "web/tsconfig.json",
+   "bytes": 235
+  },
+  {
+   "path": "web/vite.config.ts",
+   "bytes": 406
+  }
+ ],
+ "excluded_by": [
+  "runtime-data",
+  "release-mirror",
+  "generated-reports",
+  "runtime-db",
+  "secrets",
+  "python-cache",
+  "web-build",
+  "backup"
+ ],
+ "kept_build_products": [
+  "web/dist"
+ ],
+ "note": "zip 的 sha256 与字节数在 zip 同名的 .sha256 文件与构建报告里。"
+}

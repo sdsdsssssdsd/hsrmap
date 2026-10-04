@@ -1,0 +1,2 @@
+只能根据提供内容提取。没有的信息写 null。禁止自行补攻略步骤。
+返回 JSON：{"relevant": true, "guide_type": "floating_grease", "sections": [{"map": "", "title": "", "steps": [{"text": ""}]}]}

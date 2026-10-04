@@ -1,0 +1,166 @@
+{
+  "topic_key": "origami_bird",
+  "level": 2,
+  "sections": [
+    {
+      "id": "origami_bird-1",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 黄金的时刻 / 3层",
+      "section_start": "匹诺康尼 / 黄金的时刻 / 3层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-2",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 黄金的时刻 / 2层",
+      "section_start": "匹诺康尼 / 黄金的时刻 / 2层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-3",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 黄金的时刻 / 1层",
+      "section_start": "匹诺康尼 / 黄金的时刻 / 1层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-4",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 筑梦边境 / 筑梦边境",
+      "section_start": "匹诺康尼 / 筑梦边境 / 筑梦边境",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-5",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 稚子的梦 / 稚子的梦",
+      "section_start": "匹诺康尼 / 稚子的梦 / 稚子的梦",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-6",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 「白日梦」酒店-梦境 / 3层",
+      "section_start": "匹诺康尼 / 「白日梦」酒店-梦境 / 3层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-7",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 「白日梦」酒店-梦境 / 2层",
+      "section_start": "匹诺康尼 / 「白日梦」酒店-梦境 / 2层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-8",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 「白日梦」酒店-梦境 / 1层",
+      "section_start": "匹诺康尼 / 「白日梦」酒店-梦境 / 1层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-9",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 朝露公馆 / 2层",
+      "section_start": "匹诺康尼 / 朝露公馆 / 2层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-10",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 朝露公馆 / 1层",
+      "section_start": "匹诺康尼 / 朝露公馆 / 1层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-11",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 朝露公馆 / 沙盘模型",
+      "section_start": "匹诺康尼 / 朝露公馆 / 沙盘模型",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-12",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 克劳克影视乐园 / 2层",
+      "section_start": "匹诺康尼 / 克劳克影视乐园 / 2层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-13",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 克劳克影视乐园 / 1层",
+      "section_start": "匹诺康尼 / 克劳克影视乐园 / 1层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-14",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 流梦礁 / 2层",
+      "section_start": "匹诺康尼 / 流梦礁 / 2层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-15",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 流梦礁 / 1层",
+      "section_start": "匹诺康尼 / 流梦礁 / 1层",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-16",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 苏乐达™热砂海选会场 / 苏乐达™热砂海选会场",
+      "section_start": "匹诺康尼 / 苏乐达™热砂海选会场 / 苏乐达™热砂海选会场",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-17",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 匹诺康尼大剧院 / 匹诺康尼大剧院",
+      "section_start": "匹诺康尼 / 匹诺康尼大剧院 / 匹诺康尼大剧院",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-18",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 稚子的梦-小 / 2",
+      "section_start": "匹诺康尼 / 稚子的梦-小 / 2",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-19",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 稚子的梦-大 / 1",
+      "section_start": "匹诺康尼 / 稚子的梦-大 / 1",
+      "step_count": 1,
+      "image_roles": {}
+    },
+    {
+      "id": "origami_bird-20",
+      "source_page": "origami_pinocchio.html",
+      "map_name": "匹诺康尼 / 稚子的梦-大 / 2",
+      "section_start": "匹诺康尼 / 稚子的梦-大 / 2",
+      "step_count": 1,
+      "image_roles": {}
+    }
+  ]
+}

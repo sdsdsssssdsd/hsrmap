@@ -1,0 +1,14 @@
+{
+  "topic_key": "hanu",
+  "level": 2,
+  "sections": [
+    {
+      "id": "hanu-goldenage-1",
+      "source_page": "hanu_goldenage.html",
+      "map_name": "黄金的时刻",
+      "section_start": "黄金的时刻",
+      "step_count": 1,
+      "image_roles": {}
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+只抄写图上可见的中文。map_name_raw 必须来自 visible_text 中的官方地图名。
+若 hint.whitelist 非空，map_name_raw 只能填 whitelist 里出现且图上可见的名字。
+完全没有地图名，或只有版本号/作者名，map_name_raw 必须是 null。
+spatial_anchor 只填图上写明的相对位置：左下角/右下角/左上角/右上角/左侧/右侧/上方/下方/中间。没有就不填。
+不要输出 map_id 或 source_point_id。
+返回 JSON：{"map_name_raw":null,"visible_text":[],"article_ordinal":null,"ordinal_raw":null,"spatial_anchor":null,"instruction_text":[],"grounded":false}

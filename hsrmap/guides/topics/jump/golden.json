@@ -1,0 +1,14 @@
+{
+  "topic_key": "jump",
+  "level": 2,
+  "sections": [
+    {
+      "id": "jump-challenge-1",
+      "source_page": "jump_challenge.html",
+      "map_name": "二次元JUMP",
+      "section_start": "二次元JUMP",
+      "step_count": 1,
+      "image_roles": {}
+    }
+  ]
+}

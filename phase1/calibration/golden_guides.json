@@ -1,0 +1,25 @@
+{
+  "semantic_label": "floating_grease_origin_retrace",
+  "sections": [
+    {"id": "g01", "source_page": "17173_multipoint.html", "map_name": "海原市", "source_point_id": "5171", "section_start": "海原市", "step_count": 2, "image_roles": {"haiyuan-1.png": "location_map"}},
+    {"id": "g02", "source_page": "17173_multipoint.html", "map_name": "海原市", "source_point_id": "5170", "section_start": "海原市", "step_count": 2, "image_roles": {"haiyuan-2.png": "puzzle_step"}},
+    {"id": "g03", "source_page": "17173_multipoint.html", "map_name": "海原市", "source_point_id": "5169", "section_start": "海原市", "step_count": 2, "image_roles": {}},
+    {"id": "g04", "source_page": "17173_multipoint.html", "map_name": "海原电视塔", "source_point_id": "5196", "section_start": "海原电视塔", "step_count": 1, "image_roles": {"tower-1.png": "location_map"}},
+    {"id": "g05", "source_page": "17173_multipoint.html", "map_name": "海原电视塔", "source_point_id": "5212", "section_start": "海原电视塔", "step_count": 1, "image_roles": {}},
+    {"id": "g06", "source_page": "17173_multipoint.html", "map_name": "海原电视塔", "source_point_id": "5215", "section_start": "海原电视塔", "step_count": 1, "image_roles": {}},
+    {"id": "g07", "source_page": "taptap_images.html", "map_name": "渡画泉隐", "source_point_id": "5311", "section_start": "渡画泉隐", "step_count": 1, "image_roles": {"taptap-1.png": "location_map"}},
+    {"id": "g08", "source_page": "taptap_images.html", "map_name": "渡画泉隐", "source_point_id": "5302", "section_start": "渡画泉隐", "step_count": 1, "image_roles": {"taptap-2.png": "puzzle_step"}},
+    {"id": "g09", "source_page": "taptap_images.html", "map_name": "渡画泉隐", "source_point_id": "5292", "section_start": "渡画泉隐", "step_count": 1, "image_roles": {}},
+    {"id": "g10", "source_page": "gamersky_long.html", "map_name": "珠星大厦", "source_point_id": "5016", "section_start": "珠星大厦", "step_count": 1, "image_roles": {"gs-1.png": "location_map"}},
+    {"id": "g11", "source_page": "gamersky_long.html", "map_name": "观览云岛站", "source_point_id": "5064", "section_start": "观览云岛站", "step_count": 1, "image_roles": {"gs-2.png": "location_map"}},
+    {"id": "g12", "source_page": "gamersky_long.html", "map_name": "二维市", "source_point_id": "4620", "section_start": "二维市", "step_count": 1, "image_roles": {}},
+    {"id": "g13", "source_page": "3dm_reprint.html", "map_name": "海原市", "source_point_id": "5171", "section_start": "海原市", "step_count": 1, "image_roles": {"haiyuan-1.png": "location_map"}},
+    {"id": "g14", "source_page": "miyoushe_author.html", "map_name": "坠星的摇篮", "source_point_id": "5440", "section_start": "坠星的摇篮", "step_count": 1, "image_roles": {"miyo-1.png": "location_map"}},
+    {"id": "g15", "source_page": "weak_text.html", "map_name": "指针塔", "source_point_id": "5562", "section_start": "指针塔", "step_count": 0, "image_roles": {"weak-1.png": "location_map"}},
+    {"id": "g16", "source_page": "ads_heavy.html", "map_name": "寂灭空飨妖都", "source_point_id": "5407", "section_start": "寂灭空飨妖都", "step_count": 1, "image_roles": {"yaodu-1.png": "location_map"}},
+    {"id": "g17", "source_page": "gamersky_long.html", "map_name": "珠星大厦", "source_point_id": "5003", "section_start": "珠星大厦", "step_count": 1, "image_roles": {}},
+    {"id": "g18", "source_page": "miyoushe_author.html", "map_name": "坠星的摇篮", "source_point_id": "5424", "section_start": "坠星的摇篮", "step_count": 1, "image_roles": {}},
+    {"id": "g19", "source_page": "ads_heavy.html", "map_name": "寂灭空飨妖都", "source_point_id": "5391", "section_start": "寂灭空飨妖都", "step_count": 1, "image_roles": {}},
+    {"id": "g20", "source_page": "taptap_images.html", "map_name": "渡画泉隐", "source_point_id": "5311", "section_start": "渡画泉隐", "step_count": 1, "image_roles": {"taptap-1.png": "location_map"}}
+  ]
+}

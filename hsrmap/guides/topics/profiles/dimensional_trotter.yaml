@@ -1,0 +1,32 @@
+topic_key: dimensional_trotter
+display_name: 次元扑满
+guide_kind: CHALLENGE
+scope: POINT
+official_labels:
+  names:
+    - 次元扑满
+priority: 73
+enabled: true
+unit_builder:
+  type: challenge
+matcher:
+  profile: unique_on_map_v1
+layout:
+  profile: challenge_v1
+discovery:
+  queries:
+    - "{map} 次元扑满"
+    - 次元扑满 攻略
+
+#: 这个主题的解谜是什么类型，以及文字攻略能不能承载它（决定搜索与证据策略）。
+evidence_form:
+  kind: MIXED
+  text_sufficient: null
+  reason: 未评估
+
+#: 完成一个点位需要走到哪一步（与 evidence_form.kind 正交）：
+#: LOCATE_ONLY = 到达即得；LOCATE_AND_SOLVE = 到达后还要解。点级证据可以上调。
+completion:
+  requirement: LOCATE_ONLY
+  solve_kind: NONE
+  reason: 次元扑满：定位后正常游戏行为即可

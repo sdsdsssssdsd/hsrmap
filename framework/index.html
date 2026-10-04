@@ -1,0 +1,600 @@
+<!doctype html><html lang='zh-CN'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>hsrmap 项目框架台</title><style>
+*{box-sizing:border-box}
+:root{
+ --bg:#0d1117;--bg2:#111823;--panel:#161d29;--panel2:#1b2432;--line:#26303f;--line2:#33405200;
+ --fg:#e6e9ef;--fg2:#aab4c4;--dim:#78859a;
+ --ok:#5fd08a;--warn:#e8b44c;--bad:#e8735f;--acc:#63b3ed;
+}
+body{margin:0;background:radial-gradient(1200px 600px at 15% -10%,#17202e 0%,var(--bg) 55%) fixed;
+ color:var(--fg);font:14px/1.7 "Microsoft YaHei","PingFang SC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--acc);text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:34px 22px 90px}
+.hero{padding:10px 0 22px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.hero h1{margin:0 0 6px;font-size:27px;font-weight:700;letter-spacing:-.4px}
+.hero h1 span{color:var(--acc)}
+.hero .sub{color:var(--fg2);font-size:13px}
+.lede{background:linear-gradient(135deg,#182234,#141a24);border:1px solid var(--line);border-left:3px solid var(--acc);
+ border-radius:10px;padding:16px 20px;margin:18px 0 24px;font-size:15px;line-height:1.85;color:#dbe2ec}
+.lede b{color:var(--acc)}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 15px;min-width:104px}
+.chip b{display:block;font-size:20px;color:var(--fg);font-variant-numeric:tabular-nums;line-height:1.25}
+.chip span{color:var(--dim);font-size:11.5px}
+h2{font-size:17px;margin:38px 0 4px;font-weight:650;letter-spacing:.2px;scroll-margin-top:66px}
+.nav{position:sticky;top:0;z-index:9;display:flex;flex-wrap:wrap;gap:5px;padding:9px 0;margin-bottom:4px;
+ background:linear-gradient(180deg,rgba(13,17,23,.97),rgba(13,17,23,.86));backdrop-filter:blur(8px);
+ border-bottom:1px solid var(--line)}
+.nav a{font-size:12.5px;color:var(--fg2);padding:4px 11px;border-radius:16px;border:1px solid transparent;white-space:nowrap}
+.nav a:hover{color:var(--fg);border-color:var(--line);background:var(--panel)}
+.nav a b{color:var(--acc);font-weight:600;margin-right:5px}
+.yaml{margin:0 0 9px;padding-top:9px;border-top:1px dashed var(--line);line-height:1.5}
+.yaml .pill{font-size:11px;padding:2px 8px;margin:2px 3px 2px 0}
+h2 em{font-style:normal;color:var(--dim);font-size:12.5px;font-weight:400;margin-left:8px}
+.hint{color:var(--fg2);font-size:13px;margin:0 0 14px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:12px}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px 15px;position:relative;overflow:hidden}
+.step:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--acc);opacity:.55}
+.step .no{font-size:11px;color:var(--dim);letter-spacing:1.5px}
+.step h4{margin:2px 0 6px;font-size:15.5px}
+.step p{margin:0;color:var(--fg2);font-size:12.5px;line-height:1.6}
+.step .who{margin-top:9px;font-size:11px;color:var(--dim);border-top:1px dashed var(--line);padding-top:6px}
+.layers{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:13px}
+.layer{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 16px;position:relative;transition:.15s}
+.layer:hover{border-color:#3b4a60;transform:translateY(-1px)}
+.layer .top{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.tag{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+ font:600 10.5px/1 Consolas,monospace;color:#0d1117;flex:0 0 auto}
+.layer h3{margin:0;font-size:15.5px}
+.layer .cnt{color:var(--dim);font-size:11.5px;margin-left:auto;white-space:nowrap}
+.layer .plain{color:#cfd7e3;font-size:13px;margin:0 0 9px;line-height:1.7}
+details{margin-top:2px}
+summary{cursor:pointer;color:var(--dim);font-size:12px;list-style:none;padding:3px 0}
+summary::-webkit-details-marker{display:none}
+summary:before{content:"▸ ";color:var(--acc)}
+details[open] summary:before{content:"▾ "}
+.mods{margin:6px 0 0;padding:0;list-style:none}
+.mods li{padding:7px 0;border-top:1px solid #1e2735}
+.mods .rel{font:12px/1.5 Consolas,monospace;color:var(--acc)}
+.mods .ln{color:var(--dim);font-size:11px;margin-left:6px}
+.mods .d{display:block;color:var(--fg2);font-size:12px;margin-top:2px}
+.mods .p{display:block;color:#d7c58a;font-size:12px;margin-top:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+pre.flow{margin:0;font:12px/1.55 Consolas,"Cascadia Mono",monospace;color:#c6d0dd;overflow-x:auto;white-space:pre}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 9px;border-bottom:1px solid #1e2735;text-align:left;vertical-align:top}
+th{color:var(--dim);font-weight:500;font-size:11.5px;white-space:nowrap}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mono{font-family:Consolas,monospace;font-size:12px}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.dim{color:var(--dim)}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;border:1px solid var(--line);
+ background:#131a24;font-size:11.5px;margin:2px 4px 2px 0;color:var(--fg2)}
+.pill.hi{color:#0d1117;background:var(--ok);border-color:var(--ok);font-weight:600}
+.pill.mid{color:#0d1117;background:var(--warn);border-color:var(--warn);font-weight:600}
+.model{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:13px}
+.model .panel h4{margin:0 0 8px;font-size:14px}
+.model .panel .note{color:var(--dim);font-size:12px;margin-top:8px}
+.big{font-size:38px;font-weight:700;line-height:1.15;color:var(--warn);font-variant-numeric:tabular-nums}
+.big span{font-size:15px;font-weight:500;color:var(--fg2);margin-left:8px}
+.big.ok{color:var(--ok)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+@media(max-width:760px){.cmp{grid-template-columns:1fr}}
+.cmp .panel h4{margin:0 0 4px;font-size:14px}
+.cmp ol{margin:6px 0 0 18px;padding:0;color:var(--fg2);font-size:12.5px}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);color:var(--dim);font-size:12px}
+</style></head><body><div class='wrap'>
+<div class='hero'><h1>hsrmap <span>项目框架台</span></h1>
+<div class='sub'>从源码自动生成 · 2026-10-04 11:04:59 · 167 个模块 / 28285 行 · 全部数据只读提取</div></div>
+<div class='lede'>把《崩坏：星穹铁道》官方互动地图和网上的图文攻略抓下来，自动判断「玩家照着现有材料能不能把东西拿到手」——能就标完成，不能就指出缺的是<b>位置</b>还是<b>解法</b>，再把缺的排成下一轮找源的工作队列。</div>
+<div class='chips'>
+<div class='chip'><b>959</b><span>攻略条目</span></div>
+<div class='chip'><b>779</b><span>已发布</span></div>
+<div class='chip'><b>555</b><span>官方来源</span></div>
+<div class='chip'><b>224</b><span>社区来源</span></div>
+<div class='chip'><b>770</b><span>覆盖点位</span></div>
+<div class='chip'><b>235</b><span>抓取页面</span></div>
+<div class='chip'><b>5706</b><span>步骤条数</span></div>
+<div class='chip'><b>2067</b><span>挂载图片</span></div>
+</div>
+<div class='nav'><a href='#n-gaps'><b>·</b>还差什么</a><a href='#n-pipe'><b>·</b>五步流水线</a><a href='#n-layers'><b>·</b>十个层</a><a href='#n-model'><b>·</b>判定层</a><a href='#n-topics'><b>·</b>主题档案</a><a href='#n-flow'><b>·</b>数据流</a><a href='#n-db'><b>·</b>数据库</a><a href='#n-cli'><b>·</b>命令行</a></div>
+<h2 id="n-gaps">还差什么<em>判定层亲口说的缺口</em></h2>
+<div class='panel'><div class='big ok'>全部收口</div><p class='hint' style='margin:6px 0 0'>1006 个点位，每一个玩家照着现有材料都能拿到手。</p></div>
+<h2 id="n-pipe">这个项目怎么跑<em>五步流水线</em></h2>
+<p class='hint'>从左到右是一条数据的一生：抓回来 → 拆开 → 判断 → 人工过目 → 发布留档。</p><div class='steps'>
+<div class='step'><div class='no'>01</div><h4>抓</h4><p>把官方地图快照、官方点位详情、网上的图文攻略存到本地</p><div class='who'>抓取与语料层 / 数据底座</div></div>
+<div class='step'><div class='no'>02</div><h4>拆</h4><p>网页切成文字块和图片；图分成镜，图和点位对上号</p><div class='who'>抽取与视觉层</div></div>
+<div class='step'><div class='no'>03</div><h4>判</h4><p>逐点位判断：缺位置还是缺解法，还是已经算完成</p><div class='who'>完整性判定层 + 主题档案层</div></div>
+<div class='step'><div class='no'>04</div><h4>审</h4><p>机器觉得能发的，也要人过一眼才准发</p><div class='who'>审核层</div></div>
+<div class='step'><div class='no'>05</div><h4>发</h4><p>发布前比对、原子发布、发完审计有没有编造</p><div class='who'>发布与审计层 + 证据与账本层</div></div>
+</div>
+<h2 id="n-layers">十个层<em>每层一句人话</em></h2>
+<p class='hint'>展开任意一层可以看到它下面所有模块，以及每个文件自己声明的用途。</p><div class='layers'>
+<div class='layer'><div class='top'>
+<div class='tag' style='background:#8b9dc3'>DB</div>
+<h3>存储层</h3><div class='cnt'>1 模块 · 986 行</div></div>
+<p class='plain'>所有攻略数据都装在一个 sqlite 文件里，这里定义表长什么样。</p>
+<details><summary>展开 1 个模块</summary><ul class='mods'>
+<li><span class='rel'>hsrmap/guide_db.py</span><span class='ln'>986 行 · 10-04 10:20</span>
+<span class='p'>人话：攻略库的表结构 + 读写入口，guide.db 和 published.db 共用同一套表。</span>
+<span class='d'>def _connect(path: Path, *, readonly: bool = False) -&gt; sqlite3.Connection:</span></li>
+</ul></details></div>
+<div class='layer'><div class='top'>
+<div class='tag' style='background:#6fb3d9'>SAT</div>
+<h3>数据底座</h3><div class='cnt'>40 模块 · 5893 行</div></div>
+<p class='plain'>官方那一侧：地图快照、点位详情、图片资源，还有「离线 / 混合 / 联网」三种跑法。</p>
+<details><summary>展开 40 个模块</summary><ul class='mods'>
+<li><span class='rel'>hsrmap/dod.py</span><span class='ln'>564 行 · 10-04 09:51</span>
+<span class='d'>Definition of Done（a1-8 十六）：把「卫生化完成」变成可以反复跑的检查。</span></li>
+<li><span class='rel'>hsrmap/viewer_repo.py</span><span class='ln'>560 行 · 10-02 02:32</span>
+<span class='d'>SHA_RE = re.compile(r"^[0-9a-f]{64}$", re.I)</span></li>
+<li><span class='rel'>hsrmap/detail_enrich.py</span><span class='ln'>511 行 · 10-03 00:19</span>
+<span class='d'>def file_sha256(path: Path) -&gt; str:</span></li>
+<li><span class='rel'>hsrmap/sync.py</span><span class='ln'>473 行 · 10-01 19:16</span>
+<span class='d'>ASSETS,</span></li>
+<li><span class='rel'>hsrmap/database.py</span><span class='ln'>380 行 · 10-04 09:50</span>
+<span class='d'>SCHEMA_VERSION = 1</span></li>
+<li><span class='rel'>hsrmap/detail_db.py</span><span class='ln'>362 行 · 10-04 09:50</span>
+<span class='d'>SCHEMA_VERSION = 1</span></li>
+<li><span class='rel'>hsrmap/doctor.py</span><span class='ln'>270 行 · 10-04 10:26</span>
+<span class='d'>闭环自检（a1-8 十六 + 用户 2026-10「启动入口要能打开」）。</span></li>
+<li><span class='rel'>hsrmap/providers/hybrid.py</span><span class='ln'>251 行 · 10-02 02:32</span>
+<span class='d'>LIVE_ERRORS = (OSError, TimeoutError, ConnectionError, LiveIncompatible, RuntimeError, ValueError)</span></li>
+<li><span class='rel'>hsrmap/providers/live.py</span><span class='ln'>223 行 · 10-02 02:32</span>
+<span class='d'>ENDPOINT_SCHEMA = {</span></li>
+<li><span class='rel'>hsrmap/runtime.py</span><span class='ln'>204 行 · 10-03 23:25</span>
+<span class='d'>运行时目录（a1-8 四.2）：Git checkout 不再是可变状态的根目录。</span></li>
+<li><span class='rel'>hsrmap/hygiene.py</span><span class='ln'>192 行 · 10-04 09:05</span>
+<span class='d'>仓库卫生检查（a1-8 九）：.gitignore 挡不住已经进树的东西，所以按规则扫树。</span></li>
+<li><span class='rel'>hsrmap/release.py</span><span class='ln'>138 行 · 10-04 11:04</span>
+<span class='d'>发布包构建（a1-8 八；DoD 6：发布物由 allowlist/build pipeline 生成，不是手工镜像目录）。</span></li>
+<li><span class='rel'>hsrmap/normalize.py</span><span class='ln'>128 行 · 10-01 18:46</span>
+<span class='d'>def flatten_map_nodes(tree: list[dict[str, Any]]) -&gt; list[dict[str, Any]]:</span></li>
+<li><span class='rel'>hsrmap/reports.py</span><span class='ln'>127 行 · 10-01 18:48</span>
+<span class='d'>def write_json(path: Path, data: Any) -&gt; None:</span></li>
+<li><span class='rel'>hsrmap/detail_queue.py</span><span class='ln'>126 行 · 10-03 00:19</span>
+<span class='d'>def point_info_request_params(point_id: Any, app_version: str) -&gt; dict[str, str]:</span></li>
+<li><span class='rel'>hsrmap/detail_normalize.py</span><span class='ln'>125 行 · 10-01 19:54</span>
+<span class='d'>IMAGE_EXT = (".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".avif")</span></li>
+<li><span class='rel'>hsrmap/user_db.py</span><span class='ln'>125 行 · 10-04 09:50</span>
+<span class='d'>SCHEMA_VERSION = 1</span></li>
+<li><span class='rel'>hsrmap/jobs.py</span><span class='ln'>105 行 · 10-01 18:50</span>
+<span class='d'>def _now() -&gt; str:</span></li>
+<li><span class='rel'>hsrmap/http.py</span><span class='ln'>100 行 · 10-03 16:57</span>
+<span class='d'>USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"</span></li>
+<li><span class='rel'>hsrmap/assets.py</span><span class='ln'>94 行 · 10-01 19:16</span>
+<span class='d'>@dataclass</span></li>
+<li><span class='rel'>hsrmap/paths.py</span><span class='ln'>91 行 · 10-04 09:06</span>
+<span class='d'>路径常量。</span></li>
+<li><span class='rel'>hsrmap/detail_offline.py</span><span class='ln'>68 行 · 10-01 19:56</span>
+<span class='d'>def validate_details_offline(</span></li>
+<li><span class='rel'>hsrmap/preflight.py</span><span class='ln'>66 行 · 10-01 18:50</span>
+<span class='d'>def load_registry(path) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/schema.py</span><span class='ln'>66 行 · 10-01 19:54</span>
+<span class='d'>REQUIRED_PATHS = {</span></li>
+<li><span class='rel'>hsrmap/viewer_bind.py</span><span class='ln'>65 行 · 10-04 09:02</span>
+<span class='d'>class SnapshotMismatchError(RuntimeError):</span></li>
+<li><span class='rel'>hsrmap/validate.py</span><span class='ln'>62 行 · 10-01 19:17</span>
+<span class='d'>def golden_point_errors(db: CoreDatabase, golden: list[dict[str, Any]]) -&gt; dict[str, float]:</span></li>
+<li><span class='rel'>hsrmap/detail_lock.py</span><span class='ln'>58 行 · 10-01 19:54</span>
+<span class='d'>class LockHeldError(RuntimeError):</span></li>
+<li><span class='rel'>hsrmap/inspect_map.py</span><span class='ln'>58 行 · 10-01 18:47</span>
+<span class='d'>def _current_db() -&gt; Path:</span></li>
+<li><span class='rel'>hsrmap/providers/snapshot.py</span><span class='ln'>51 行 · 10-02 02:32</span>
+<span class='d'>map_labels_payload,</span></li>
+<li><span class='rel'>hsrmap/providers/factory.py</span><span class='ln'>50 行 · 10-02 02:32</span>
+<span class='d'>def connect_live(client: Any | None = None) -&gt; LiveSession:</span></li>
+<li><span class='rel'>hsrmap/rebuild.py</span><span class='ln'>39 行 · 10-01 19:18</span>
+<span class='d'>def rebuild_from_raw(raw_dir: Path, db_path: Path) -&gt; CoreDatabase:</span></li>
+<li><span class='rel'>hsrmap/detail_rebuild.py</span><span class='ln'>32 行 · 10-01 19:55</span>
+<span class='d'>def rebuild_detail_from_raw(raw_dir: Path, db_path: Path, app_version: str) -&gt; DetailDatabase:</span></li>
+<li><span class='rel'>hsrmap/viewer_crs.py</span><span class='ln'>30 行 · 10-01 22:29</span>
+<span class='d'>def get_raster_bounds(origin_x: float, origin_y: float, width: float, height: float) -&gt; dict[str, list[float]]:</span></li>
+<li><span class='rel'>hsrmap/live_assets.py</span><span class='ln'>28 行 · 10-02 02:32</span>
+<span class='d'>class LiveAssetStore:</span></li>
+<li><span class='rel'>hsrmap/providers/base.py</span><span class='ln'>18 行 · 10-02 02:32</span>
+<span class='d'>class MapDataProvider(Protocol):</span></li>
+<li><span class='rel'>hsrmap/__main__.py</span><span class='ln'>17 行 · 10-04 10:24</span>
+<span class='d'>if __name__ == "__main__":</span></li>
+<li><span class='rel'>hsrmap/request_key.py</span><span class='ln'>16 行 · 10-01 18:46</span>
+<span class='d'>def request_key(endpoint_name: str, params: dict[str, Any], app_version: str) -&gt; str:</span></li>
+<li><span class='rel'>hsrmap/transform.py</span><span class='ln'>14 行 · 10-01 18:46</span>
+<span class='d'>TRANSFORM_VERSION = "hoyolab_hsr_origin_translation_v1"</span></li>
+<li><span class='rel'>hsrmap/__init__.py</span><span class='ln'>3 行 · 10-01 18:46</span>
+<span class='d'>HSR HoYoLAB public map core sync.</span></li>
+<li><span class='rel'>hsrmap/providers/__init__.py</span><span class='ln'>3 行 · 10-02 02:32</span>
+<span class='d'>__all__ = ["SnapshotProvider"]</span></li>
+</ul></details></div>
+<div class='layer'><div class='top'>
+<div class='tag' style='background:#7ec86a'>SCL</div>
+<h3>完整性判定层</h3><div class='cnt'>1 模块 · 725 行</div></div>
+<p class='plain'>全项目最有话语权的一层，而且只管一件事：玩家照着现有材料，到底能不能把东西拿到手。</p>
+<details><summary>展开 1 个模块</summary><ul class='mods'>
+<li><span class='rel'>hsrmap/guides/stages.py</span><span class='ln'>725 行 · 10-04 09:50</span>
+<span class='p'>人话：判定层本体：两个维度 × 三种证据，算出六个状态。全项目只有它说「算不算完成」。</span>
+<span class='d'>攻略够不够：两个维度 + 三种证据能力（用户 2026-10 指示的逻辑层）。</span></li>
+</ul></details></div>
+<div class='layer'><div class='top'>
+<div class='tag' style='background:#e0b84c'>CFG</div>
+<h3>主题档案层</h3><div class='cnt'>12 模块 · 1105 行</div></div>
+<p class='plain'>16 个攻略主题（若虫、浮脂溯源、黄金替罪羊……）各自的规矩：要不要第二阶段、怎么匹配、怎么排版。</p>
+<div class='yaml'><span class='pill mono'>dimensional_trotter.yaml</span><span class='pill mono'>dream_ticker.yaml</span><span class='pill mono'>floating_grease.yaml</span><span class='pill mono'>golden_scapegoat.yaml</span><span class='pill mono'>hanu.yaml</span><span class='pill mono'>hidden_treasure.yaml</span><span class='pill mono'>jump.yaml</span><span class='pill mono'>king_bucket.yaml</span><span class='pill mono'>magnetic_puzzle.yaml</span><span class='pill mono'>miracle_orb.yaml</span><span class='pill mono'>nameless_dust_spirit.yaml</span><span class='pill mono'>nymph.yaml</span><span class='pill mono'>origami_bird.yaml</span><span class='pill mono'>pioneer_fairy.yaml</span><span class='pill mono'>unworldly_material.yaml</span><span class='pill mono'>zagreus_hand.yaml</span></div>
+<details><summary>展开 12 个模块</summary><ul class='mods'>
+<li><span class='rel'>hsrmap/guides/topics/dream_ticker/bind.py</span><span class='ln'>295 行 · 10-03 00:19</span>
+<span class='d'>def bind_dream_ticker(</span></li>
+<li><span class='rel'>hsrmap/guides/topics/official.py</span><span class='ln'>224 行 · 10-03 00:19</span>
+<span class='d'>def topic_payload_by_label_names(</span></li>
+<li><span class='rel'>hsrmap/guides/topics/dream_ticker/observe.py</span><span class='ln'>135 行 · 10-03 00:19</span>
+<span class='d'>def maps_catalog(official_points: list[dict[str, Any]]) -&gt; list[dict[str, Any]]:</span></li>
+<li><span class='rel'>hsrmap/guides/topics/seed.py</span><span class='ln'>122 行 · 10-03 00:19</span>
+<span class='d'>def seed_topics(db: GuideDatabase) -&gt; list[dict]:</span></li>
+<li><span class='rel'>hsrmap/guides/topics/evidence.py</span><span class='ln'>86 行 · 10-03 13:31</span>
+<span class='p'>人话：搜索证据账本：每次搜了什么、搜到哪些候选、为什么留为什么扔。</span>
+<span class='d'>What kind of puzzle a topic is, and whether a text guide can carry it.</span></li>
+<li><span class='rel'>hsrmap/guides/topics/dream_ticker/freeze.py</span><span class='ln'>66 行 · 10-03 00:19</span>
+<span class='d'>FREEZE_ID = "dream-ticker-review-20261002"</span></li>
+<li><span class='rel'>hsrmap/guides/topics/dream_ticker/canary.py</span><span class='ln'>57 行 · 10-03 00:19</span>
+<span class='d'>_CHROME = ("17173", "崩坏：星穹铁道", "崩坏星穹铁道", "关于崩坏", "更多相关")</span></li>
+<li><span class='rel'>hsrmap/guides/topics/backfill.py</span><span class='ln'>50 行 · 10-02 15:16</span>
+<span class='d'>def backfill_page_topics(db: GuideDatabase) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/guides/topics/loader.py</span><span class='ln'>37 行 · 10-02 14:27</span>
+<span class='p'>人话：读取 16 个主题档案 YAML 并缓存。</span>
+<span class='d'>PROFILES = Path(__file__).with_name("profiles")</span></li>
+<li><span class='rel'>hsrmap/guides/topics/dream_ticker/report.py</span><span class='ln'>28 行 · 10-03 00:19</span>
+<span class='d'>def ticker_bind_report(</span></li>
+<li><span class='rel'>hsrmap/guides/topics/__init__.py</span><span class='ln'>4 行 · 10-02 14:35</span>
+<span class='d'>__all__ = ["get_topic", "list_topics", "official_points_for_topic"]</span></li>
+<li><span class='rel'>hsrmap/guides/topics/dream_ticker/__init__.py</span><span class='ln'>1 行 · 10-03 00:19</span>
+<span class='d'>Dream ticker bind helpers. Corpus freeze and scoring live here; ingest stays untouched.</span></li>
+</ul></details></div>
+<div class='layer'><div class='top'>
+<div class='tag' style='background:#c99ae0'>LED</div>
+<h3>证据与账本层</h3><div class='cnt'>18 模块 · 4135 行</div></div>
+<p class='plain'>记账用的：这个目标搜过几次、搜到过什么、现在算「已发布」还是「确实没有公开来源」。</p>
+<details><summary>展开 18 个模块</summary><ul class='mods'>
+<li><span class='rel'>hsrmap/guides/claims.py</span><span class='ln'>712 行 · 10-04 09:49</span>
+<span class='d'>证据一等化（a1-8 五）：把「这条结论凭什么成立」变成可查询的声明。</span></li>
+<li><span class='rel'>hsrmap/guides/planner.py</span><span class='ln'>534 行 · 10-03 15:31</span>
+<span class='p'>人话：根据缺什么，排出下一轮该用什么关键词去搜。</span>
+<span class='d'>Target-driven discovery, priority frontier and yield metrics (a1-6 §六–§八).</span></li>
+<li><span class='rel'>hsrmap/guides/jobs.py</span><span class='ln'>510 行 · 10-03 10:53</span>
+<span class='d'>Minimal job model for long crawls (a1-6 §十六/§十七/§十八, §28).</span></li>
+<li><span class='rel'>hsrmap/guides/ledger.py</span><span class='ln'>367 行 · 10-04 09:36</span>
+<span class='p'>人话：台账：每个目标现在处于哪个状态（已发布 / 待审 / 确实没来源）。</span>
+<span class='d'>STATUSES = (</span></li>
+<li><span class='rel'>hsrmap/guides/evidence.py</span><span class='ln'>328 行 · 10-03 02:29</span>
+<span class='p'>人话：搜索证据账本：每次搜了什么、搜到哪些候选、为什么留为什么扔。</span>
+<span class='d'>Search Evidence Ledger (a1-6 §八).</span></li>
+<li><span class='rel'>hsrmap/guides/official.py</span><span class='ln'>281 行 · 10-03 16:20</span>
+<span class='p'>人话：官方点位详情：对「走到就能拿」的点位，官方那一行说明加截图本身就是完整攻略。</span>
+<span class='d'>官方点位详情：位置型主题最完整的攻略。</span></li>
+<li><span class='rel'>hsrmap/guides/targets.py</span><span class='ln'>248 行 · 10-04 09:38</span>
+<span class='d'>正规关系表 vs 字符串键：补齐、shadow 对比、切换（a1-8 十二）。</span></li>
+<li><span class='rel'>hsrmap/guides/golden.py</span><span class='ln'>221 行 · 10-03 03:01</span>
+<span class='d'>TOPICS_DIR = Path(__file__).resolve().parent / "topics"</span></li>
+<li><span class='rel'>hsrmap/guides/workflows.py</span><span class='ln'>190 行 · 10-04 09:15</span>
+<span class='d'>正式工作流（a1-8 七）：把 %TEMP% 里的一次性脚本收进有 schema、有事务、有测试的入口。</span></li>
+<li><span class='rel'>hsrmap/guides/dedupe.py</span><span class='ln'>171 行 · 10-03 16:35</span>
+<span class='d'>def _thickness(db: GuideDatabase, guide_id: int) -&gt; tuple[int, int, int]:</span></li>
+<li><span class='rel'>hsrmap/guides/nops.py</span><span class='ln'>164 行 · 10-03 15:05</span>
+<span class='p'>人话：把「查过了，公开来源确实没有」变成有记录、可复核的一条结论。</span>
+<span class='d'>「查过了，公开来源确实没有」——证据账本给出的结论（a1-6 §八）。</span></li>
+<li><span class='rel'>hsrmap/guides/inventory/classifier.py</span><span class='ln'>110 行 · 10-03 00:19</span>
+<span class='d'>NO_GUIDE = (</span></li>
+<li><span class='rel'>hsrmap/guides/pipeline.py</span><span class='ln'>94 行 · 10-02 05:19</span>
+<span class='d'>def import_page(</span></li>
+<li><span class='rel'>hsrmap/guides/inventory/reports.py</span><span class='ln'>77 行 · 10-02 14:26</span>
+<span class='d'>def load_selectable_labels(db) -&gt; list[dict[str, Any]]:</span></li>
+<li><span class='rel'>hsrmap/guides/store.py</span><span class='ln'>68 行 · 10-02 04:35</span>
+<span class='d'>def _now() -&gt; str:</span></li>
+<li><span class='rel'>hsrmap/guides/coverage.py</span><span class='ln'>56 行 · 10-02 11:21</span>
+<span class='d'>def build_coverage(db: GuideDatabase, official_ids: list[str], matches: list[dict[str, Any]]) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/guides/inventory/__init__.py</span><span class='ln'>3 行 · 10-02 14:25</span>
+<span class='d'>__all__ = ["classify_label", "classify_labels"]</span></li>
+<li><span class='rel'>hsrmap/guides/__init__.py</span><span class='ln'>1 行 · 10-02 04:35</span>
+<span class='d'>Community guide pipeline. Official DBs stay untouched.</span></li>
+</ul></details></div>
+<div class='layer'><div class='top'>
+<div class='tag' style='background:#8fd3c7'>CV</div>
+<h3>抽取与视觉层</h3><div class='cnt'>44 模块 · 3190 行</div></div>
+<p class='plain'>把网页变成能用的东西：文字切成块、图里分成镜、图和点位对上号。</p>
+<details><summary>展开 44 个模块</summary><ul class='mods'>
+<li><span class='rel'>hsrmap/guides/matching/rematch.py</span><span class='ln'>424 行 · 10-03 00:19</span>
+<span class='d'>def rematch_topic(</span></li>
+<li><span class='rel'>hsrmap/guides/extract/blocks.py</span><span class='ln'>286 行 · 10-03 12:07</span>
+<span class='p'>人话：把 HTML 按标题 / 段落 / 图片的顺序切成块。</span>
+<span class='d'>_META_TAG = re.compile(r"&lt;meta\b[^&gt;]*&gt;", re.IGNORECASE)</span></li>
+<li><span class='rel'>hsrmap/guides/llm/deepseek.py</span><span class='ln'>250 行 · 10-03 00:19</span>
+<span class='d'>class DeepSeekGuideLLMProvider:</span></li>
+<li><span class='rel'>hsrmap/guides/matching/spatial.py</span><span class='ln'>190 行 · 10-02 13:57</span>
+<span class='d'>_FLOOR_RE = re.compile(r"(\d)\s*层")</span></li>
+<li><span class='rel'>hsrmap/guides/regions/sections.py</span><span class='ln'>189 行 · 10-03 16:42</span>
+<span class='d'>把一篇攻略切成「一个区域一段」——标题、小标题、正文里的区域名都算边界。</span></li>
+<li><span class='rel'>hsrmap/guides/regions/units.py</span><span class='ln'>166 行 · 10-03 00:19</span>
+<span class='d'>_TEXT_ORDINAL = re.compile(r"第\s*(\d+)\s*个|点位\s*(\d+)")</span></li>
+<li><span class='rel'>hsrmap/guides/matching/matcher.py</span><span class='ln'>142 行 · 10-02 14:35</span>
+<span class='p'>人话：把攻略里说的位置和官方点位对上号。</span>
+<span class='d'>def match_sections(</span></li>
+<li><span class='rel'>hsrmap/guides/regions/resolver.py</span><span class='ln'>131 行 · 10-03 02:51</span>
+<span class='d'>def _norm(text: str) -&gt; str:</span></li>
+<li><span class='rel'>hsrmap/guides/matching/candidates.py</span><span class='ln'>122 行 · 10-03 14:52</span>
+<span class='d'>def query_candidates(</span></li>
+<li><span class='rel'>hsrmap/guides/matching/inset.py</span><span class='ln'>96 行 · 10-02 13:59</span>
+<span class='d'>def read_inset_anchor(image_bytes: bytes | None) -&gt; str | None:</span></li>
+<li><span class='rel'>hsrmap/guides/matching/ticker.py</span><span class='ln'>95 行 · 10-03 00:19</span>
+<span class='d'>def official_candidates_for_map(</span></li>
+<li><span class='rel'>hsrmap/guides/extract/refresh.py</span><span class='ln'>94 行 · 10-03 02:17</span>
+<span class='d'>Re-derive a stored page's article text with the current parser (a1-6 §33).</span></li>
+<li><span class='rel'>hsrmap/guides/llm/fake.py</span><span class='ln'>91 行 · 10-03 00:19</span>
+<span class='d'>class FakeGuideLLMProvider:</span></li>
+<li><span class='rel'>hsrmap/guides/matching/scenes.py</span><span class='ln'>88 行 · 10-03 00:19</span>
+<span class='d'>_ROLE_RANK = {"PUZZLE_STEP": 0, "LOCATION_MAP": 1, "RESULT": 2}</span></li>
+<li><span class='rel'>hsrmap/guides/matching/cv.py</span><span class='ln'>78 行 · 10-02 05:02</span>
+<span class='d'>def locate_on_raster(image_sha: str, fixture_hash: str | None = None) -&gt; dict[str, Any] | None:</span></li>
+<li><span class='rel'>hsrmap/guides/vision/roles.py</span><span class='ln'>73 行 · 10-03 00:19</span>
+<span class='p'>人话：判断一张图是位置图、解谜步骤图，还是广告封面。</span>
+<span class='d'>ALLOWED = {</span></li>
+<li><span class='rel'>hsrmap/guides/llm/provider.py</span><span class='ln'>72 行 · 10-03 02:55</span>
+<span class='d'>class GuideLLMProvider(Protocol):</span></li>
+<li><span class='rel'>hsrmap/guides/matching/registry.py</span><span class='ln'>61 行 · 10-03 00:19</span>
+<span class='d'>def match_for_topic(topic_key: str, unit: dict[str, Any], candidates: list[dict[str, Any]]) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/guides/vision/region_reader.py</span><span class='ln'>54 行 · 10-02 13:58</span>
+<span class='d'>BANNED = {"4.2版本", "4.2", "版本", "祈鸢", "作者"}</span></li>
+<li><span class='rel'>hsrmap/guides/units/collectible.py</span><span class='ln'>45 行 · 10-02 15:07</span>
+<span class='d'>def build_collectible_units(</span></li>
+<li><span class='rel'>hsrmap/guides/vision/slicer.py</span><span class='ln'>44 行 · 10-03 00:19</span>
+<span class='d'>def slice_long_image(blob: bytes | None, *, ratio: float = 3.0) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/guides/llm/config.py</span><span class='ln'>41 行 · 10-02 04:57</span>
+<span class='d'>ROOT = Path(__file__).resolve().parents[3]</span></li>
+<li><span class='rel'>hsrmap/guides/derived.py</span><span class='ln'>39 行 · 10-02 11:29</span>
+<span class='d'>class DerivedGuideStore:</span></li>
+<li><span class='rel'>hsrmap/guides/vision/variants.py</span><span class='ln'>35 行 · 10-02 15:24</span>
+<span class='d'>def build_image_variants(blob: bytes, *, sha256: str, cache_root: Path) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/guides/layout/render.py</span><span class='ln'>29 行 · 10-02 15:16</span>
+<span class='d'>def render_layout(layout: dict[str, Any] | None) -&gt; str:</span></li>
+<li><span class='rel'>hsrmap/guides/llm/extract.py</span><span class='ln'>28 行 · 10-02 04:36</span>
+<span class='d'>PROMPT_VERSION = "article_extract_v1"</span></li>
+<li><span class='rel'>hsrmap/guides/matching/image_similarity.py</span><span class='ln'>28 行 · 10-02 11:19</span>
+<span class='d'>def average_hash(image_bytes: bytes, size: int = 8) -&gt; str:</span></li>
+<li><span class='rel'>hsrmap/guides/regions/official.py</span><span class='ln'>27 行 · 10-03 00:19</span>
+<span class='d'>def resolve_official_map(map_name_raw: str | None, maps: list[dict[str, Any]]) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/guides/layout/planner.py</span><span class='ln'>26 行 · 10-02 15:07</span>
+<span class='p'>人话：根据缺什么，排出下一轮该用什么关键词去搜。</span>
+<span class='d'>def plan_layout(draft: dict[str, Any] | None) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/guides/vision/generic_roles.py</span><span class='ln'>26 行 · 10-03 00:19</span>
+<span class='d'>_ALIASES = {</span></li>
+<li><span class='rel'>hsrmap/guides/units/registry.py</span><span class='ln'>24 行 · 10-02 15:21</span>
+<span class='d'>def build_units_for_topic(</span></li>
+<li><span class='rel'>hsrmap/guides/semantic/classifier.py</span><span class='ln'>22 行 · 10-02 14:53</span>
+<span class='d'>def classify_topics(blocks: list[dict[str, Any]]) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/guides/extract/deterministic.py</span><span class='ln'>15 行 · 10-02 05:01</span>
+<span class='d'>class DeterministicGuideExtractor(FakeGuideLLMProvider):</span></li>
+<li><span class='rel'>hsrmap/guides/llm/client.py</span><span class='ln'>14 行 · 10-02 04:41</span>
+<span class='d'>class FakeLLMClient:</span></li>
+<li><span class='rel'>hsrmap/guides/llm/vision.py</span><span class='ln'>13 行 · 10-02 04:39</span>
+<span class='d'>ALLOWED = {"map_overview", "puzzle_step", "ui", "other"}</span></li>
+<li><span class='rel'>hsrmap/guides/vision/sanitize.py</span><span class='ln'>13 行 · 10-03 00:19</span>
+<span class='d'>_FORBIDDEN = {"source_point_id", "point_id", "map_id", "official_point_id"}</span></li>
+<li><span class='rel'>hsrmap/guides/regions/__init__.py</span><span class='ln'>5 行 · 10-02 11:19</span>
+<span class='d'>__all__ = ["resolve_map", "build_region_sections", "build_guide_units"]</span></li>
+<li><span class='rel'>hsrmap/guides/layout/__init__.py</span><span class='ln'>4 行 · 10-02 15:16</span>
+<span class='d'>__all__ = ["plan_layout", "render_layout"]</span></li>
+<li><span class='rel'>hsrmap/guides/vision/__init__.py</span><span class='ln'>4 行 · 10-02 11:19</span>
+<span class='d'>__all__ = ["classify_role", "read_region"]</span></li>
+<li><span class='rel'>hsrmap/guides/semantic/__init__.py</span><span class='ln'>3 行 · 10-02 14:53</span>
+<span class='d'>__all__ = ["classify_topics"]</span></li>
+<li><span class='rel'>hsrmap/guides/units/__init__.py</span><span class='ln'>3 行 · 10-02 15:07</span>
+<span class='d'>__all__ = ["build_units_for_topic"]</span></li>
+<li><span class='rel'>hsrmap/guides/extract/__init__.py</span><span class='ln'>0 行 · 10-02 04:35</span>
+<span class='d'>(没有 docstring)</span></li>
+<li><span class='rel'>hsrmap/guides/llm/__init__.py</span><span class='ln'>0 行 · 10-02 04:36</span>
+<span class='d'>(没有 docstring)</span></li>
+<li><span class='rel'>hsrmap/guides/matching/__init__.py</span><span class='ln'>0 行 · 10-02 04:36</span>
+<span class='d'>(没有 docstring)</span></li>
+</ul></details></div>
+<div class='layer'><div class='top'>
+<div class='tag' style='background:#e08a5f'>NET</div>
+<h3>抓取与语料层</h3><div class='cnt'>32 模块 · 4236 行</div></div>
+<p class='plain'>出门找东西：适配各家网站、渲染需要跑 JS 的页面、去重、质检、把图存下来。</p>
+<details><summary>展开 32 个模块</summary><ul class='mods'>
+<li><span class='rel'>hsrmap/guides/corpus.py</span><span class='ln'>455 行 · 10-03 11:34</span>
+<span class='p'>人话：批量导入一批 URL：抓取、解析、入库一条龙。</span>
+<span class='d'>CANARY_URLS = [</span></li>
+<li><span class='rel'>hsrmap/guides/rebuild.py</span><span class='ln'>410 行 · 10-03 09:53</span>
+<span class='d'>Rebuild quarantined guides from the article text we really stored (a1-6 §30).</span></li>
+<li><span class='rel'>hsrmap/guides/assets/fetcher.py</span><span class='ln'>376 行 · 10-03 14:17</span>
+<span class='d'>Asset ingestion: one place that turns an image URL into a typed, cached asset.</span></li>
+<li><span class='rel'>hsrmap/guides/ingest.py</span><span class='ln'>354 行 · 10-03 16:46</span>
+<span class='p'>人话：一篇文章从 HTML 到入库的完整管线。</span>
+<span class='d'>def ingest_page(</span></li>
+<li><span class='rel'>hsrmap/guides/crawler/identity.py</span><span class='ln'>236 行 · 10-03 02:25</span>
+<span class='d'>URL identity for the crawler: which article, which site, which mirror.</span></li>
+<li><span class='rel'>hsrmap/guides/crawler/base.py</span><span class='ln'>209 行 · 10-03 01:55</span>
+<span class='d'>class GuideSourceAdapter:</span></li>
+<li><span class='rel'>hsrmap/guides/assets/cache.py</span><span class='ln'>205 行 · 10-03 02:26</span>
+<span class='d'>Asset cache: one download per image, keyed by canonical SHA256.</span></li>
+<li><span class='rel'>hsrmap/guides/crawler/hosts.py</span><span class='ln'>193 行 · 10-03 02:58</span>
+<span class='d'>Host scheduler, circuit breaker and robots cache (a1-6 §14/§15/§21).</span></li>
+<li><span class='rel'>hsrmap/guides/signature.py</span><span class='ln'>192 行 · 10-03 01:58</span>
+<span class='d'>Canonicalization and the Review Unit Signature (a1-6 §10–14).</span></li>
+<li><span class='rel'>hsrmap/guides/revive.py</span><span class='ln'>172 行 · 10-03 11:16</span>
+<span class='d'>Thin drafts are usually a parse artefact, not a dead end (a1-6 §27/§31).</span></li>
+<li><span class='rel'>hsrmap/guides/crawler/render.py</span><span class='ln'>160 行 · 10-03 11:42</span>
+<span class='p'>人话：用本机已装的 Chrome 把需要跑 JS 的页面渲染出来（米游社、TapTap 这类）。</span>
+<span class='d'>Render a page that needs JavaScript, with a browser that is already installed.</span></li>
+<li><span class='rel'>hsrmap/guides/assets/relevance.py</span><span class='ln'>157 行 · 10-03 03:02</span>
+<span class='d'>Rule-based image relevance, then perceptual dedup (a1-6 §十).</span></li>
+<li><span class='rel'>hsrmap/guides/qa.py</span><span class='ln'>144 行 · 10-03 01:55</span>
+<span class='d'>PAGE_STATUSES = (</span></li>
+<li><span class='rel'>hsrmap/guides/assets/phash.py</span><span class='ln'>140 行 · 10-03 02:25</span>
+<span class='d'>Perceptual hash: the same picture in another encoding (a1-6 §十, Sprint 2).</span></li>
+<li><span class='rel'>hsrmap/guides/assets/smoke.py</span><span class='ln'>137 行 · 10-03 01:44</span>
+<span class='d'>P1.1 smoke matrix: what do real hosts actually do to our asset fetches?</span></li>
+<li><span class='rel'>hsrmap/guides/crawler/guard.py</span><span class='ln'>121 行 · 10-03 02:58</span>
+<span class='d'>URL admission: the crawler only ever talks to public HTTP(S) hosts (a1-6 §22).</span></li>
+<li><span class='rel'>hsrmap/guides/crawler/miyoushe.py</span><span class='ln'>116 行 · 10-03 17:01</span>
+<span class='d'>米游社（miyoushe）文章的 JSON API —— SPA 页面之外的那条路。</span></li>
+<li><span class='rel'>hsrmap/guides/reingest.py</span><span class='ln'>106 行 · 10-03 12:01</span>
+<span class='p'>人话：一篇文章从 HTML 到入库的完整管线。</span>
+<span class='d'>Re-parse a stored page with its assets fetched (a1-6 §27/§31).</span></li>
+<li><span class='rel'>hsrmap/guides/discover.py</span><span class='ln'>80 行 · 10-03 00:19</span>
+<span class='d'>def _parse_seeds(path: Path) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/guides/dedup.py</span><span class='ln'>55 行 · 10-02 05:19</span>
+<span class='p'>人话：同一个目标有多条攻略时，留最厚的那条，其余标记被取代。</span>
+<span class='d'>def _norm(text: str) -&gt; str:</span></li>
+<li><span class='rel'>hsrmap/guides/crawler/pagination.py</span><span class='ln'>43 行 · 10-03 02:36</span>
+<span class='d'>_ARTICLE = re.compile(r"/(\d+)(?:_\d+)?\.s?html", re.I)</span></li>
+<li><span class='rel'>hsrmap/guides/assets/__init__.py</span><span class='ln'>39 行 · 10-03 01:43</span>
+<span class='d'>ASSET_STATUSES,</span></li>
+<li><span class='rel'>hsrmap/guides/crawler/robots.py</span><span class='ln'>28 行 · 10-02 04:39</span>
+<span class='d'>def path_allowed(robots_txt: str, path: str, user_agent: str = "*") -&gt; bool:</span></li>
+<li><span class='rel'>hsrmap/guides/sources/gamersky.py</span><span class='ln'>20 行 · 10-02 05:18</span>
+<span class='d'>class GamerSkyAdapter(GuideSourceAdapter):</span></li>
+<li><span class='rel'>hsrmap/guides/sources/three_dm.py</span><span class='ln'>20 行 · 10-02 05:18</span>
+<span class='d'>class ThreeDMAdapter(GuideSourceAdapter):</span></li>
+<li><span class='rel'>hsrmap/guides/sources/taptap.py</span><span class='ln'>18 行 · 10-02 05:18</span>
+<span class='d'>class TapTapAdapter(GuideSourceAdapter):</span></li>
+<li><span class='rel'>hsrmap/guides/sources/site17173.py</span><span class='ln'>17 行 · 10-02 05:09</span>
+<span class='d'>class Site17173Adapter(GuideSourceAdapter):</span></li>
+<li><span class='rel'>hsrmap/guides/crawler/fetch.py</span><span class='ln'>16 行 · 10-02 04:39</span>
+<span class='d'>def fetch_page(url: str, client: Any, robots_txt: str | None = None) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/guides/sources/miyoushe.py</span><span class='ln'>9 行 · 10-02 04:40</span>
+<span class='d'>class MiyousheAdapter(GuideSourceAdapter):</span></li>
+<li><span class='rel'>hsrmap/guides/sources/generic.py</span><span class='ln'>8 行 · 10-02 04:40</span>
+<span class='d'>class GenericAdapter(GuideSourceAdapter):</span></li>
+<li><span class='rel'>hsrmap/guides/crawler/__init__.py</span><span class='ln'>0 行 · 10-02 04:36</span>
+<span class='d'>(没有 docstring)</span></li>
+<li><span class='rel'>hsrmap/guides/sources/__init__.py</span><span class='ln'>0 行 · 10-02 04:36</span>
+<span class='d'>(没有 docstring)</span></li>
+</ul></details></div>
+<div class='layer'><div class='top'>
+<div class='tag' style='background:#d98cb3'>REV</div>
+<h3>审核层</h3><div class='cnt'>5 模块 · 2350 行</div></div>
+<p class='plain'>人工闸门：机器觉得可以发的，也还是要人过一眼才准发。</p>
+<details><summary>展开 5 个模块</summary><ul class='mods'>
+<li><span class='rel'>hsrmap/guides/review/service.py</span><span class='ln'>2102 行 · 10-04 10:22</span>
+<span class='p'>人话：人工审核的准入规则：什么草稿可以批准、什么必须打回。</span>
+<span class='d'>def _row(row) -&gt; dict[str, Any]:</span></li>
+<li><span class='rel'>hsrmap/guides/review/merge.py</span><span class='ln'>171 行 · 10-03 03:05</span>
+<span class='d'>Evidence merge: one review object per unit signature (a1-6 §13).</span></li>
+<li><span class='rel'>hsrmap/guides/review/canary.py</span><span class='ln'>50 行 · 10-02 14:34</span>
+<span class='d'>CANARY_POINT_IDS = (</span></li>
+<li><span class='rel'>hsrmap/guides/review/queue.py</span><span class='ln'>27 行 · 10-02 05:01</span>
+<span class='d'>def list_pending(db: GuideDatabase) -&gt; list[dict[str, Any]]:</span></li>
+<li><span class='rel'>hsrmap/guides/review/__init__.py</span><span class='ln'>0 行 · 10-02 04:39</span>
+<span class='d'>(没有 docstring)</span></li>
+</ul></details></div>
+<div class='layer'><div class='top'>
+<div class='tag' style='background:#b8c46a'>PUB</div>
+<h3>发布与审计层</h3><div class='cnt'>11 模块 · 2971 行</div></div>
+<p class='plain'>发出去之前比一比、发的时候别写坏、发完回头审计有没有编造的内容。</p>
+<details><summary>展开 11 个模块</summary><ul class='mods'>
+<li><span class='rel'>hsrmap/guides/publishing/diff.py</span><span class='ln'>1188 行 · 10-04 09:26</span>
+<span class='p'>人话：发布前比对：这次发布会删掉什么、覆盖率会不会倒退。</span>
+<span class='d'>Publish-time snapshot diff and coverage regression gate.</span></li>
+<li><span class='rel'>hsrmap/guides/audit.py</span><span class='ln'>499 行 · 10-04 09:26</span>
+<span class='p'>人话：发布后回头查：每一步文字是不是真的出现在它声称的来源页里，不在就是编造。</span>
+<span class='d'>Published snapshot audit (a1-6 §33 step 5, a1-5 acceptance "hallucinated steps = 0").</span></li>
+<li><span class='rel'>hsrmap/guides/closure.py</span><span class='ln'>359 行 · 10-04 09:36</span>
+<span class='p'>人话：收官判定：整个项目现在算不算做完了。</span>
+<span class='d'>Machine closure verdict for Guide Atlas V3 (a1-6 §32) and the ADR table (§33 步 7).</span></li>
+<li><span class='rel'>hsrmap/guides/publishing/atomic.py</span><span class='ln'>247 行 · 10-04 09:31</span>
+<span class='p'>人话：原子发布：中途失败不会把 published.db 写坏一半。</span>
+<span class='d'>Staged publish: build → validate → offline E2E → regression → atomic switch.</span></li>
+<li><span class='rel'>hsrmap/guides/ai_cache.py</span><span class='ln'>238 行 · 10-03 02:54</span>
+<span class='d'>Unified AI cache (a1-6 §29, ADR-005).</span></li>
+<li><span class='rel'>hsrmap/guides/admin.py</span><span class='ln'>185 行 · 10-03 02:56</span>
+<span class='d'>Topic Admin: the metrics behind the admin page (a1-6 §27).</span></li>
+<li><span class='rel'>hsrmap/guides/publishing/sync.py</span><span class='ln'>120 行 · 10-04 09:28</span>
+<span class='d'>CLAIM_COLUMNS = (</span></li>
+<li><span class='rel'>hsrmap/guides/publish/lookup.py</span><span class='ln'>75 行 · 10-03 00:19</span>
+<span class='d'>def resolve_guide_keys(ctx, source_point_id: str) -&gt; list[str]:</span></li>
+<li><span class='rel'>hsrmap/guides/publish/publisher.py</span><span class='ln'>34 行 · 10-02 05:01</span>
+<span class='d'>def publish_page(db: GuideDatabase, page: dict[str, Any], bindings: list[dict[str, Any]], steps: list[dict[str, Any]]) -</span></li>
+<li><span class='rel'>hsrmap/guides/publishing/__init__.py</span><span class='ln'>26 行 · 10-04 09:32</span>
+<span class='d'>PublishBlocked,</span></li>
+<li><span class='rel'>hsrmap/guides/publish/__init__.py</span><span class='ln'>0 行 · 10-02 04:36</span>
+<span class='d'>(没有 docstring)</span></li>
+</ul></details></div>
+<div class='layer'><div class='top'>
+<div class='tag' style='background:#7fa8d9'>API</div>
+<h3>接口层</h3><div class='cnt'>3 模块 · 2694 行</div></div>
+<p class='plain'>对外的两个口子：命令行工具，和本机网页服务。</p>
+<details><summary>展开 3 个模块</summary><ul class='mods'>
+<li><span class='rel'>hsrmap/cli.py</span><span class='ln'>1830 行 · 10-04 10:24</span>
+<span class='d'>class _LazyPaths:</span></li>
+<li><span class='rel'>hsrmap/viewer_app.py</span><span class='ln'>694 行 · 10-04 10:26</span>
+<span class='d'>asset_path,</span></li>
+<li><span class='rel'>hsrmap/serve.py</span><span class='ln'>170 行 · 10-04 10:16</span>
+<span class='d'>本地服务：离线地图与审核台**分成两个进程/端口**。</span></li>
+</ul></details></div>
+</div>
+<h2 id="n-model">判定层：全项目唯一的口径<em>「能不能拿到」而不是「写得详不详细」</em></h2>
+<p class='hint'>每个点位先问两个问题：<b>要不要第二阶段</b>（到了就能拿，还是到了还得动手），再看手上证据补上了 <b>范围 / 位置 / 解法</b> 里的哪几种。</p>
+<div class='model'>
+<div class='panel'><h4>维度一 · 完成要求</h4><span class='pill hi'>LOCATE_ONLY</span><span class='pill mid'>LOCATE_AND_SOLVE</span><div class='note'>LOCATE_ONLY = 走到就能拿，位置证据本身就是完整攻略。<br>LOCATE_AND_SOLVE = 到了还得动手，另需解法。</div></div>
+<div class='panel'><h4>维度二 · 要动手的话，是哪一种</h4><span class='pill'>NONE</span><span class='pill'>INTERACT</span><span class='pill'>INPUT_SEQUENCE</span><span class='pill'>MODULE_PUZZLE</span><span class='pill'>TRANSFORM_ROUTE</span><span class='pill'>PLATFORM_ROUTE</span><span class='pill'>CHALLENGE</span><span class='pill'>OTHER</span></div>
+<div class='panel'><h4>六种状态</h4><span class='pill '>NO_EVIDENCE</span><span class='pill '>SCOPE_ONLY</span><span class='pill '>LOCATE_MISSING</span><span class='pill hi'>LOCATE_COMPLETE</span><span class='pill '>SOLVE_MISSING</span><span class='pill hi'>COMPLETE</span><div class='note'>绿色两种算「玩家拿得到」。不搞百分比——分数没有稳定语义。</div></div>
+</div>
+<div class='cmp' style='margin-top:13px'>
+<div class='panel'><h4 class='ok'>若虫 · 第 1 阶段就到手</h4><p class='dim' style='font-size:12.5px;margin:2px 0 0'>位置即全部难点，官方点位图就是完整攻略。</p><ol><li>官方地图上有点位</li><li>玩家走过去</li><li>直接收集</li></ol><p class='ok' style='margin:8px 0 0'>→ <b>COMPLETE</b></p></div>
+<div class='panel'><h4 class='warn'>浮脂溯源 · 第 2 阶段还要解</h4><p class='dim' style='font-size:12.5px;margin:2px 0 0'>官方图只解决「在哪」，不解决「怎么转」。</p><ol><li>官方点位图告诉你在哪</li><li>玩家走到机关前</li><li><b>还得按 Q 顺时针 / E 逆时针转对</b></li></ol><p class='warn' style='margin:8px 0 0'>→ 只有位置 = <b>SOLVE_MISSING</b>；位置 + 旋转序列 = <b>COMPLETE</b></p></div>
+</div>
+<h2 id="n-topics">十六个主题档案<em>11 个只要第一阶段，其余要解法</em></h2>
+<p class='hint'>主题档案是「这个主题的规矩」：要不要第二阶段、点级能不能上调、用哪个匹配器和版式。</p>
+<div class='panel'><table><tr><th>主题</th><th>游戏内名称</th><th>内容类型</th><th>范围</th><th>完成要求</th><th>解法类型</th><th>点级上调</th><th class='n'>优先级</th><th>启用</th></tr>
+<tr><td class='mono'>floating_grease</td><td>浮脂溯源·二次元ROTATE！</td><td class='dim'>PUZZLE</td><td class='dim'>POINT</td><td><span class='warn'>到了还得动手</span></td><td class='dim mono'>INPUT_SEQUENCE</td><td class='dim'>可以</td><td class='n dim'>100</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>dream_ticker</td><td>梦境迷钟</td><td class='dim'>PUZZLE</td><td class='dim'>POINT</td><td><span class='warn'>到了还得动手</span></td><td class='dim mono'>MODULE_PUZZLE</td><td class='dim'>可以</td><td class='n dim'>90</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>golden_scapegoat</td><td>黄金替罪羊</td><td class='dim'>PUZZLE</td><td class='dim'>POINT</td><td><span class='warn'>到了还得动手</span></td><td class='dim mono'>INPUT_SEQUENCE</td><td class='dim'>可以</td><td class='n dim'>88</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>magnetic_puzzle</td><td>磁流解阈</td><td class='dim'>PUZZLE</td><td class='dim'>POINT</td><td><span class='warn'>到了还得动手</span></td><td class='dim mono'>MODULE_PUZZLE</td><td class='dim'>可以</td><td class='n dim'>88</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>unworldly_material</td><td>不世之材</td><td class='dim'>PUZZLE</td><td class='dim'>POINT</td><td><span class='ok'>走到就能拿</span></td><td class='dim mono'>NONE</td><td class='dim'>可以</td><td class='n dim'>87</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>jump</td><td>二次元 JUMP</td><td class='dim'>CHALLENGE</td><td class='dim'>POINT</td><td><span class='ok'>走到就能拿</span></td><td class='dim mono'>NONE</td><td class='dim'>可以</td><td class='n dim'>86</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>hanu</td><td>小小哈努行动</td><td class='dim'>CHALLENGE</td><td class='dim'>POINT</td><td><span class='ok'>走到就能拿</span></td><td class='dim mono'>NONE</td><td class='dim'>已关闭</td><td class='n dim'>85</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>zagreus_hand</td><td>扎格列斯之手</td><td class='dim'>PUZZLE</td><td class='dim'>POINT_SET</td><td><span class='ok'>走到就能拿</span></td><td class='dim mono'>NONE</td><td class='dim'>可以</td><td class='n dim'>84</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>pioneer_fairy</td><td>开拓妖精大挑战</td><td class='dim'>CHALLENGE</td><td class='dim'>POINT</td><td><span class='ok'>走到就能拿</span></td><td class='dim mono'>NONE</td><td class='dim'>可以</td><td class='n dim'>83</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>origami_bird</td><td>折纸小鸟</td><td class='dim'>COLLECTIBLE</td><td class='dim'>MAP_LABEL</td><td><span class='ok'>走到就能拿</span></td><td class='dim mono'>NONE</td><td class='dim'>可以</td><td class='n dim'>80</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>nymph</td><td>若虫</td><td class='dim'>COLLECTIBLE</td><td class='dim'>MAP_LABEL</td><td><span class='ok'>走到就能拿</span></td><td class='dim mono'>NONE</td><td class='dim'>可以</td><td class='n dim'>79</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>nameless_dust_spirit</td><td>无名尘灵</td><td class='dim'>COLLECTIBLE</td><td class='dim'>MAP_LABEL</td><td><span class='ok'>走到就能拿</span></td><td class='dim mono'>NONE</td><td class='dim'>可以</td><td class='n dim'>78</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>miracle_orb</td><td>奇迹宝珠</td><td class='dim'>COLLECTIBLE</td><td class='dim'>MAP_LABEL</td><td><span class='ok'>走到就能拿</span></td><td class='dim mono'>NONE</td><td class='dim'>可以</td><td class='n dim'>76</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>king_bucket</td><td>王下一桶</td><td class='dim'>CHALLENGE</td><td class='dim'>POINT</td><td><span class='ok'>走到就能拿</span></td><td class='dim mono'>NONE</td><td class='dim'>已关闭</td><td class='n dim'>74</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>dimensional_trotter</td><td>次元扑满</td><td class='dim'>CHALLENGE</td><td class='dim'>POINT</td><td><span class='ok'>走到就能拿</span></td><td class='dim mono'>NONE</td><td class='dim'>可以</td><td class='n dim'>73</td><td><span class='ok'>是</span></td></tr>
+<tr><td class='mono'>hidden_treasure</td><td>隐性战利品</td><td class='dim'>PUZZLE</td><td class='dim'>POINT</td><td><span class='warn'>到了还得动手</span></td><td class='dim mono'>OTHER</td><td class='dim'>可以</td><td class='n dim'>20</td><td><span class='dim'>否</span></td></tr>
+</table></div>
+<h2 id="n-flow">数据流<em>真实世界 → 本地语料 → 判定与产出</em></h2>
+<div class='panel'><pre class='flow'>真实世界                          本地语料                          判定与产出
+─────────────────────────────  ────────────────────────────────  ───────────────────────────────
+官方互动地图                       抓取与语料层                       完整性判定层
+  ├─ 地图快照 core.db    ───────▶   ├─ 各站适配器 sources/            stages.py
+  ├─ 点位详情 detail.db  ───────▶   ├─ 需要跑 JS 的页面 render        「要求 × 证据 → 状态」
+  └─ 官方点位与官方图    ───────▶   ├─ 导入 / 重导 ingest、reingest             │
+                                    └─ 图片资产 assets/                        ▼
+社区图文攻略            ───────▶                                     主题档案层
+  ├─ 17173 / 3DM / 游民   ───────▶  抽取与视觉层                      16 个主题各自的规矩
+  ├─ TapTap / 米游社      ───────▶   ├─ HTML 切成块 extract/            ├─ 要不要第二阶段
+  └─ 游侠 / 九游 / B站    ───────▶   ├─ 大模型抽取 llm/                 ├─ 证据形态是什么
+                                    ├─ 视觉分镜 vision/                └─ 匹配器 / 版式 / 视觉角色
+                                    ├─ 图文匹配 matching/                        │
+                                    └─ 区域解析 regions/                         ▼
+                                            │                          证据与账本层
+                                            ▼                           ├─ 搜索证据账本 evidence
+                                    审核层                                ├─ 台账 ledger
+                                    人工闸门                              ├─ 覆盖率 coverage
+                                    锚定 / 文本接地两种准入                └─ 检索计划 planner
+                                            │                                    │
+                                            ▼                                    ▼
+                                    发布与审计层                        接口层
+                                    ├─ 发布前 diff 回归闸门               cli / serve / viewer_app
+                                    ├─ 原子发布 atomic                            │
+                                    ├─ 已发布内容审计 audit                        ▼
+                                    └─ 收官判定 closure                  前端 web/
+                                                                         地图 viewer + 攻略中心 + 审核台</pre></div>
+<h2 id="n-db">数据放在哪<em>四个 sqlite 库</em></h2><div class='layers'>
+<div class='layer'><h3 class='mono' style='font-size:14px'>guide.db / published.db</h3><p class='plain'>攻略主库（工作库 + 发布库） · <span class='mono dim'>hsrmap/guide_db.py</span></p><p style='margin:0'><span class='pill mono'>metadata</span><span class='pill mono'>guide_entry</span><span class='pill mono'>guide_steps</span><span class='pill mono'>guide_assets</span><span class='pill mono'>guide_source</span><span class='pill mono'>guide_page</span><span class='pill mono'>guide_cluster</span><span class='pill mono'>guide_point_binding</span><span class='pill mono'>crawl_run</span><span class='pill mono'>extraction_run</span><span class='pill mono'>review_item</span><span class='pill mono'>source_search_verdict</span><span class='pill mono'>guide_topic</span><span class='pill mono'>guide_target</span><span class='pill mono'>guide_entry_target</span><span class='pill mono'>page_topic</span><span class='pill mono'>guide_target_status</span><span class='pill mono'>ai_cache</span><span class='pill mono'>guide_job</span><span class='pill mono'>source_search_run</span><span class='pill mono'>source_search_result</span><span class='pill mono'>guide_asset_cache</span><span class='pill mono'>已经建好</span><span class='pill mono'>guide_claim_evidence</span><span class='pill mono'>page_image_cache</span><span class='pill mono'>schema_migration</span></p></div>
+<div class='layer'><h3 class='mono' style='font-size:14px'>core.db</h3><p class='plain'>官方地图快照 · <span class='mono dim'>hsrmap/database.py</span></p><p style='margin:0'><span class='pill mono'>map_nodes</span><span class='pill mono'>maps</span><span class='pill mono'>map_fragments</span><span class='pill mono'>label_nodes</span><span class='pill mono'>semantic_labels</span><span class='pill mono'>semantic_label_bindings</span><span class='pill mono'>points</span><span class='pill mono'>point_labels</span><span class='pill mono'>assets</span><span class='pill mono'>asset_sources</span></p></div>
+<div class='layer'><h3 class='mono' style='font-size:14px'>detail.db</h3><p class='plain'>官方点位详情 · <span class='mono dim'>hsrmap/detail_db.py</span></p><p style='margin:0'><span class='pill mono'>metadata</span><span class='pill mono'>schema_versions</span><span class='pill mono'>detail_requests</span><span class='pill mono'>point_details</span><span class='pill mono'>point_detail_bindings</span><span class='pill mono'>point_detail_assets</span><span class='pill mono'>unclassified_asset_candidates</span><span class='pill mono'>asset_sources</span></p></div>
+<div class='layer'><h3 class='mono' style='font-size:14px'>user.db</h3><p class='plain'>本地用户进度 · <span class='mono dim'>hsrmap/user_db.py</span></p><p style='margin:0'><span class='pill mono'>metadata</span><span class='pill mono'>point_progress</span></p></div>
+</div>
+<h2 id="n-cli">命令行<em>顶层 17 个命令 · guides 下 54 个子命令</em></h2>
+<div class='panel'><h4 style='margin:0 0 6px;font-size:14px'>hsrmap &lt;命令&gt;</h4><span class='pill mono'>runtime</span><span class='pill mono'>release</span><span class='pill mono'>doctor</span><span class='pill mono'>dod</span><span class='pill mono'>repo-hygiene</span><span class='pill mono'>sync</span><span class='pill mono'>validate</span><span class='pill mono'>inspect</span><span class='pill mono'>status</span><span class='pill mono'>staging</span><span class='pill mono'>enrich-details</span><span class='pill mono'>detail-status</span><span class='pill mono'>validate-details</span><span class='pill mono'>serve</span><span class='pill mono'>guides</span><span class='pill mono'>ingest</span><span class='pill mono'>import-page</span><h4 style='margin:14px 0 6px;font-size:14px'>hsrmap guides &lt;子命令&gt;</h4><span class='pill mono'>inventory</span><span class='pill mono'>topics</span><span class='pill mono'>discover</span><span class='pill mono'>fetch</span><span class='pill mono'>parse</span><span class='pill mono'>extract</span><span class='pill mono'>match</span><span class='pill mono'>rematch</span><span class='pill mono'>ticker-bind</span><span class='pill mono'>review</span><span class='pill mono'>publish</span><span class='pill mono'>publish-snapshot</span><span class='pill mono'>backfill-topics</span><span class='pill mono'>sync</span><span class='pill mono'>coverage</span><span class='pill mono'>corpus</span><span class='pill mono'>status</span><span class='pill mono'>targets</span><span class='pill mono'>atlas</span><span class='pill mono'>ledger</span><span class='pill mono'>process</span><span class='pill mono'>asset-smoke</span><span class='pill mono'>qa-rescan</span><span class='pill mono'>qa-quarantine</span><span class='pill mono'>signature-merge</span><span class='pill mono'>refresh-text</span><span class='pill mono'>chrome-prune</span><span class='pill mono'>identity</span><span class='pill mono'>asset-dedup</span><span class='pill mono'>search-log</span><span class='pill mono'>search-plan</span><span class='pill mono'>search-record</span><span class='pill mono'>evidence-transcribe</span><span class='pill mono'>claims</span><span class='pill mono'>frontier</span><span class='pill mono'>yield</span><span class='pill mono'>evidence-forms</span><span class='pill mono'>official-seed</span><span class='pill mono'>completeness</span><span class='pill mono'>target-shadow</span><span class='pill mono'>no-public-source</span><span class='pill mono'>job-status</span><span class='pill mono'>job-list</span><span class='pill mono'>rebuild-quarantined</span><span class='pill mono'>review-approve</span><span class='pill mono'>ai-cache</span><span class='pill mono'>image-filter</span><span class='pill mono'>reingest-page</span><span class='pill mono'>published-audit</span><span class='pill mono'>closure-check</span><span class='pill mono'>dedupe-entries</span><span class='pill mono'>revive-thin</span><span class='pill mono'>ingest</span><span class='pill mono'>import-page</span></div>
+<footer>本页由 <span class='mono'>framework/build.py</span> 生成。模块清单、docstring、行数、主题档案、数据库表、命令树全部从源码与 guide.db 只读提取；分层配色与人话解释写在该脚本里。重跑即可刷新。监控台：<span class='mono'>127.0.0.1:8768</span></footer>
+</div></body></html>

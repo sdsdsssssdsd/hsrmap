@@ -1,0 +1,27 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 842,
+      "name": "海原市",
+      "parent_id": 841,
+      "depth": 3,
+      "detail": "{\"slices\":[[{\"url\":\"https://act-webstatic.hoyoverse.com/sr-map-op/2026/04/17/1054210/ae2ada8bb703087b97efffd76c7c6a5a_4877997184951928710.png\"}]],\"origin\":[3827,2217],\"total_size\":[8192,4096],\"padding\":[1706,219]}",
+      "node_type": 2,
+      "children": [],
+      "icon": "",
+      "ch_ext": "",
+      "parent_name": "海原市",
+      "sort": 0,
+      "preview": "",
+      "related_id": "0",
+      "is_hide": false,
+      "map_shape": "0",
+      "map_group_type": 0,
+      "related_group_map": 0,
+      "game_map_id": 0,
+      "map_all_treasure_count": 0
+    }
+  }
+}

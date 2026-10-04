@@ -1,0 +1,38 @@
+topic_key: nymph
+display_name: 若虫
+guide_kind: COLLECTIBLE
+scope: MAP_LABEL
+official_labels:
+  names:
+    - 若虫
+priority: 79
+enabled: true
+unit_builder:
+  type: collectible_route
+matcher:
+  profile: collectible_route_v1
+layout:
+  profile: collection_route_v1
+discovery:
+  queries:
+    - "{map} 若虫 全收集"
+    - 崩坏星穹铁道 若虫 位置
+vision_profile:
+  generic_roles:
+    - LOCATION_MAP
+    - ROUTE_MAP
+    - COLLECTIBLE_LOCATION
+  specialist_prompt: collectible_location_v1
+
+#: 这个主题的解谜是什么类型，以及文字攻略能不能承载它（决定搜索与证据策略）。
+evidence_form:
+  kind: COLLECTIBLE_SPOT
+  text_sufficient: false
+  reason: 3D 隐藏点位，位置靠图；官方数据里房间还无名
+
+#: 完成一个点位需要走到哪一步（与 evidence_form.kind 正交）：
+#: LOCATE_ONLY = 到达即得；LOCATE_AND_SOLVE = 到达后还要解。点级证据可以上调。
+completion:
+  requirement: LOCATE_ONLY
+  solve_kind: NONE
+  reason: 若虫：位置即全部难点，到点收集即可

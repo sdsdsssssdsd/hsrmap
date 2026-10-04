@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5698,
+      "map_id": 842,
+      "label_id": 957,
+      "x_pos": -362.05012279539187,
+      "y_pos": 217.61624969902914,
+      "expansion": "",
+      "display_state": 1,
+      "version": 2,
+      "editor": "",
+      "editor_name": "呆头鹅波比",
+      "author": "",
+      "author_name": "喵喵超级虎",
+      "ctime": "2026-08-26 14:50:46",
+      "content": "位于此处电箱上拾取。",
+      "img": "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/f3362ed6798e8c9921314e7b590c1272_4715809285350692981.png",
+      "url_list": [],
+      "record_id": "13476",
+      "point_num": 1,
+      "related_jump_id": "0",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-08-26 14:50:46"
+  }
+}

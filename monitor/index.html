@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8">
+<title>hsrmap 实时监控台</title>
+<style>
+:root{--bg:#12140f;--panel:#1c1f18;--line:#3a4030;--fg:#e8e4d4;--dim:#9aa08a;--ok:#7ec86a;--warn:#e0b84c;--bad:#e07a5f;--acc:#8fd3c7}
+*{box-sizing:border-box}
+body{margin:0;padding:16px 20px 32px;background:var(--bg);color:var(--fg);font:13px/1.6 "Microsoft YaHei",Consolas,"Cascadia Mono",sans-serif}
+header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+h1{font-size:17px;margin:0}
+h2{font-size:13px;color:var(--acc);margin:0 0 8px;letter-spacing:.4px}
+.meta{color:var(--dim);font-size:12px}
+main{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:1080px){main{grid-template-columns:1fr}}
+section{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:11px 13px}
+.wide{grid-column:1/-1}
+table{width:100%;border-collapse:collapse}
+td,th{padding:3px 6px;border-bottom:1px solid #262a20;vertical-align:top;text-align:left;user-select:text;cursor:text}
+th{color:var(--dim);font-weight:400;font-size:11px;white-space:nowrap}
+td.k{white-space:nowrap}
+td.v,th.v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.big{font-size:26px;font-weight:700}
+.run{color:var(--ok)}.idle{color:var(--dim)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.dim{color:var(--dim);font-size:12px}
+.mono{font-family:Consolas,"Cascadia Mono",monospace}
+.pill{display:inline-block;padding:1px 9px;border-radius:9px;border:1px solid var(--line);font-size:12px}
+.pill.pause{color:var(--warn);border-color:var(--warn)}
+ul{margin:0;padding-left:18px}li{margin:2px 0}
+svg{display:block;margin:4px 0;background:#171a13;border-radius:4px}
+footer{margin-top:14px;color:var(--dim);font-size:12px}
+.stages{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){.stages{grid-template-columns:1fr}}
+.card{background:#191c15;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+.card h3{margin:0 0 2px;font-size:13px;color:var(--fg);font-weight:600}
+.bar{position:relative;height:16px;background:#23271d;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin:6px 0 8px}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#4f8f5f,#7ec86a);display:block}
+.bar.w i{background:linear-gradient(90deg,#a3801f,#e0b84c)}
+.bar em{position:absolute;inset:0;text-align:center;font-size:11px;line-height:16px;color:#e8e4d4;font-style:normal}
+.gap{display:flex;gap:12px;flex-wrap:wrap;font-size:12px}
+.gap span b{font-size:15px}
+button.cp{border:1px solid var(--line);background:#20241a;color:var(--dim);border-radius:4px;font-size:11px;line-height:16px;padding:0 5px;cursor:pointer;font-family:inherit}
+button.cp:hover{color:var(--fg);border-color:var(--acc)}
+td.cpcell{text-align:right;white-space:nowrap;width:1%;padding-right:2px}
+button.ui{border:1px solid var(--line);background:#20241a;color:var(--dim);border-radius:5px;font-size:12px;padding:2px 9px;cursor:pointer;font-family:inherit}
+button.ui:hover{color:var(--fg);border-color:var(--acc)}
+#toast{position:fixed;right:18px;bottom:18px;background:#2b3324;border:1px solid var(--acc);color:var(--fg);padding:7px 13px;border-radius:6px;font-size:12px;opacity:0;transition:opacity .15s;pointer-events:none;z-index:99;max-width:60vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#toast.on{opacity:1}
+</style></head><body>
+<header>
+  <h1>hsrmap 实时监控台 <span class="pill" id="state">连接中…</span> <span class="pill" id="pausepill"></span></h1>
+  <div class="meta">采样 <span id="now">-</span> · 已运行 <span id="uptime">0</span>s · <span id="cmpreload" class="dim"></span>
+    <button class="ui" id="pausebtn">暂停刷新 (p)</button>
+    <a class="ui" href="/framework" target="_blank" style="text-decoration:none;display:inline-block">项目框架台</a></div>
+</header>
+<main>
+  <section class="wide"><h2>主智能体在造什么轮子 · 开发活动</h2>
+    <div class="meta" style="margin-bottom:8px">当前模式 <span class="pill" id="devmode">-</span> · 近 5 分钟改动 <b id="devn">0</b> 个文件 · 近 10 分钟新抓取批次 <b id="rawn">0</b> · 跟踪文件 <span id="devtrack">0</span> 个</div>
+    <div id="devsub" class="dim" style="margin-bottom:8px"></div>
+    <table id="focus"></table>
+    <div id="fresh" style="margin-top:8px"></div>
+  </section>
+
+  <section class="wide"><h2>攻略完整性 · 两阶段进度（官方点位口径）</h2>
+    <div class="stages">
+      <div class="card">
+        <h3>第 1 阶段 · 走到就能拿到</h3>
+        <div class="dim">以官方地图为准：官方点位本身就是完整攻略</div>
+        <div class="big run" id="s1num">-</div>
+        <div class="bar" id="s1bar"><i style="width:0"></i><em></em></div>
+        <div class="gap" id="s1gap"></div>
+        <div class="dim" id="s1topics" style="margin-top:6px"></div>
+      </div>
+      <div class="card">
+        <h3>第 2 阶段 · 到了还要动手</h3>
+        <div class="dim">位置只是第一步：到点后必须继续操作才拿得到</div>
+        <div class="big warn" id="s2num">-</div>
+        <div class="bar w" id="s2bar"><i style="width:0"></i><em></em></div>
+        <div class="gap" id="s2gap"></div>
+        <div class="dim" id="s2topics" style="margin-top:6px"></div>
+      </div>
+    </div>
+    <div class="dim" style="margin-top:8px" id="cmpsum"></div>
+    <div class="dim" id="cmpat"></div>
+  </section>
+
+  <section class="wide"><h2>按解谜类型细分</h2><table id="kinds"></table></section>
+
+  <section class="wide"><h2>按主题细分</h2><table id="topics"></table></section>
+
+  <section class="wide"><h2>缺解法工作队列（前 40 条）</h2><div id="queue"></div></section>
+
+  <section><h2>主智能体进程</h2><div id="procs"></div><table id="newest"></table></section>
+  <section><h2>项目状态</h2><table id="metrics"></table></section>
+
+  <section class="wide"><h2>趋势（本会话内存，约 5 分钟窗口）</h2>
+    <div class="dim">guide.db 字节</div><svg width="560" height="48" viewBox="0 0 560 48" id="sparkg"></svg><div class="dim" id="sparkgi"></div>
+    <div class="dim" style="margin-top:8px">guide-assets 文件数</div><svg width="560" height="48" viewBox="0 0 560 48" id="sparka"></svg>
+  </section>
+
+  <section class="wide"><h2>最近 10 分钟的文件变更</h2><div id="recent"></div></section>
+
+  <section class="wide"><h2>数据库（每 20s 只读重查）</h2><table id="db"></table></section>
+</main>
+<footer>
+  只读：进程查询 + 文件时间戳 + sqlite 只读连接 + 复用项目判定层 hsrmap.guides.stages · 127.0.0.1:8768 · 不写入仓库数据<br>
+  <b>复制说明</b>：双击任意单元格 = 复制该处文字 · 行末 <span class="mono">[⧉]</span> = 复制整行（Tab 分隔，可直接粘进表格）· 只要你在页面上选中了文字，刷新会自动暂停，选完点空白处或按 p 恢复。
+</footer>
+<div id="toast"></div>
+<script>
+var KIND_CN={
+  NONE:"到点即得（无第二阶段）",
+  INTERACT:"互动／对话触发",
+  INPUT_SEQUENCE:"输入序列（方向键／顺逆时针旋转）",
+  MODULE_PUZZLE:"模块移动／旋转解谜",
+  TRANSFORM_ROUTE:"变身＋路线机关",
+  PLATFORM_ROUTE:"平台跳跃路线",
+  CHALLENGE:"挑战玩法",
+  OTHER:"其它／未归类"
+};
+var KIND_ORDER=["NONE","INTERACT","INPUT_SEQUENCE","MODULE_PUZZLE","TRANSFORM_ROUTE","PLATFORM_ROUTE","CHALLENGE","OTHER"];
+var GAMEKIND_CN={COLLECTIBLE:"收集物",PUZZLE:"解谜",CHALLENGE:"挑战"};
+var PAUSE_MANUAL=false, PAUSE_SELECT=false;
+
+function esc(s){return String(s==null?"-":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function row(k,v,cls){return "<tr><td class='k dim'>"+k+"</td><td class='v "+(cls||"")+"'>"+v+"</td></tr>";}
+/* set 只在内容真变了才重画，并且记住上次的源码 html——否则行末的复制按钮会被每秒抹掉 */
+function set(id,html){
+  var e=document.getElementById(id); if(!e) return;
+  if(e.dataset && e.dataset.src===html) return;
+  if(e.dataset) e.dataset.src=html;
+  e.innerHTML=html;
+}
+function pct(a,b){ if(!b) return "0.0"; return (100*a/b).toFixed(1); }
+function cn(kind){return KIND_CN[kind]||kind;}
+
+function toast(msg){
+  var t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("on");
+  clearTimeout(t._h); t._h=setTimeout(function(){ t.classList.remove("on"); }, 1600);
+}
+function fallbackCopy(s){
+  var ta=document.createElement("textarea");
+  ta.value=s; ta.style.position="fixed"; ta.style.opacity="0"; ta.style.left="-9999px";
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  var ok=false;
+  try { ok=document.execCommand("copy"); } catch(e){ ok=false; }
+  document.body.removeChild(ta);
+  toast(ok? ("已复制："+s.slice(0,60)) : "复制失败，请手动选择后 Ctrl+C");
+}
+function copyText(s){
+  s=String(s==null?"":s);
+  if(!s){ toast("这一格是空的"); return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(s).then(function(){ toast("已复制："+s.slice(0,60)); }, function(){ fallbackCopy(s); });
+  } else { fallbackCopy(s); }
+}
+function anySelection(){
+  var s=window.getSelection();
+  return !!(s && String(s).length>0);
+}
+function frozen(){ return PAUSE_MANUAL || PAUSE_SELECT; }
+function paintPause(){
+  var e=document.getElementById("pausepill"); if(!e) return;
+  var b=document.getElementById("pausebtn");
+  if(PAUSE_MANUAL){ e.textContent="已暂停刷新"; e.className="pill pause"; if(b) b.textContent="继续刷新 (p)"; }
+  else if(PAUSE_SELECT){ e.textContent="选中文字，刷新已暂停"; e.className="pill pause"; if(b) b.textContent="暂停刷新 (p)"; }
+  else { e.textContent=""; e.className="pill"; if(b) b.textContent="暂停刷新 (p)"; }
+}
+function togglePause(){ PAUSE_MANUAL=!PAUSE_MANUAL; paintPause(); toast(PAUSE_MANUAL?"已暂停刷新":"已恢复刷新"); }
+/* 每次重画表格后，给每个数据行补一个「复制整行」按钮 */
+function addRowCopy(id){
+  var t=document.getElementById(id); if(!t) return;
+  var rows=t.querySelectorAll("tr");
+  for(var i=0;i<rows.length;i++){
+    var tr=rows[i];
+    if(tr.querySelector("th")) continue;
+    if(tr.querySelector("button.cp")) continue;
+    if(!tr.querySelector("td")) continue;
+    var td=document.createElement("td");
+    td.className="cpcell";
+    var b=document.createElement("button");
+    b.className="cp"; b.type="button"; b.textContent="⧉"; b.title="复制这一行";
+    td.appendChild(b); tr.appendChild(td);
+  }
+}
+document.addEventListener("click", function(ev){
+  var b=ev.target.closest ? ev.target.closest("button.cp") : null;
+  if(!b) return;
+  var tr=b.closest("tr"); if(!tr) return;
+  var cells=[];
+  var tds=tr.querySelectorAll("td");
+  for(var i=0;i<tds.length;i++){
+    if(tds[i].querySelector("button.cp")) continue;
+    cells.push(String(tds[i].innerText||"").replace(/\s+/g," ").trim());
+  }
+  copyText(cells.join("\t"));
+});
+/* 双击：有选区就复制选中的那几个字，否则复制该格整段文字 */
+document.addEventListener("dblclick", function(ev){
+  var sel=String(window.getSelection()||"").trim();
+  if(sel){ copyText(sel); return; }
+  var td=ev.target.closest ? ev.target.closest("td,th") : null;
+  if(!td) return;
+  var txt=String(td.innerText||"").replace(/\s+/g," ").trim();
+  if(txt) copyText(txt);
+});
+document.addEventListener("selectionchange", function(){ PAUSE_SELECT=anySelection(); paintPause(); });
+document.addEventListener("keydown", function(ev){
+  if(ev.key==="p"||ev.key==="P"){ if(ev.target && /INPUT|TEXTAREA/.test(ev.target.tagName)) return; togglePause(); }
+  if(ev.key==="Escape" && PAUSE_MANUAL){ togglePause(); }
+});
+document.getElementById("pausebtn").addEventListener("click", togglePause);
+
+function bar(id,a,b,warn){
+  var el=document.getElementById(id); if(!el) return;
+  var p=pct(a,b);
+  el.className="bar"+(warn?" w":"");
+  el.innerHTML="<i style='width:"+p+"%'></i><em>"+p+"%</em>";
+}
+function gapHTML(g){
+  return "<span class='dim'>点位</span> <span><b>"+g.points+"</b></span>"
+    +"<span class='run'>已完成</span> <span><b>"+g.done+"</b></span>"
+    +"<span class='warn'>缺解法</span> <span><b>"+g.solve_missing+"</b></span>"
+    +"<span>缺定位</span> <span><b>"+g.locate_missing+"</b></span>"
+    +"<span>仅范围计数</span> <span><b>"+g.scope_only+"</b></span>"
+    +"<span>没有任何证据</span> <span><b>"+g.no_evidence+"</b></span>";
+}
+function listFrom(map, key, N){
+  var m=(map||{})[key]||{};
+  var ks=Object.keys(m).sort(function(a,b){ return m[b]-m[a]; });
+  if(!ks.length) return "";
+  return "涉及主题：" + ks.map(function(x){ return dispOf(N,x)+"（"+m[x]+"）"; }).join("、");
+}
+function dispOf(N,k){ var n=null; if(N){ n=N[k]; } return (n && n.display) ? n.display : k; }
+
+function renderCompleteness(c){
+  if(!c || c.error || c.points==null){
+    set("cmpsum", c && c.error ? ("<span class='bad'>判定层出错：" + esc(c.error) + "</span>") : "判定层首次计算中…");
+    return;
+  }
+  var N=c.names||{};
+  function disp(k){ return dispOf(N,k); }
+  function dispCell(k){
+    var n=N[k]||{};
+    var out="<b>"+esc(n.display||k)+"</b>";
+    if(n.label && n.label!==n.display){ out+=" <span class='dim'>（地图标签："+esc(n.label)+"）</span>"; }
+    out+="<br><span class='dim mono'>"+esc(k)+"</span>";
+    return out;
+  }
+  set("cmpat","完整性算于 "+c.at+(c.code_reloaded_at && c.code_reloaded_at!=="-"? (" · 判定层代码已重载于 "+c.code_reloaded_at):"")+"（每 90s 重算；页面每秒刷新）");
+  set("cmpreload","");
+
+  var req=c.by_requirement||{};
+  var g1=req.LOCATE_ONLY||{points:0,done:0,solve_missing:0,locate_missing:0,scope_only:0,no_evidence:0};
+  var g2=req.LOCATE_AND_SOLVE||{points:0,done:0,solve_missing:0,locate_missing:0,scope_only:0,no_evidence:0};
+  set("s1num", g1.done+" / "+g1.points);
+  set("s2num", g2.done+" / "+g2.points);
+  bar("s1bar", g1.done, g1.points, false);
+  bar("s2bar", g2.done, g2.points, true);
+  set("s1gap", gapHTML(g1));
+  set("s2gap", gapHTML(g2));
+  set("s1topics", listFrom(c.req_topics,"LOCATE_ONLY",N));
+  set("s2topics", listFrom(c.req_topics,"LOCATE_AND_SOLVE",N));
+
+  set("cmpsum","全部 "+c.points+" 个官方点位：<b class='run'>已完成 "+c.done+"</b>（到点即完成 "+c.locate_complete+" · 含解法完成 "+c.complete+"）"
+    +" · <b class='warn'>缺解法 "+c.solve_missing+"</b> · 缺定位 "+c.locate_missing+" · 仅范围计数 "+c.scope_only+" · 没有任何证据 "+c.no_evidence);
+
+  var k=c.by_solve_kind||{};
+  var ks=Object.keys(k).sort(function(a,b){
+    var ia=KIND_ORDER.indexOf(a), ib=KIND_ORDER.indexOf(b);
+    if(ia<0) ia=99; if(ib<0) ib=99;
+    if(ia!==ib) return ia-ib;
+    return k[b].points-k[a].points;
+  });
+  var t="<tr><th>解谜类型</th><th class='v'>点位</th><th class='v'>已完成</th><th class='v'>缺解法</th><th class='v'>缺定位</th><th class='v'>仅范围</th><th class='v'>无证据</th><th class='v'>进度</th><th>涉及主题</th></tr>";
+  for(var i=0;i<ks.length;i++){
+    var key=ks[i], v=k[key];
+    var m2=(c.kind_topics||{})[key]||{};
+    var list=Object.keys(m2).sort(function(a,b){ return m2[b]-m2[a]; }).map(function(x){ return disp(x)+"（"+m2[x]+"）"; }).join("、");
+    t+="<tr><td class='k'><b>"+esc(cn(key))+"</b><br><span class='dim mono'>"+esc(key)+"</span></td>"
+      +"<td class='v'>"+v.points+"</td><td class='v run'>"+v.done+"</td>"
+      +"<td class='v "+(v.solve_missing?"warn":"dim")+"'>"+v.solve_missing+"</td>"
+      +"<td class='v'>"+v.locate_missing+"</td><td class='v'>"+v.scope_only+"</td><td class='v'>"+v.no_evidence+"</td>"
+      +"<td class='v'>"+pct(v.done,v.points)+"%</td><td class='dim'>"+esc(list||"—")+"</td></tr>";
+  }
+  set("kinds",t); addRowCopy("kinds");
+
+  var tp=c.topics||{};
+  var keys=Object.keys(tp).sort(function(a,b){ return (tp[b].points||0)-(tp[a].points||0); });
+  var tt="<tr><th>主题</th><th>内容类型</th><th>完成要求</th><th>解谜类型</th><th class='v'>点位</th><th class='v'>已完成</th><th class='v'>到点即完成</th><th class='v'>含解法完成</th><th class='v'>缺解法</th><th class='v'>缺定位</th><th class='v'>仅范围</th><th class='v'>无证据</th><th class='v'>进度</th></tr>";
+  for(var j=0;j<keys.length;j++){
+    var kk=keys[j], b=tp[kk], meta=N[kk]||{};
+    var reqCell=(b.requirement==="LOCATE_ONLY")?"<span class='run'>第 1 阶段即可</span>":"<span class='warn'>第 2 阶段</span>";
+    tt+="<tr><td class='k'>"+dispCell(kk)+"</td>"
+      +"<td class='dim'>"+esc(GAMEKIND_CN[meta.kind]||meta.kind||"-")+"</td>"
+      +"<td>"+reqCell+"</td><td class='dim'>"+esc(cn(b.solve_kind))+"</td>"
+      +"<td class='v'>"+b.points+"</td><td class='v run'>"+b.done+"</td>"
+      +"<td class='v dim'>"+b.locate_complete+"</td><td class='v dim'>"+b.complete+"</td>"
+      +"<td class='v "+(b.missing_solve?"warn":"dim")+"'>"+b.missing_solve+"</td>"
+      +"<td class='v'>"+b.missing_locate+"</td><td class='v'>"+b.scope_only+"</td><td class='v'>"+b.no_evidence+"</td>"
+      +"<td class='v'>"+pct(b.done,b.points)+"%</td></tr>";
+  }
+  set("topics",tt); addRowCopy("topics");
+
+  var q=c.solve_queue||[];
+  var html="";
+  if(!q.length){ html="<div class='dim'>没有缺解法的点位。</div>"; }
+  else{
+    html="<table id='qtable'><tr><th>主题</th><th>点位</th><th>解谜类型</th><th>当前已发布条目</th></tr>";
+    for(var m=0;m<Math.min(q.length,40);m++){
+      var it=q[m];
+      html+="<tr><td class='k'>"+esc(disp(it.topic))+" <span class='dim mono'>"+esc(it.topic)+"</span></td>"
+        +"<td class='v mono'>"+esc(it.point)+"</td>"
+        +"<td class='dim'>"+esc(cn(it.solve_kind))+"</td><td class='dim'>"+esc(it.title||"(无已发布条目)")+"</td></tr>";
+    }
+    html+="</table><div class='dim'>共 "+q.length+" 条缺解法点位，这里显示前 40 条。</div>";
+  }
+  set("queue",html); addRowCopy("qtable");
+}
+function renderDev(d){
+  if(!d){ return; }
+  var mp=document.getElementById("devmode");
+  mp.textContent=d.mode;
+  mp.className="pill "+(d.mode.indexOf("造轮子")>=0?(d.mode.indexOf("抓取")>=0?"warn":"idle"):(d.mode==="抓取"?"run":"idle"));
+  set("devn",d.dev_recent); set("rawn",d.crawl_recent); set("devtrack",d.tracked);
+  var sub=d.subsystems||{};
+  var ks=Object.keys(sub).sort(function(a,b){ return sub[b]-sub[a]; });
+  set("devsub", ks.length? ("近 5 分钟改动分布：" + ks.map(function(k){ return k+" "+sub[k]; }).join(" · ")) : "近 5 分钟没有源码／文档改动");
+  var foc=d.focus||[];
+  var t="<tr><th>文件</th><th>所属层</th><th class='v'>本窗口改动次数</th><th class='v'>最后写入</th><th>文件自己声明的用途</th></tr>";
+  if(!foc.length){ t+="<tr><td colspan='5' class='dim'>最近 15 分钟没有文件改动</td></tr>"; }
+  for(var i=0;i<foc.length;i++){
+    var w=foc[i];
+    t+="<tr><td class='mono'>"+esc(w.rel)+"</td>"
+      +"<td class='dim'>"+esc(w.subsys)+"</td>"
+      +"<td class='v "+(w.edits?"warn":"dim")+"'>"+w.edits+"</td>"
+      +"<td class='v dim'>"+esc(w.at)+"（"+w.age+"s 前）</td>"
+      +"<td class='dim'>"+esc(w.doc||"—")+"</td></tr>";
+  }
+  set("focus",t); addRowCopy("focus");
+  var fr=d.fresh||[];
+  if(fr.length){
+    set("fresh","<div class='dim'>本监控窗口内首次出现的文件（"+fr.length+"）：</div><ul>"+fr.map(function(x){
+      return "<li><span class='dim'>"+esc(x.at)+"</span> <span class='mono'>"+esc(x.rel)+"</span> <span class='dim'>("+esc(x.subsys)+" · "+x.size+" B)</span></li>";
+    }).join("")+"</ul>");
+  } else { set("fresh",""); }
+}
+function tick(){
+  fetch("/api/status",{cache:"no-store"}).then(function(r){return r.json();}).then(function(s){
+    if(frozen()){ paintPause(); return; }
+    set("now",s.now); set("uptime",s.uptime);
+    var st=document.getElementById("state");
+    var txt="空闲",cls="idle";
+    if(s.alive){txt="运行中";cls="run";} else if(s.newest.age<90){txt="编辑中";cls="warn";}
+    st.textContent=txt; st.className="pill "+cls;
+    renderDev(s.dev);
+    renderCompleteness(s.completeness);
+    var p="";
+    if(s.procs && s.procs.length){
+      p="<table>";
+      for(var i=0;i<s.procs.length;i++){var q=s.procs[i];
+        if(q.self){ p+=row("pid "+q.pid,"<span class='dim'>"+esc(q.cmd)+"（监控台自身）</span>"); continue; }
+        p+=row("pid "+q.pid,"<span class='run'>"+esc(q.cmd)+"</span><br><span class='dim'>start "+esc(q.start)+" · cpu "+q.cpu+"s · "+q.ws+" MB</span>");}
+      p+="</table>";
+    } else {
+      p="<div class='big "+cls+"'>当前没有 python 进程</div><div class='dim'>主智能体可能正在编辑文件（看下面的源码写入时间）。</div>";
+    }
+    set("procs",p);
+    set("newest",row("最近源码写入","<b>"+s.newest.age+" 秒前</b>")+row("文件",esc(s.newest.name))+row("时间",esc(s.newest.at)));
+    addRowCopy("newest");
+    var m="";
+    m+=row("guide.db",(s.guide_db.size/1048576).toFixed(2)+" MB <span class='dim'>@"+s.guide_db.mtime+"</span>");
+    m+=row("published.db",(s.published_db_file.size/1024).toFixed(1)+" KB <span class='dim'>@"+s.published_db_file.mtime+"</span>");
+    m+=row("攻略配图文件数",s.assets);
+    m+=row("原始网页存档数",s.raw);
+    m+=row("抽取结果文件数",s.derived);
+    set("metrics",m); addRowCopy("metrics");
+    document.getElementById("sparkg").innerHTML=s.spark_guide||"";
+    document.getElementById("sparka").innerHTML=s.spark_assets||"";
+    document.getElementById("sparkgi").textContent="最小 "+s.hist_min+" / 最大 "+s.hist_max+" / 现在 "+s.guide_db.size+" 字节";
+    var r="";
+    if(s.recent && s.recent.length){
+      r="<ul>";
+      for(var j2=0;j2<s.recent.length;j2++){var f=s.recent[j2];
+        r+="<li><span class='dim'>"+esc(f.t)+"</span> <span class='mono'>"+esc(f.name)+"</span> <span class='dim'>("+f.size+" B)</span></li>";}
+      r+="</ul>";
+    } else { r="<div class='dim'>最近 10 分钟没有源码/文档变更</div>"; }
+    set("recent",r);
+    var d=s.db||{}; var t="";
+    t+=row("攻略条目总数",d.entries);
+    t+=row("已发布条目",d.published);
+    t+=row("　官方来源",d.official);
+    t+=row("　社区来源",d.community);
+    t+=row("覆盖点位数（去重）",d.covered);
+    t+=row("范围条目（地图／集合／全局）",d.scope_entries);
+    t+=row("抓取页面数",d.pages);
+    t+=row("步骤条数",d.steps);
+    t+=row("挂载图片数",d.assets);
+    t+=row("待人工审核条目",d.review_pending);
+    t+=row("台账目标状态行数",d.ledger);
+    t+=row("发布库条目",d.published_db);
+    if(d.error){t+=row("<span class='bad'>读库错误</span>",esc(d.error));}
+    set("db",t); addRowCopy("db");
+    paintPause();
+  }).catch(function(e){
+    var st2=document.getElementById("state"); st2.textContent="连接已断开"; st2.className="pill bad";
+  });
+}
+tick();
+setInterval(tick,1000);
+</script></body></html>

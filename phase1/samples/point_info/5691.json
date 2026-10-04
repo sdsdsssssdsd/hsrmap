@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5691,
+      "map_id": 842,
+      "label_id": 950,
+      "x_pos": -1109.0352805697876,
+      "y_pos": -173.64767278163936,
+      "expansion": "",
+      "display_state": 1,
+      "version": 2,
+      "editor": "",
+      "editor_name": "呆头鹅波比",
+      "author": "",
+      "author_name": "喵喵超级虎",
+      "ctime": "2026-08-26 14:50:46",
+      "content": "位于此处椅子上拾取。",
+      "img": "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/fc07aa45750e24ffd0d44ae16d6d32c7_4422077510335888670.png",
+      "url_list": [],
+      "record_id": "13469",
+      "point_num": 1,
+      "related_jump_id": "0",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-08-26 14:50:46"
+  }
+}

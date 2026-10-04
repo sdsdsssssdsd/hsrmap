@@ -1,0 +1,14 @@
+{
+  "topic_key": "king_bucket",
+  "level": 2,
+  "sections": [
+    {
+      "id": "king-dawn-1",
+      "source_page": "king_dawn.html",
+      "map_name": "朝露公馆",
+      "section_start": "朝露公馆",
+      "step_count": 1,
+      "image_roles": {}
+    }
+  ]
+}

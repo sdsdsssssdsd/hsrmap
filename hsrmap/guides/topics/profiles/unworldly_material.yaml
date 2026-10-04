@@ -1,0 +1,34 @@
+topic_key: unworldly_material
+display_name: 不世之材
+guide_kind: PUZZLE
+scope: POINT
+seed_global: true
+official_labels:
+  names:
+    - 不世之材
+priority: 87
+enabled: true
+unit_builder:
+  type: region_ordinal
+matcher:
+  profile: puzzle_point_v2
+layout:
+  profile: puzzle_steps_v1
+discovery:
+  queries:
+    - "{map} 不世之材"
+    - 不世之材 图文攻略
+notes: Official label exists and is selectable, but the current HoYo snapshot has 0 points. Do not invent targets.
+
+#: 这个主题的解谜是什么类型，以及文字攻略能不能承载它（决定搜索与证据策略）。
+evidence_form:
+  kind: MIXED
+  text_sufficient: null
+  reason: 未评估
+
+#: 完成一个点位需要走到哪一步（与 evidence_form.kind 正交）：
+#: LOCATE_ONLY = 到达即得；LOCATE_AND_SOLVE = 到达后还要解。点级证据可以上调。
+completion:
+  requirement: LOCATE_ONLY
+  solve_kind: NONE
+  reason: 材料收集：到点拾取

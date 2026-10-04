@@ -1,0 +1,34 @@
+topic_key: hanu
+display_name: 小小哈努行动
+guide_kind: CHALLENGE
+scope: POINT
+official_labels:
+  names:
+    - 小小哈努行动
+priority: 85
+enabled: true
+unit_builder:
+  type: challenge
+matcher:
+  profile: puzzle_point_v2
+layout:
+  profile: challenge_v1
+discovery:
+  queries:
+    - "{map} 小小哈努行动"
+    - 小小哈努行动 攻略
+
+#: 这个主题的解谜是什么类型，以及文字攻略能不能承载它（决定搜索与证据策略）。
+evidence_form:
+  kind: TRANSFORM_PUZZLE
+  text_sufficient: false
+  reason: 变身与机关操作可写，但点位分布靠图；单点位仍需图定位
+
+#: 完成一个点位需要走到哪一步（与 evidence_form.kind 正交）：
+#: LOCATE_ONLY = 到达即得；LOCATE_AND_SOLVE = 到达后还要解。点级证据可以上调。
+completion:
+  requirement: LOCATE_ONLY
+  solve_kind: NONE
+  reason: 找到位置就行，之后由玩家自己操作（用户 2026-10 指示）
+  #: 人工已判定：官方说明里的「变身／机关」是玩法本身，不再把单点拉回第 2 阶段。
+  point_upgrade: false

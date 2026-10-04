@@ -1,0 +1,1 @@
+根据提供的攻略截图分类：map_overview / puzzle_step / ui / other。禁止臆造文字。

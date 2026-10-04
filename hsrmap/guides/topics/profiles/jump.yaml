@@ -1,0 +1,37 @@
+topic_key: jump
+display_name: 二次元 JUMP
+guide_kind: CHALLENGE
+scope: POINT
+seed_global: true
+official_labels:
+  names:
+    - 二次元 JUMP!
+    - 二次元JUMP!
+    - 二次元 JUMP
+priority: 86
+enabled: true
+unit_builder:
+  type: challenge
+matcher:
+  profile: puzzle_point_v2
+layout:
+  profile: challenge_v1
+discovery:
+  queries:
+    - "{map} 二次元 JUMP"
+    - 二次元JUMP 攻略
+
+#: 这个主题的解谜是什么类型，以及文字攻略能不能承载它（决定搜索与证据策略）。
+#: 2026-10 修订：JUMP 归入第 1 阶段后，需要攻略的只剩「入口在哪儿」——那是官方地图点本身；
+#: 进去之后的平台跳跃是玩家自己的操作，不需要（也无法用文字承载）解法。
+evidence_form:
+  kind: COLLECTIBLE_SPOT
+  text_sufficient: false
+  reason: 只需要入口位置（官方地图点即标准）；进去之后的平台跳跃由玩家自己操作，不需要解法攻略
+
+#: 完成一个点位需要走到哪一步（与 evidence_form.kind 正交）：
+#: LOCATE_ONLY = 到达即得；LOCATE_AND_SOLVE = 到达后还要解。点级证据可以上调。
+completion:
+  requirement: LOCATE_ONLY
+  solve_kind: NONE
+  reason: 找到入口就够了：进去之后是玩家自己的操作，平台跳跃不需要攻略（用户 2026-10 指示）

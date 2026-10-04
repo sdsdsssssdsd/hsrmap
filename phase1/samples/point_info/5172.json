@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5172,
+      "map_id": 842,
+      "label_id": 659,
+      "x_pos": -1108,
+      "y_pos": -247,
+      "expansion": "",
+      "display_state": 1,
+      "version": 2,
+      "editor": "",
+      "editor_name": "呆头鹅波比",
+      "author": "",
+      "author_name": "LetterT",
+      "ctime": "2026-04-21 13:24:52",
+      "content": "位于此处站台边缘。",
+      "img": "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/64cc316ffe4984e2b864f349abf8b67f_7558300325652851983.png",
+      "url_list": [],
+      "record_id": "12703",
+      "point_num": 1,
+      "related_jump_id": "0",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-04-21 13:24:52"
+  }
+}

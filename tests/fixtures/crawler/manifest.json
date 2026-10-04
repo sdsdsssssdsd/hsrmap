@@ -1,0 +1,65 @@
+{
+  "note": "Offline crawler fixtures (a1-6 §二十). Small, synthetic, no third-party content beyond public article structure.",
+  "cases": [
+    {
+      "id": "single_page",
+      "host": "3dmgame.com",
+      "file": "3dm/single_page.html",
+      "covers": [
+        "single page",
+        "lazy image",
+        "broken image",
+        "duplicate image"
+      ]
+    },
+    {
+      "id": "pagination_page1",
+      "host": "17173.com",
+      "file": "17173/pagination.html",
+      "covers": [
+        "pagination"
+      ]
+    },
+    {
+      "id": "pagination_page2",
+      "host": "17173.com",
+      "file": "17173/pagination_2.html",
+      "covers": [
+        "pagination"
+      ]
+    },
+    {
+      "id": "mirror",
+      "host": "17173.com",
+      "file": "17173/mirror.html",
+      "covers": [
+        "mirror page",
+        "canonical redirect"
+      ]
+    },
+    {
+      "id": "status_403",
+      "host": "9game.cn",
+      "file": "9game/status_403.html",
+      "covers": [
+        "403 fixture"
+      ]
+    },
+    {
+      "id": "status_404",
+      "host": "9game.cn",
+      "file": "9game/status_404.html",
+      "covers": [
+        "404"
+      ]
+    },
+    {
+      "id": "html_as_image",
+      "host": "9game.cn",
+      "file": "9game/html_as_image.html",
+      "covers": [
+        "HTML-as-image"
+      ]
+    }
+  ]
+}

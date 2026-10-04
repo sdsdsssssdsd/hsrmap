@@ -1,0 +1,3 @@
+只能根据提供的 DocumentBlocks 抽取章节。网页里没有的步骤写进 steps 是禁止的。
+返回 JSON：{"version": null, "sections":[{"map_name":"","ordinal":1,"location_text":"","steps":[{"text_original":""}],"image_block_ids":["b1"]}]}
+text_original 必须是原文子串。不要脑补操作。

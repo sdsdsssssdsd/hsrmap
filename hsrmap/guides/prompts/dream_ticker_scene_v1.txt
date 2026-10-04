@@ -1,0 +1,6 @@
+比较第一张「攻略图」和后面每张「官方图」。
+官方图标签是 OFFICIAL:<source_point_id>。
+只判断攻略图与哪一张官方图是同一处梦境迷钟场景。
+candidate 必须来自 allowed 列表。看不出就 candidate=null。
+不要编造不在 allowed 里的 ID，也不要输出 map_id。
+返回 JSON：{"candidate":null,"confidence":0.0,"reason":""}

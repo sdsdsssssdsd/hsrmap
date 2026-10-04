@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5260,
+      "map_id": 842,
+      "label_id": 836,
+      "x_pos": 1842.5,
+      "y_pos": -805.5,
+      "expansion": "",
+      "display_state": 1,
+      "version": 1,
+      "editor": "",
+      "editor_name": "LetterT",
+      "author": "",
+      "author_name": "LetterT",
+      "ctime": "2026-04-21 13:54:23",
+      "content": "",
+      "img": "",
+      "url_list": [],
+      "record_id": "12711",
+      "point_num": 1,
+      "related_jump_id": "804",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-04-21 13:54:23"
+  }
+}

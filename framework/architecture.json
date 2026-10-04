@@ -1,0 +1,1677 @@
+{
+ "generated": "2026-10-04 11:04:59",
+ "root_name": "Hoyo",
+ "layers": {
+  "存储层": [
+   {
+    "rel": "hsrmap/guide_db.py",
+    "lines": 986,
+    "doc": "def _connect(path: Path, *, readonly: bool = False) -> sqlite3.Connection:",
+    "plain": "攻略库的表结构 + 读写入口，guide.db 和 published.db 共用同一套表。",
+    "mtime": "10-04 10:20"
+   }
+  ],
+  "数据底座": [
+   {
+    "rel": "hsrmap/__init__.py",
+    "lines": 3,
+    "doc": "HSR HoYoLAB public map core sync.",
+    "plain": "",
+    "mtime": "10-01 18:46"
+   },
+   {
+    "rel": "hsrmap/__main__.py",
+    "lines": 17,
+    "doc": "if __name__ == \"__main__\":",
+    "plain": "",
+    "mtime": "10-04 10:24"
+   },
+   {
+    "rel": "hsrmap/assets.py",
+    "lines": 94,
+    "doc": "@dataclass",
+    "plain": "",
+    "mtime": "10-01 19:16"
+   },
+   {
+    "rel": "hsrmap/database.py",
+    "lines": 380,
+    "doc": "SCHEMA_VERSION = 1",
+    "plain": "",
+    "mtime": "10-04 09:50"
+   },
+   {
+    "rel": "hsrmap/detail_db.py",
+    "lines": 362,
+    "doc": "SCHEMA_VERSION = 1",
+    "plain": "",
+    "mtime": "10-04 09:50"
+   },
+   {
+    "rel": "hsrmap/detail_enrich.py",
+    "lines": 511,
+    "doc": "def file_sha256(path: Path) -> str:",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/detail_lock.py",
+    "lines": 58,
+    "doc": "class LockHeldError(RuntimeError):",
+    "plain": "",
+    "mtime": "10-01 19:54"
+   },
+   {
+    "rel": "hsrmap/detail_normalize.py",
+    "lines": 125,
+    "doc": "IMAGE_EXT = (\".png\", \".jpg\", \".jpeg\", \".webp\", \".gif\", \".bmp\", \".avif\")",
+    "plain": "",
+    "mtime": "10-01 19:54"
+   },
+   {
+    "rel": "hsrmap/detail_offline.py",
+    "lines": 68,
+    "doc": "def validate_details_offline(",
+    "plain": "",
+    "mtime": "10-01 19:56"
+   },
+   {
+    "rel": "hsrmap/detail_queue.py",
+    "lines": 126,
+    "doc": "def point_info_request_params(point_id: Any, app_version: str) -> dict[str, str]:",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/detail_rebuild.py",
+    "lines": 32,
+    "doc": "def rebuild_detail_from_raw(raw_dir: Path, db_path: Path, app_version: str) -> DetailDatabase:",
+    "plain": "",
+    "mtime": "10-01 19:55"
+   },
+   {
+    "rel": "hsrmap/doctor.py",
+    "lines": 270,
+    "doc": "闭环自检（a1-8 十六 + 用户 2026-10「启动入口要能打开」）。",
+    "plain": "",
+    "mtime": "10-04 10:26"
+   },
+   {
+    "rel": "hsrmap/dod.py",
+    "lines": 564,
+    "doc": "Definition of Done（a1-8 十六）：把「卫生化完成」变成可以反复跑的检查。",
+    "plain": "",
+    "mtime": "10-04 09:51"
+   },
+   {
+    "rel": "hsrmap/http.py",
+    "lines": 100,
+    "doc": "USER_AGENT = \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\"",
+    "plain": "",
+    "mtime": "10-03 16:57"
+   },
+   {
+    "rel": "hsrmap/hygiene.py",
+    "lines": 192,
+    "doc": "仓库卫生检查（a1-8 九）：.gitignore 挡不住已经进树的东西，所以按规则扫树。",
+    "plain": "",
+    "mtime": "10-04 09:05"
+   },
+   {
+    "rel": "hsrmap/inspect_map.py",
+    "lines": 58,
+    "doc": "def _current_db() -> Path:",
+    "plain": "",
+    "mtime": "10-01 18:47"
+   },
+   {
+    "rel": "hsrmap/jobs.py",
+    "lines": 105,
+    "doc": "def _now() -> str:",
+    "plain": "",
+    "mtime": "10-01 18:50"
+   },
+   {
+    "rel": "hsrmap/live_assets.py",
+    "lines": 28,
+    "doc": "class LiveAssetStore:",
+    "plain": "",
+    "mtime": "10-02 02:32"
+   },
+   {
+    "rel": "hsrmap/normalize.py",
+    "lines": 128,
+    "doc": "def flatten_map_nodes(tree: list[dict[str, Any]]) -> list[dict[str, Any]]:",
+    "plain": "",
+    "mtime": "10-01 18:46"
+   },
+   {
+    "rel": "hsrmap/paths.py",
+    "lines": 91,
+    "doc": "路径常量。",
+    "plain": "",
+    "mtime": "10-04 09:06"
+   },
+   {
+    "rel": "hsrmap/preflight.py",
+    "lines": 66,
+    "doc": "def load_registry(path) -> dict[str, Any]:",
+    "plain": "",
+    "mtime": "10-01 18:50"
+   },
+   {
+    "rel": "hsrmap/providers/__init__.py",
+    "lines": 3,
+    "doc": "__all__ = [\"SnapshotProvider\"]",
+    "plain": "",
+    "mtime": "10-02 02:32"
+   },
+   {
+    "rel": "hsrmap/providers/base.py",
+    "lines": 18,
+    "doc": "class MapDataProvider(Protocol):",
+    "plain": "",
+    "mtime": "10-02 02:32"
+   },
+   {
+    "rel": "hsrmap/providers/factory.py",
+    "lines": 50,
+    "doc": "def connect_live(client: Any | None = None) -> LiveSession:",
+    "plain": "",
+    "mtime": "10-02 02:32"
+   },
+   {
+    "rel": "hsrmap/providers/hybrid.py",
+    "lines": 251,
+    "doc": "LIVE_ERRORS = (OSError, TimeoutError, ConnectionError, LiveIncompatible, RuntimeError, ValueError)",
+    "plain": "",
+    "mtime": "10-02 02:32"
+   },
+   {
+    "rel": "hsrmap/providers/live.py",
+    "lines": 223,
+    "doc": "ENDPOINT_SCHEMA = {",
+    "plain": "",
+    "mtime": "10-02 02:32"
+   },
+   {
+    "rel": "hsrmap/providers/snapshot.py",
+    "lines": 51,
+    "doc": "map_labels_payload,",
+    "plain": "",
+    "mtime": "10-02 02:32"
+   },
+   {
+    "rel": "hsrmap/rebuild.py",
+    "lines": 39,
+    "doc": "def rebuild_from_raw(raw_dir: Path, db_path: Path) -> CoreDatabase:",
+    "plain": "",
+    "mtime": "10-01 19:18"
+   },
+   {
+    "rel": "hsrmap/release.py",
+    "lines": 138,
+    "doc": "发布包构建（a1-8 八；DoD 6：发布物由 allowlist/build pipeline 生成，不是手工镜像目录）。",
+    "plain": "",
+    "mtime": "10-04 11:04"
+   },
+   {
+    "rel": "hsrmap/reports.py",
+    "lines": 127,
+    "doc": "def write_json(path: Path, data: Any) -> None:",
+    "plain": "",
+    "mtime": "10-01 18:48"
+   },
+   {
+    "rel": "hsrmap/request_key.py",
+    "lines": 16,
+    "doc": "def request_key(endpoint_name: str, params: dict[str, Any], app_version: str) -> str:",
+    "plain": "",
+    "mtime": "10-01 18:46"
+   },
+   {
+    "rel": "hsrmap/runtime.py",
+    "lines": 204,
+    "doc": "运行时目录（a1-8 四.2）：Git checkout 不再是可变状态的根目录。",
+    "plain": "",
+    "mtime": "10-03 23:25"
+   },
+   {
+    "rel": "hsrmap/schema.py",
+    "lines": 66,
+    "doc": "REQUIRED_PATHS = {",
+    "plain": "",
+    "mtime": "10-01 19:54"
+   },
+   {
+    "rel": "hsrmap/sync.py",
+    "lines": 473,
+    "doc": "ASSETS,",
+    "plain": "",
+    "mtime": "10-01 19:16"
+   },
+   {
+    "rel": "hsrmap/transform.py",
+    "lines": 14,
+    "doc": "TRANSFORM_VERSION = \"hoyolab_hsr_origin_translation_v1\"",
+    "plain": "",
+    "mtime": "10-01 18:46"
+   },
+   {
+    "rel": "hsrmap/user_db.py",
+    "lines": 125,
+    "doc": "SCHEMA_VERSION = 1",
+    "plain": "",
+    "mtime": "10-04 09:50"
+   },
+   {
+    "rel": "hsrmap/validate.py",
+    "lines": 62,
+    "doc": "def golden_point_errors(db: CoreDatabase, golden: list[dict[str, Any]]) -> dict[str, float]:",
+    "plain": "",
+    "mtime": "10-01 19:17"
+   },
+   {
+    "rel": "hsrmap/viewer_bind.py",
+    "lines": 65,
+    "doc": "class SnapshotMismatchError(RuntimeError):",
+    "plain": "",
+    "mtime": "10-04 09:02"
+   },
+   {
+    "rel": "hsrmap/viewer_crs.py",
+    "lines": 30,
+    "doc": "def get_raster_bounds(origin_x: float, origin_y: float, width: float, height: float) -> dict[str, list[float]]:",
+    "plain": "",
+    "mtime": "10-01 22:29"
+   },
+   {
+    "rel": "hsrmap/viewer_repo.py",
+    "lines": 560,
+    "doc": "SHA_RE = re.compile(r\"^[0-9a-f]{64}$\", re.I)",
+    "plain": "",
+    "mtime": "10-02 02:32"
+   }
+  ],
+  "完整性判定层": [
+   {
+    "rel": "hsrmap/guides/stages.py",
+    "lines": 725,
+    "doc": "攻略够不够：两个维度 + 三种证据能力（用户 2026-10 指示的逻辑层）。",
+    "plain": "判定层本体：两个维度 × 三种证据，算出六个状态。全项目只有它说「算不算完成」。",
+    "mtime": "10-04 09:50"
+   }
+  ],
+  "主题档案层": [
+   {
+    "rel": "hsrmap/guides/topics/__init__.py",
+    "lines": 4,
+    "doc": "__all__ = [\"get_topic\", \"list_topics\", \"official_points_for_topic\"]",
+    "plain": "",
+    "mtime": "10-02 14:35"
+   },
+   {
+    "rel": "hsrmap/guides/topics/backfill.py",
+    "lines": 50,
+    "doc": "def backfill_page_topics(db: GuideDatabase) -> dict[str, Any]:",
+    "plain": "",
+    "mtime": "10-02 15:16"
+   },
+   {
+    "rel": "hsrmap/guides/topics/dream_ticker/__init__.py",
+    "lines": 1,
+    "doc": "Dream ticker bind helpers. Corpus freeze and scoring live here; ingest stays untouched.",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/topics/dream_ticker/bind.py",
+    "lines": 295,
+    "doc": "def bind_dream_ticker(",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/topics/dream_ticker/canary.py",
+    "lines": 57,
+    "doc": "_CHROME = (\"17173\", \"崩坏：星穹铁道\", \"崩坏星穹铁道\", \"关于崩坏\", \"更多相关\")",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/topics/dream_ticker/freeze.py",
+    "lines": 66,
+    "doc": "FREEZE_ID = \"dream-ticker-review-20261002\"",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/topics/dream_ticker/observe.py",
+    "lines": 135,
+    "doc": "def maps_catalog(official_points: list[dict[str, Any]]) -> list[dict[str, Any]]:",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/topics/dream_ticker/report.py",
+    "lines": 28,
+    "doc": "def ticker_bind_report(",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/topics/evidence.py",
+    "lines": 86,
+    "doc": "What kind of puzzle a topic is, and whether a text guide can carry it.",
+    "plain": "搜索证据账本：每次搜了什么、搜到哪些候选、为什么留为什么扔。",
+    "mtime": "10-03 13:31"
+   },
+   {
+    "rel": "hsrmap/guides/topics/loader.py",
+    "lines": 37,
+    "doc": "PROFILES = Path(__file__).with_name(\"profiles\")",
+    "plain": "读取 16 个主题档案 YAML 并缓存。",
+    "mtime": "10-02 14:27"
+   },
+   {
+    "rel": "hsrmap/guides/topics/official.py",
+    "lines": 224,
+    "doc": "def topic_payload_by_label_names(",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/topics/seed.py",
+    "lines": 122,
+    "doc": "def seed_topics(db: GuideDatabase) -> list[dict]:",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   }
+  ],
+  "证据与账本层": [
+   {
+    "rel": "hsrmap/guides/__init__.py",
+    "lines": 1,
+    "doc": "Community guide pipeline. Official DBs stay untouched.",
+    "plain": "",
+    "mtime": "10-02 04:35"
+   },
+   {
+    "rel": "hsrmap/guides/claims.py",
+    "lines": 712,
+    "doc": "证据一等化（a1-8 五）：把「这条结论凭什么成立」变成可查询的声明。",
+    "plain": "",
+    "mtime": "10-04 09:49"
+   },
+   {
+    "rel": "hsrmap/guides/coverage.py",
+    "lines": 56,
+    "doc": "def build_coverage(db: GuideDatabase, official_ids: list[str], matches: list[dict[str, Any]]) -> dict[str, Any]:",
+    "plain": "",
+    "mtime": "10-02 11:21"
+   },
+   {
+    "rel": "hsrmap/guides/dedupe.py",
+    "lines": 171,
+    "doc": "def _thickness(db: GuideDatabase, guide_id: int) -> tuple[int, int, int]:",
+    "plain": "",
+    "mtime": "10-03 16:35"
+   },
+   {
+    "rel": "hsrmap/guides/evidence.py",
+    "lines": 328,
+    "doc": "Search Evidence Ledger (a1-6 §八).",
+    "plain": "搜索证据账本：每次搜了什么、搜到哪些候选、为什么留为什么扔。",
+    "mtime": "10-03 02:29"
+   },
+   {
+    "rel": "hsrmap/guides/golden.py",
+    "lines": 221,
+    "doc": "TOPICS_DIR = Path(__file__).resolve().parent / \"topics\"",
+    "plain": "",
+    "mtime": "10-03 03:01"
+   },
+   {
+    "rel": "hsrmap/guides/inventory/__init__.py",
+    "lines": 3,
+    "doc": "__all__ = [\"classify_label\", \"classify_labels\"]",
+    "plain": "",
+    "mtime": "10-02 14:25"
+   },
+   {
+    "rel": "hsrmap/guides/inventory/classifier.py",
+    "lines": 110,
+    "doc": "NO_GUIDE = (",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/inventory/reports.py",
+    "lines": 77,
+    "doc": "def load_selectable_labels(db) -> list[dict[str, Any]]:",
+    "plain": "",
+    "mtime": "10-02 14:26"
+   },
+   {
+    "rel": "hsrmap/guides/jobs.py",
+    "lines": 510,
+    "doc": "Minimal job model for long crawls (a1-6 §十六/§十七/§十八, §28).",
+    "plain": "",
+    "mtime": "10-03 10:53"
+   },
+   {
+    "rel": "hsrmap/guides/ledger.py",
+    "lines": 367,
+    "doc": "STATUSES = (",
+    "plain": "台账：每个目标现在处于哪个状态（已发布 / 待审 / 确实没来源）。",
+    "mtime": "10-04 09:36"
+   },
+   {
+    "rel": "hsrmap/guides/nops.py",
+    "lines": 164,
+    "doc": "「查过了，公开来源确实没有」——证据账本给出的结论（a1-6 §八）。",
+    "plain": "把「查过了，公开来源确实没有」变成有记录、可复核的一条结论。",
+    "mtime": "10-03 15:05"
+   },
+   {
+    "rel": "hsrmap/guides/official.py",
+    "lines": 281,
+    "doc": "官方点位详情：位置型主题最完整的攻略。",
+    "plain": "官方点位详情：对「走到就能拿」的点位，官方那一行说明加截图本身就是完整攻略。",
+    "mtime": "10-03 16:20"
+   },
+   {
+    "rel": "hsrmap/guides/pipeline.py",
+    "lines": 94,
+    "doc": "def import_page(",
+    "plain": "",
+    "mtime": "10-02 05:19"
+   },
+   {
+    "rel": "hsrmap/guides/planner.py",
+    "lines": 534,
+    "doc": "Target-driven discovery, priority frontier and yield metrics (a1-6 §六–§八).",
+    "plain": "根据缺什么，排出下一轮该用什么关键词去搜。",
+    "mtime": "10-03 15:31"
+   },
+   {
+    "rel": "hsrmap/guides/store.py",
+    "lines": 68,
+    "doc": "def _now() -> str:",
+    "plain": "",
+    "mtime": "10-02 04:35"
+   },
+   {
+    "rel": "hsrmap/guides/targets.py",
+    "lines": 248,
+    "doc": "正规关系表 vs 字符串键：补齐、shadow 对比、切换（a1-8 十二）。",
+    "plain": "",
+    "mtime": "10-04 09:38"
+   },
+   {
+    "rel": "hsrmap/guides/workflows.py",
+    "lines": 190,
+    "doc": "正式工作流（a1-8 七）：把 %TEMP% 里的一次性脚本收进有 schema、有事务、有测试的入口。",
+    "plain": "",
+    "mtime": "10-04 09:15"
+   }
+  ],
+  "抽取与视觉层": [
+   {
+    "rel": "hsrmap/guides/derived.py",
+    "lines": 39,
+    "doc": "class DerivedGuideStore:",
+    "plain": "",
+    "mtime": "10-02 11:29"
+   },
+   {
+    "rel": "hsrmap/guides/extract/__init__.py",
+    "lines": 0,
+    "doc": "",
+    "plain": "",
+    "mtime": "10-02 04:35"
+   },
+   {
+    "rel": "hsrmap/guides/extract/blocks.py",
+    "lines": 286,
+    "doc": "_META_TAG = re.compile(r\"<meta\\b[^>]*>\", re.IGNORECASE)",
+    "plain": "把 HTML 按标题 / 段落 / 图片的顺序切成块。",
+    "mtime": "10-03 12:07"
+   },
+   {
+    "rel": "hsrmap/guides/extract/deterministic.py",
+    "lines": 15,
+    "doc": "class DeterministicGuideExtractor(FakeGuideLLMProvider):",
+    "plain": "",
+    "mtime": "10-02 05:01"
+   },
+   {
+    "rel": "hsrmap/guides/extract/refresh.py",
+    "lines": 94,
+    "doc": "Re-derive a stored page's article text with the current parser (a1-6 §33).",
+    "plain": "",
+    "mtime": "10-03 02:17"
+   },
+   {
+    "rel": "hsrmap/guides/layout/__init__.py",
+    "lines": 4,
+    "doc": "__all__ = [\"plan_layout\", \"render_layout\"]",
+    "plain": "",
+    "mtime": "10-02 15:16"
+   },
+   {
+    "rel": "hsrmap/guides/layout/planner.py",
+    "lines": 26,
+    "doc": "def plan_layout(draft: dict[str, Any] | None) -> dict[str, Any]:",
+    "plain": "根据缺什么，排出下一轮该用什么关键词去搜。",
+    "mtime": "10-02 15:07"
+   },
+   {
+    "rel": "hsrmap/guides/layout/render.py",
+    "lines": 29,
+    "doc": "def render_layout(layout: dict[str, Any] | None) -> str:",
+    "plain": "",
+    "mtime": "10-02 15:16"
+   },
+   {
+    "rel": "hsrmap/guides/llm/__init__.py",
+    "lines": 0,
+    "doc": "",
+    "plain": "",
+    "mtime": "10-02 04:36"
+   },
+   {
+    "rel": "hsrmap/guides/llm/client.py",
+    "lines": 14,
+    "doc": "class FakeLLMClient:",
+    "plain": "",
+    "mtime": "10-02 04:41"
+   },
+   {
+    "rel": "hsrmap/guides/llm/config.py",
+    "lines": 41,
+    "doc": "ROOT = Path(__file__).resolve().parents[3]",
+    "plain": "",
+    "mtime": "10-02 04:57"
+   },
+   {
+    "rel": "hsrmap/guides/llm/deepseek.py",
+    "lines": 250,
+    "doc": "class DeepSeekGuideLLMProvider:",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/llm/extract.py",
+    "lines": 28,
+    "doc": "PROMPT_VERSION = \"article_extract_v1\"",
+    "plain": "",
+    "mtime": "10-02 04:36"
+   },
+   {
+    "rel": "hsrmap/guides/llm/fake.py",
+    "lines": 91,
+    "doc": "class FakeGuideLLMProvider:",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/llm/provider.py",
+    "lines": 72,
+    "doc": "class GuideLLMProvider(Protocol):",
+    "plain": "",
+    "mtime": "10-03 02:55"
+   },
+   {
+    "rel": "hsrmap/guides/llm/vision.py",
+    "lines": 13,
+    "doc": "ALLOWED = {\"map_overview\", \"puzzle_step\", \"ui\", \"other\"}",
+    "plain": "",
+    "mtime": "10-02 04:39"
+   },
+   {
+    "rel": "hsrmap/guides/matching/__init__.py",
+    "lines": 0,
+    "doc": "",
+    "plain": "",
+    "mtime": "10-02 04:36"
+   },
+   {
+    "rel": "hsrmap/guides/matching/candidates.py",
+    "lines": 122,
+    "doc": "def query_candidates(",
+    "plain": "",
+    "mtime": "10-03 14:52"
+   },
+   {
+    "rel": "hsrmap/guides/matching/cv.py",
+    "lines": 78,
+    "doc": "def locate_on_raster(image_sha: str, fixture_hash: str | None = None) -> dict[str, Any] | None:",
+    "plain": "",
+    "mtime": "10-02 05:02"
+   },
+   {
+    "rel": "hsrmap/guides/matching/image_similarity.py",
+    "lines": 28,
+    "doc": "def average_hash(image_bytes: bytes, size: int = 8) -> str:",
+    "plain": "",
+    "mtime": "10-02 11:19"
+   },
+   {
+    "rel": "hsrmap/guides/matching/inset.py",
+    "lines": 96,
+    "doc": "def read_inset_anchor(image_bytes: bytes | None) -> str | None:",
+    "plain": "",
+    "mtime": "10-02 13:59"
+   },
+   {
+    "rel": "hsrmap/guides/matching/matcher.py",
+    "lines": 142,
+    "doc": "def match_sections(",
+    "plain": "把攻略里说的位置和官方点位对上号。",
+    "mtime": "10-02 14:35"
+   },
+   {
+    "rel": "hsrmap/guides/matching/registry.py",
+    "lines": 61,
+    "doc": "def match_for_topic(topic_key: str, unit: dict[str, Any], candidates: list[dict[str, Any]]) -> dict[str, Any]:",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/matching/rematch.py",
+    "lines": 424,
+    "doc": "def rematch_topic(",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/matching/scenes.py",
+    "lines": 88,
+    "doc": "_ROLE_RANK = {\"PUZZLE_STEP\": 0, \"LOCATION_MAP\": 1, \"RESULT\": 2}",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/matching/spatial.py",
+    "lines": 190,
+    "doc": "_FLOOR_RE = re.compile(r\"(\\d)\\s*层\")",
+    "plain": "",
+    "mtime": "10-02 13:57"
+   },
+   {
+    "rel": "hsrmap/guides/matching/ticker.py",
+    "lines": 95,
+    "doc": "def official_candidates_for_map(",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/regions/__init__.py",
+    "lines": 5,
+    "doc": "__all__ = [\"resolve_map\", \"build_region_sections\", \"build_guide_units\"]",
+    "plain": "",
+    "mtime": "10-02 11:19"
+   },
+   {
+    "rel": "hsrmap/guides/regions/official.py",
+    "lines": 27,
+    "doc": "def resolve_official_map(map_name_raw: str | None, maps: list[dict[str, Any]]) -> dict[str, Any]:",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/regions/resolver.py",
+    "lines": 131,
+    "doc": "def _norm(text: str) -> str:",
+    "plain": "",
+    "mtime": "10-03 02:51"
+   },
+   {
+    "rel": "hsrmap/guides/regions/sections.py",
+    "lines": 189,
+    "doc": "把一篇攻略切成「一个区域一段」——标题、小标题、正文里的区域名都算边界。",
+    "plain": "",
+    "mtime": "10-03 16:42"
+   },
+   {
+    "rel": "hsrmap/guides/regions/units.py",
+    "lines": 166,
+    "doc": "_TEXT_ORDINAL = re.compile(r\"第\\s*(\\d+)\\s*个|点位\\s*(\\d+)\")",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/semantic/__init__.py",
+    "lines": 3,
+    "doc": "__all__ = [\"classify_topics\"]",
+    "plain": "",
+    "mtime": "10-02 14:53"
+   },
+   {
+    "rel": "hsrmap/guides/semantic/classifier.py",
+    "lines": 22,
+    "doc": "def classify_topics(blocks: list[dict[str, Any]]) -> dict[str, Any]:",
+    "plain": "",
+    "mtime": "10-02 14:53"
+   },
+   {
+    "rel": "hsrmap/guides/units/__init__.py",
+    "lines": 3,
+    "doc": "__all__ = [\"build_units_for_topic\"]",
+    "plain": "",
+    "mtime": "10-02 15:07"
+   },
+   {
+    "rel": "hsrmap/guides/units/collectible.py",
+    "lines": 45,
+    "doc": "def build_collectible_units(",
+    "plain": "",
+    "mtime": "10-02 15:07"
+   },
+   {
+    "rel": "hsrmap/guides/units/registry.py",
+    "lines": 24,
+    "doc": "def build_units_for_topic(",
+    "plain": "",
+    "mtime": "10-02 15:21"
+   },
+   {
+    "rel": "hsrmap/guides/vision/__init__.py",
+    "lines": 4,
+    "doc": "__all__ = [\"classify_role\", \"read_region\"]",
+    "plain": "",
+    "mtime": "10-02 11:19"
+   },
+   {
+    "rel": "hsrmap/guides/vision/generic_roles.py",
+    "lines": 26,
+    "doc": "_ALIASES = {",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/vision/region_reader.py",
+    "lines": 54,
+    "doc": "BANNED = {\"4.2版本\", \"4.2\", \"版本\", \"祈鸢\", \"作者\"}",
+    "plain": "",
+    "mtime": "10-02 13:58"
+   },
+   {
+    "rel": "hsrmap/guides/vision/roles.py",
+    "lines": 73,
+    "doc": "ALLOWED = {",
+    "plain": "判断一张图是位置图、解谜步骤图，还是广告封面。",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/vision/sanitize.py",
+    "lines": 13,
+    "doc": "_FORBIDDEN = {\"source_point_id\", \"point_id\", \"map_id\", \"official_point_id\"}",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/vision/slicer.py",
+    "lines": 44,
+    "doc": "def slice_long_image(blob: bytes | None, *, ratio: float = 3.0) -> dict[str, Any]:",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/vision/variants.py",
+    "lines": 35,
+    "doc": "def build_image_variants(blob: bytes, *, sha256: str, cache_root: Path) -> dict[str, Any]:",
+    "plain": "",
+    "mtime": "10-02 15:24"
+   }
+  ],
+  "抓取与语料层": [
+   {
+    "rel": "hsrmap/guides/assets/__init__.py",
+    "lines": 39,
+    "doc": "ASSET_STATUSES,",
+    "plain": "",
+    "mtime": "10-03 01:43"
+   },
+   {
+    "rel": "hsrmap/guides/assets/cache.py",
+    "lines": 205,
+    "doc": "Asset cache: one download per image, keyed by canonical SHA256.",
+    "plain": "",
+    "mtime": "10-03 02:26"
+   },
+   {
+    "rel": "hsrmap/guides/assets/fetcher.py",
+    "lines": 376,
+    "doc": "Asset ingestion: one place that turns an image URL into a typed, cached asset.",
+    "plain": "",
+    "mtime": "10-03 14:17"
+   },
+   {
+    "rel": "hsrmap/guides/assets/phash.py",
+    "lines": 140,
+    "doc": "Perceptual hash: the same picture in another encoding (a1-6 §十, Sprint 2).",
+    "plain": "",
+    "mtime": "10-03 02:25"
+   },
+   {
+    "rel": "hsrmap/guides/assets/relevance.py",
+    "lines": 157,
+    "doc": "Rule-based image relevance, then perceptual dedup (a1-6 §十).",
+    "plain": "",
+    "mtime": "10-03 03:02"
+   },
+   {
+    "rel": "hsrmap/guides/assets/smoke.py",
+    "lines": 137,
+    "doc": "P1.1 smoke matrix: what do real hosts actually do to our asset fetches?",
+    "plain": "",
+    "mtime": "10-03 01:44"
+   },
+   {
+    "rel": "hsrmap/guides/corpus.py",
+    "lines": 455,
+    "doc": "CANARY_URLS = [",
+    "plain": "批量导入一批 URL：抓取、解析、入库一条龙。",
+    "mtime": "10-03 11:34"
+   },
+   {
+    "rel": "hsrmap/guides/crawler/__init__.py",
+    "lines": 0,
+    "doc": "",
+    "plain": "",
+    "mtime": "10-02 04:36"
+   },
+   {
+    "rel": "hsrmap/guides/crawler/base.py",
+    "lines": 209,
+    "doc": "class GuideSourceAdapter:",
+    "plain": "",
+    "mtime": "10-03 01:55"
+   },
+   {
+    "rel": "hsrmap/guides/crawler/fetch.py",
+    "lines": 16,
+    "doc": "def fetch_page(url: str, client: Any, robots_txt: str | None = None) -> dict[str, Any]:",
+    "plain": "",
+    "mtime": "10-02 04:39"
+   },
+   {
+    "rel": "hsrmap/guides/crawler/guard.py",
+    "lines": 121,
+    "doc": "URL admission: the crawler only ever talks to public HTTP(S) hosts (a1-6 §22).",
+    "plain": "",
+    "mtime": "10-03 02:58"
+   },
+   {
+    "rel": "hsrmap/guides/crawler/hosts.py",
+    "lines": 193,
+    "doc": "Host scheduler, circuit breaker and robots cache (a1-6 §14/§15/§21).",
+    "plain": "",
+    "mtime": "10-03 02:58"
+   },
+   {
+    "rel": "hsrmap/guides/crawler/identity.py",
+    "lines": 236,
+    "doc": "URL identity for the crawler: which article, which site, which mirror.",
+    "plain": "",
+    "mtime": "10-03 02:25"
+   },
+   {
+    "rel": "hsrmap/guides/crawler/miyoushe.py",
+    "lines": 116,
+    "doc": "米游社（miyoushe）文章的 JSON API —— SPA 页面之外的那条路。",
+    "plain": "",
+    "mtime": "10-03 17:01"
+   },
+   {
+    "rel": "hsrmap/guides/crawler/pagination.py",
+    "lines": 43,
+    "doc": "_ARTICLE = re.compile(r\"/(\\d+)(?:_\\d+)?\\.s?html\", re.I)",
+    "plain": "",
+    "mtime": "10-03 02:36"
+   },
+   {
+    "rel": "hsrmap/guides/crawler/render.py",
+    "lines": 160,
+    "doc": "Render a page that needs JavaScript, with a browser that is already installed.",
+    "plain": "用本机已装的 Chrome 把需要跑 JS 的页面渲染出来（米游社、TapTap 这类）。",
+    "mtime": "10-03 11:42"
+   },
+   {
+    "rel": "hsrmap/guides/crawler/robots.py",
+    "lines": 28,
+    "doc": "def path_allowed(robots_txt: str, path: str, user_agent: str = \"*\") -> bool:",
+    "plain": "",
+    "mtime": "10-02 04:39"
+   },
+   {
+    "rel": "hsrmap/guides/dedup.py",
+    "lines": 55,
+    "doc": "def _norm(text: str) -> str:",
+    "plain": "同一个目标有多条攻略时，留最厚的那条，其余标记被取代。",
+    "mtime": "10-02 05:19"
+   },
+   {
+    "rel": "hsrmap/guides/discover.py",
+    "lines": 80,
+    "doc": "def _parse_seeds(path: Path) -> dict[str, Any]:",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/ingest.py",
+    "lines": 354,
+    "doc": "def ingest_page(",
+    "plain": "一篇文章从 HTML 到入库的完整管线。",
+    "mtime": "10-03 16:46"
+   },
+   {
+    "rel": "hsrmap/guides/qa.py",
+    "lines": 144,
+    "doc": "PAGE_STATUSES = (",
+    "plain": "",
+    "mtime": "10-03 01:55"
+   },
+   {
+    "rel": "hsrmap/guides/rebuild.py",
+    "lines": 410,
+    "doc": "Rebuild quarantined guides from the article text we really stored (a1-6 §30).",
+    "plain": "",
+    "mtime": "10-03 09:53"
+   },
+   {
+    "rel": "hsrmap/guides/reingest.py",
+    "lines": 106,
+    "doc": "Re-parse a stored page with its assets fetched (a1-6 §27/§31).",
+    "plain": "一篇文章从 HTML 到入库的完整管线。",
+    "mtime": "10-03 12:01"
+   },
+   {
+    "rel": "hsrmap/guides/revive.py",
+    "lines": 172,
+    "doc": "Thin drafts are usually a parse artefact, not a dead end (a1-6 §27/§31).",
+    "plain": "",
+    "mtime": "10-03 11:16"
+   },
+   {
+    "rel": "hsrmap/guides/signature.py",
+    "lines": 192,
+    "doc": "Canonicalization and the Review Unit Signature (a1-6 §10–14).",
+    "plain": "",
+    "mtime": "10-03 01:58"
+   },
+   {
+    "rel": "hsrmap/guides/sources/__init__.py",
+    "lines": 0,
+    "doc": "",
+    "plain": "",
+    "mtime": "10-02 04:36"
+   },
+   {
+    "rel": "hsrmap/guides/sources/gamersky.py",
+    "lines": 20,
+    "doc": "class GamerSkyAdapter(GuideSourceAdapter):",
+    "plain": "",
+    "mtime": "10-02 05:18"
+   },
+   {
+    "rel": "hsrmap/guides/sources/generic.py",
+    "lines": 8,
+    "doc": "class GenericAdapter(GuideSourceAdapter):",
+    "plain": "",
+    "mtime": "10-02 04:40"
+   },
+   {
+    "rel": "hsrmap/guides/sources/miyoushe.py",
+    "lines": 9,
+    "doc": "class MiyousheAdapter(GuideSourceAdapter):",
+    "plain": "",
+    "mtime": "10-02 04:40"
+   },
+   {
+    "rel": "hsrmap/guides/sources/site17173.py",
+    "lines": 17,
+    "doc": "class Site17173Adapter(GuideSourceAdapter):",
+    "plain": "",
+    "mtime": "10-02 05:09"
+   },
+   {
+    "rel": "hsrmap/guides/sources/taptap.py",
+    "lines": 18,
+    "doc": "class TapTapAdapter(GuideSourceAdapter):",
+    "plain": "",
+    "mtime": "10-02 05:18"
+   },
+   {
+    "rel": "hsrmap/guides/sources/three_dm.py",
+    "lines": 20,
+    "doc": "class ThreeDMAdapter(GuideSourceAdapter):",
+    "plain": "",
+    "mtime": "10-02 05:18"
+   }
+  ],
+  "审核层": [
+   {
+    "rel": "hsrmap/guides/review/__init__.py",
+    "lines": 0,
+    "doc": "",
+    "plain": "",
+    "mtime": "10-02 04:39"
+   },
+   {
+    "rel": "hsrmap/guides/review/canary.py",
+    "lines": 50,
+    "doc": "CANARY_POINT_IDS = (",
+    "plain": "",
+    "mtime": "10-02 14:34"
+   },
+   {
+    "rel": "hsrmap/guides/review/merge.py",
+    "lines": 171,
+    "doc": "Evidence merge: one review object per unit signature (a1-6 §13).",
+    "plain": "",
+    "mtime": "10-03 03:05"
+   },
+   {
+    "rel": "hsrmap/guides/review/queue.py",
+    "lines": 27,
+    "doc": "def list_pending(db: GuideDatabase) -> list[dict[str, Any]]:",
+    "plain": "",
+    "mtime": "10-02 05:01"
+   },
+   {
+    "rel": "hsrmap/guides/review/service.py",
+    "lines": 2102,
+    "doc": "def _row(row) -> dict[str, Any]:",
+    "plain": "人工审核的准入规则：什么草稿可以批准、什么必须打回。",
+    "mtime": "10-04 10:22"
+   }
+  ],
+  "发布与审计层": [
+   {
+    "rel": "hsrmap/guides/admin.py",
+    "lines": 185,
+    "doc": "Topic Admin: the metrics behind the admin page (a1-6 §27).",
+    "plain": "",
+    "mtime": "10-03 02:56"
+   },
+   {
+    "rel": "hsrmap/guides/ai_cache.py",
+    "lines": 238,
+    "doc": "Unified AI cache (a1-6 §29, ADR-005).",
+    "plain": "",
+    "mtime": "10-03 02:54"
+   },
+   {
+    "rel": "hsrmap/guides/audit.py",
+    "lines": 499,
+    "doc": "Published snapshot audit (a1-6 §33 step 5, a1-5 acceptance \"hallucinated steps = 0\").",
+    "plain": "发布后回头查：每一步文字是不是真的出现在它声称的来源页里，不在就是编造。",
+    "mtime": "10-04 09:26"
+   },
+   {
+    "rel": "hsrmap/guides/closure.py",
+    "lines": 359,
+    "doc": "Machine closure verdict for Guide Atlas V3 (a1-6 §32) and the ADR table (§33 步 7).",
+    "plain": "收官判定：整个项目现在算不算做完了。",
+    "mtime": "10-04 09:36"
+   },
+   {
+    "rel": "hsrmap/guides/publish/__init__.py",
+    "lines": 0,
+    "doc": "",
+    "plain": "",
+    "mtime": "10-02 04:36"
+   },
+   {
+    "rel": "hsrmap/guides/publish/lookup.py",
+    "lines": 75,
+    "doc": "def resolve_guide_keys(ctx, source_point_id: str) -> list[str]:",
+    "plain": "",
+    "mtime": "10-03 00:19"
+   },
+   {
+    "rel": "hsrmap/guides/publish/publisher.py",
+    "lines": 34,
+    "doc": "def publish_page(db: GuideDatabase, page: dict[str, Any], bindings: list[dict[str, Any]], steps: list[dict[str, Any]]) -",
+    "plain": "",
+    "mtime": "10-02 05:01"
+   },
+   {
+    "rel": "hsrmap/guides/publishing/__init__.py",
+    "lines": 26,
+    "doc": "PublishBlocked,",
+    "plain": "",
+    "mtime": "10-04 09:32"
+   },
+   {
+    "rel": "hsrmap/guides/publishing/atomic.py",
+    "lines": 247,
+    "doc": "Staged publish: build → validate → offline E2E → regression → atomic switch.",
+    "plain": "原子发布：中途失败不会把 published.db 写坏一半。",
+    "mtime": "10-04 09:31"
+   },
+   {
+    "rel": "hsrmap/guides/publishing/diff.py",
+    "lines": 1188,
+    "doc": "Publish-time snapshot diff and coverage regression gate.",
+    "plain": "发布前比对：这次发布会删掉什么、覆盖率会不会倒退。",
+    "mtime": "10-04 09:26"
+   },
+   {
+    "rel": "hsrmap/guides/publishing/sync.py",
+    "lines": 120,
+    "doc": "CLAIM_COLUMNS = (",
+    "plain": "",
+    "mtime": "10-04 09:28"
+   }
+  ],
+  "接口层": [
+   {
+    "rel": "hsrmap/cli.py",
+    "lines": 1830,
+    "doc": "class _LazyPaths:",
+    "plain": "",
+    "mtime": "10-04 10:24"
+   },
+   {
+    "rel": "hsrmap/serve.py",
+    "lines": 170,
+    "doc": "本地服务：离线地图与审核台**分成两个进程/端口**。",
+    "plain": "",
+    "mtime": "10-04 10:16"
+   },
+   {
+    "rel": "hsrmap/viewer_app.py",
+    "lines": 694,
+    "doc": "asset_path,",
+    "plain": "",
+    "mtime": "10-04 10:26"
+   }
+  ]
+ },
+ "layer_meta": {
+  "存储层": {
+   "icon": "DB",
+   "color": "#8b9dc3",
+   "plain": "所有攻略数据都装在一个 sqlite 文件里，这里定义表长什么样。"
+  },
+  "数据底座": {
+   "icon": "SAT",
+   "color": "#6fb3d9",
+   "plain": "官方那一侧：地图快照、点位详情、图片资源，还有「离线 / 混合 / 联网」三种跑法。"
+  },
+  "完整性判定层": {
+   "icon": "SCL",
+   "color": "#7ec86a",
+   "plain": "全项目最有话语权的一层，而且只管一件事：玩家照着现有材料，到底能不能把东西拿到手。"
+  },
+  "主题档案层": {
+   "icon": "CFG",
+   "color": "#e0b84c",
+   "plain": "16 个攻略主题（若虫、浮脂溯源、黄金替罪羊……）各自的规矩：要不要第二阶段、怎么匹配、怎么排版。"
+  },
+  "证据与账本层": {
+   "icon": "LED",
+   "color": "#c99ae0",
+   "plain": "记账用的：这个目标搜过几次、搜到过什么、现在算「已发布」还是「确实没有公开来源」。"
+  },
+  "抽取与视觉层": {
+   "icon": "CV",
+   "color": "#8fd3c7",
+   "plain": "把网页变成能用的东西：文字切成块、图里分成镜、图和点位对上号。"
+  },
+  "抓取与语料层": {
+   "icon": "NET",
+   "color": "#e08a5f",
+   "plain": "出门找东西：适配各家网站、渲染需要跑 JS 的页面、去重、质检、把图存下来。"
+  },
+  "审核层": {
+   "icon": "REV",
+   "color": "#d98cb3",
+   "plain": "人工闸门：机器觉得可以发的，也还是要人过一眼才准发。"
+  },
+  "发布与审计层": {
+   "icon": "PUB",
+   "color": "#b8c46a",
+   "plain": "发出去之前比一比、发的时候别写坏、发完回头审计有没有编造的内容。"
+  },
+  "接口层": {
+   "icon": "API",
+   "color": "#7fa8d9",
+   "plain": "对外的两个口子：命令行工具，和本机网页服务。"
+  }
+ },
+ "model": {
+  "requirements": [
+   "LOCATE_ONLY",
+   "LOCATE_AND_SOLVE"
+  ],
+  "solve_kinds": [
+   "NONE",
+   "INTERACT",
+   "INPUT_SEQUENCE",
+   "MODULE_PUZZLE",
+   "TRANSFORM_ROUTE",
+   "PLATFORM_ROUTE",
+   "CHALLENGE",
+   "OTHER"
+  ],
+  "statuses": [
+   "NO_EVIDENCE",
+   "SCOPE_ONLY",
+   "LOCATE_MISSING",
+   "LOCATE_COMPLETE",
+   "SOLVE_MISSING",
+   "COMPLETE"
+  ],
+  "done": [
+   "LOCATE_COMPLETE",
+   "COMPLETE"
+  ]
+ },
+ "topics": [
+  {
+   "key": "floating_grease",
+   "display": "浮脂溯源·二次元ROTATE！",
+   "kind": "PUZZLE",
+   "scope": "POINT",
+   "req": "LOCATE_AND_SOLVE",
+   "solve": "INPUT_SEQUENCE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 100
+  },
+  {
+   "key": "dream_ticker",
+   "display": "梦境迷钟",
+   "kind": "PUZZLE",
+   "scope": "POINT",
+   "req": "LOCATE_AND_SOLVE",
+   "solve": "MODULE_PUZZLE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 90
+  },
+  {
+   "key": "golden_scapegoat",
+   "display": "黄金替罪羊",
+   "kind": "PUZZLE",
+   "scope": "POINT",
+   "req": "LOCATE_AND_SOLVE",
+   "solve": "INPUT_SEQUENCE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 88
+  },
+  {
+   "key": "magnetic_puzzle",
+   "display": "磁流解阈",
+   "kind": "PUZZLE",
+   "scope": "POINT",
+   "req": "LOCATE_AND_SOLVE",
+   "solve": "MODULE_PUZZLE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 88
+  },
+  {
+   "key": "unworldly_material",
+   "display": "不世之材",
+   "kind": "PUZZLE",
+   "scope": "POINT",
+   "req": "LOCATE_ONLY",
+   "solve": "NONE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 87
+  },
+  {
+   "key": "jump",
+   "display": "二次元 JUMP",
+   "kind": "CHALLENGE",
+   "scope": "POINT",
+   "req": "LOCATE_ONLY",
+   "solve": "NONE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 86
+  },
+  {
+   "key": "hanu",
+   "display": "小小哈努行动",
+   "kind": "CHALLENGE",
+   "scope": "POINT",
+   "req": "LOCATE_ONLY",
+   "solve": "NONE",
+   "upgrade": false,
+   "enabled": true,
+   "priority": 85
+  },
+  {
+   "key": "zagreus_hand",
+   "display": "扎格列斯之手",
+   "kind": "PUZZLE",
+   "scope": "POINT_SET",
+   "req": "LOCATE_ONLY",
+   "solve": "NONE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 84
+  },
+  {
+   "key": "pioneer_fairy",
+   "display": "开拓妖精大挑战",
+   "kind": "CHALLENGE",
+   "scope": "POINT",
+   "req": "LOCATE_ONLY",
+   "solve": "NONE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 83
+  },
+  {
+   "key": "origami_bird",
+   "display": "折纸小鸟",
+   "kind": "COLLECTIBLE",
+   "scope": "MAP_LABEL",
+   "req": "LOCATE_ONLY",
+   "solve": "NONE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 80
+  },
+  {
+   "key": "nymph",
+   "display": "若虫",
+   "kind": "COLLECTIBLE",
+   "scope": "MAP_LABEL",
+   "req": "LOCATE_ONLY",
+   "solve": "NONE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 79
+  },
+  {
+   "key": "nameless_dust_spirit",
+   "display": "无名尘灵",
+   "kind": "COLLECTIBLE",
+   "scope": "MAP_LABEL",
+   "req": "LOCATE_ONLY",
+   "solve": "NONE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 78
+  },
+  {
+   "key": "miracle_orb",
+   "display": "奇迹宝珠",
+   "kind": "COLLECTIBLE",
+   "scope": "MAP_LABEL",
+   "req": "LOCATE_ONLY",
+   "solve": "NONE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 76
+  },
+  {
+   "key": "king_bucket",
+   "display": "王下一桶",
+   "kind": "CHALLENGE",
+   "scope": "POINT",
+   "req": "LOCATE_ONLY",
+   "solve": "NONE",
+   "upgrade": false,
+   "enabled": true,
+   "priority": 74
+  },
+  {
+   "key": "dimensional_trotter",
+   "display": "次元扑满",
+   "kind": "CHALLENGE",
+   "scope": "POINT",
+   "req": "LOCATE_ONLY",
+   "solve": "NONE",
+   "upgrade": true,
+   "enabled": true,
+   "priority": 73
+  },
+  {
+   "key": "hidden_treasure",
+   "display": "隐性战利品",
+   "kind": "PUZZLE",
+   "scope": "POINT",
+   "req": "LOCATE_AND_SOLVE",
+   "solve": "OTHER",
+   "upgrade": true,
+   "enabled": false,
+   "priority": 20
+  }
+ ],
+ "db": [
+  {
+   "label": "guide.db / published.db",
+   "plain": "攻略主库（工作库 + 发布库）",
+   "src": "hsrmap/guide_db.py",
+   "tables": [
+    "metadata",
+    "guide_entry",
+    "guide_steps",
+    "guide_assets",
+    "guide_source",
+    "guide_page",
+    "guide_cluster",
+    "guide_point_binding",
+    "crawl_run",
+    "extraction_run",
+    "review_item",
+    "source_search_verdict",
+    "guide_topic",
+    "guide_target",
+    "guide_entry_target",
+    "page_topic",
+    "guide_target_status",
+    "ai_cache",
+    "guide_job",
+    "source_search_run",
+    "source_search_result",
+    "guide_asset_cache",
+    "已经建好",
+    "guide_claim_evidence",
+    "page_image_cache",
+    "schema_migration"
+   ]
+  },
+  {
+   "label": "core.db",
+   "plain": "官方地图快照",
+   "src": "hsrmap/database.py",
+   "tables": [
+    "map_nodes",
+    "maps",
+    "map_fragments",
+    "label_nodes",
+    "semantic_labels",
+    "semantic_label_bindings",
+    "points",
+    "point_labels",
+    "assets",
+    "asset_sources"
+   ]
+  },
+  {
+   "label": "detail.db",
+   "plain": "官方点位详情",
+   "src": "hsrmap/detail_db.py",
+   "tables": [
+    "metadata",
+    "schema_versions",
+    "detail_requests",
+    "point_details",
+    "point_detail_bindings",
+    "point_detail_assets",
+    "unclassified_asset_candidates",
+    "asset_sources"
+   ]
+  },
+  {
+   "label": "user.db",
+   "plain": "本地用户进度",
+   "src": "hsrmap/user_db.py",
+   "tables": [
+    "metadata",
+    "point_progress"
+   ]
+  }
+ ],
+ "cli": {
+  "top": [
+   "runtime",
+   "release",
+   "doctor",
+   "dod",
+   "repo-hygiene",
+   "sync",
+   "validate",
+   "inspect",
+   "status",
+   "staging",
+   "enrich-details",
+   "detail-status",
+   "validate-details",
+   "serve",
+   "guides",
+   "ingest",
+   "import-page"
+  ],
+  "guides": [
+   "inventory",
+   "topics",
+   "discover",
+   "fetch",
+   "parse",
+   "extract",
+   "match",
+   "rematch",
+   "ticker-bind",
+   "review",
+   "publish",
+   "publish-snapshot",
+   "backfill-topics",
+   "sync",
+   "coverage",
+   "corpus",
+   "status",
+   "targets",
+   "atlas",
+   "ledger",
+   "process",
+   "asset-smoke",
+   "qa-rescan",
+   "qa-quarantine",
+   "signature-merge",
+   "refresh-text",
+   "chrome-prune",
+   "identity",
+   "asset-dedup",
+   "search-log",
+   "search-plan",
+   "search-record",
+   "evidence-transcribe",
+   "claims",
+   "frontier",
+   "yield",
+   "evidence-forms",
+   "official-seed",
+   "completeness",
+   "target-shadow",
+   "no-public-source",
+   "job-status",
+   "job-list",
+   "rebuild-quarantined",
+   "review-approve",
+   "ai-cache",
+   "image-filter",
+   "reingest-page",
+   "published-audit",
+   "closure-check",
+   "dedupe-entries",
+   "revive-thin",
+   "ingest",
+   "import-page"
+  ]
+ },
+ "snapshot": {
+  "entries": 959,
+  "published": 779,
+  "official": 555,
+  "community": 224,
+  "covered": 770,
+  "pages": 235,
+  "steps": 5706,
+  "assets": 2067
+ },
+ "flow": "真实世界                          本地语料                          判定与产出\n─────────────────────────────  ────────────────────────────────  ───────────────────────────────\n官方互动地图                       抓取与语料层                       完整性判定层\n  ├─ 地图快照 core.db    ───────▶   ├─ 各站适配器 sources/            stages.py\n  ├─ 点位详情 detail.db  ───────▶   ├─ 需要跑 JS 的页面 render        「要求 × 证据 → 状态」\n  └─ 官方点位与官方图    ───────▶   ├─ 导入 / 重导 ingest、reingest             │\n                                    └─ 图片资产 assets/                        ▼\n社区图文攻略            ───────▶                                     主题档案层\n  ├─ 17173 / 3DM / 游民   ───────▶  抽取与视觉层                      16 个主题各自的规矩\n  ├─ TapTap / 米游社      ───────▶   ├─ HTML 切成块 extract/            ├─ 要不要第二阶段\n  └─ 游侠 / 九游 / B站    ───────▶   ├─ 大模型抽取 llm/                 ├─ 证据形态是什么\n                                    ├─ 视觉分镜 vision/                └─ 匹配器 / 版式 / 视觉角色\n                                    ├─ 图文匹配 matching/                        │\n                                    └─ 区域解析 regions/                         ▼\n                                            │                          证据与账本层\n                                            ▼                           ├─ 搜索证据账本 evidence\n                                    审核层                                ├─ 台账 ledger\n                                    人工闸门                              ├─ 覆盖率 coverage\n                                    锚定 / 文本接地两种准入                └─ 检索计划 planner\n                                            │                                    │\n                                            ▼                                    ▼\n                                    发布与审计层                        接口层\n                                    ├─ 发布前 diff 回归闸门               cli / serve / viewer_app\n                                    ├─ 原子发布 atomic                            │\n                                    ├─ 已发布内容审计 audit                        ▼\n                                    └─ 收官判定 closure                  前端 web/\n                                                                         地图 viewer + 攻略中心 + 审核台",
+ "intro": "把《崩坏：星穹铁道》官方互动地图和网上的图文攻略抓下来，自动判断「玩家照着现有材料能不能把东西拿到手」——能就标完成，不能就指出缺的是<b>位置</b>还是<b>解法</b>，再把缺的排成下一轮找源的工作队列。",
+ "steps": [
+  [
+   "01",
+   "抓",
+   "把官方地图快照、官方点位详情、网上的图文攻略存到本地",
+   "抓取与语料层 / 数据底座"
+  ],
+  [
+   "02",
+   "拆",
+   "网页切成文字块和图片；图分成镜，图和点位对上号",
+   "抽取与视觉层"
+  ],
+  [
+   "03",
+   "判",
+   "逐点位判断：缺位置还是缺解法，还是已经算完成",
+   "完整性判定层 + 主题档案层"
+  ],
+  [
+   "04",
+   "审",
+   "机器觉得能发的，也要人过一眼才准发",
+   "审核层"
+  ],
+  [
+   "05",
+   "发",
+   "发布前比对、原子发布、发完审计有没有编造",
+   "发布与审计层 + 证据与账本层"
+  ]
+ ],
+ "profiles": [
+  "dimensional_trotter",
+  "dream_ticker",
+  "floating_grease",
+  "golden_scapegoat",
+  "hanu",
+  "hidden_treasure",
+  "jump",
+  "king_bucket",
+  "magnetic_puzzle",
+  "miracle_orb",
+  "nameless_dust_spirit",
+  "nymph",
+  "origami_bird",
+  "pioneer_fairy",
+  "unworldly_material",
+  "zagreus_hand"
+ ],
+ "gaps": {
+  "missing_solve": [],
+  "missing_locate": [],
+  "error": "",
+  "points": 1006,
+  "done": 1006
+ },
+ "module_count": 167,
+ "line_count": 28285
+}

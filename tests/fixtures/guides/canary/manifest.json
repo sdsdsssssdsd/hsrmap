@@ -1,0 +1,12 @@
+{
+  "topic": "floating_grease",
+  "pages": [
+    {"file": "17173_multipoint.html", "url": "https://news.17173.com/content/04222026/173231817.shtml", "kind": "multipoint"},
+    {"file": "taptap_images.html", "url": "https://www.taptap.cn/moment/786205107434815910", "kind": "image_heavy"},
+    {"file": "gamersky_long.html", "url": "https://www.gamersky.com/handbook/202604/1.shtml", "kind": "longform"},
+    {"file": "3dm_reprint.html", "url": "https://www.3dmgame.com/gl/1.html", "kind": "reprint"},
+    {"file": "miyoushe_author.html", "url": "https://www.miyoushe.com/sr/article/1", "kind": "canonical_author"},
+    {"file": "weak_text.html", "url": "https://www.taptap.cn/moment/weak", "kind": "weak_text"},
+    {"file": "ads_heavy.html", "url": "https://www.gamersky.com/handbook/ads.shtml", "kind": "ads"}
+  ]
+}

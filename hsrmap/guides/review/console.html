@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>攻略审核</title>
+  <style>
+    body { margin: 0; font: 14px/1.45 sans-serif; background: #f4f1ea; color: #222; }
+    header { padding: 10px 16px; background: #2b2418; color: #f4e2b0; }
+    header a { color: #f4e2b0; margin-left: 16px; }
+    main { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; padding: 12px; min-height: calc(100vh - 48px); }
+    section { background: #fff; border: 1px solid #ddd2b8; padding: 12px; overflow: auto; }
+    h2 { font-size: 15px; margin: 0 0 8px; }
+    button { margin: 4px 6px 4px 0; }
+    textarea { width: 100%; min-height: 120px; }
+    .item { padding: 10px 8px; border-bottom: 1px solid #eee; cursor: pointer; }
+    .item.active { background: #f4e2b0; }
+    .item small { display: block; color: #666; margin-top: 4px; }
+    .err { color: #8a3b1b; }
+    pre { white-space: pre-wrap; font-size: 12px; }
+    #images, #waste { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 16px; }
+    #images img, #waste img { max-width: 220px; max-height: 160px; object-fit: contain; background: #f6f3ea; border: 1px solid #ddd2b8; }
+    #waste img { opacity: 0.45; }
+    #images img, #waste img { cursor: zoom-in; }
+    .group { font-weight: 700; padding: 8px 4px 4px; color: #5a4a2a; }
+    #lightbox { display: none; position: fixed; inset: 0; background: rgba(20,16,10,.88); z-index: 40; align-items: center; justify-content: center; padding: 24px; }
+    #lightbox.open { display: flex; }
+    #lightbox img { max-width: 96vw; max-height: 92vh; object-fit: contain; background: #111; box-shadow: 0 8px 40px #000; }
+    #lightbox .cap { position: absolute; left: 16px; bottom: 16px; color: #f4e2b0; }
+  </style>
+</head>
+<body>
+  <header>
+    攻略审核 · Engine Gate / Corpus Coverage 分开 · 仅 APPROVED 进入正式 Guide Snapshot
+    <a href="/">返回地图</a>
+    <label>Topic <select id="topic"><option value="">全部</option></select></label>
+  </header>
+  <section id="gates" style="margin:12px;background:#fff;border:1px solid #ddd2b8;padding:12px">
+    <h2>Atlas Gates</h2>
+    <p id="gate-box">加载中…</p>
+  </section>
+  <main>
+    <section>
+      <h2>左栏 · 来源</h2>
+      <p id="count">加载中…</p>
+      <div id="list"></div>
+      <p id="meta"></p>
+    </section>
+    <section>
+      <h2>中栏 · Target</h2>
+      <label>source_point_id <input id="point"></label>
+      <label>target_type <input id="target-type" readonly></label>
+      <label>target_key <input id="target-key"></label>
+      <select id="candidates" style="display:none;margin-top:8px;width:100%"></select>
+      <p>只能选该地图、该 Topic 的官方候选。场景对不上时看下面官方候选图，人手点选，记 HUMAN_REVIEW。不要逼 Matcher 猜。</p>
+      <div id="official-cands"></div>
+    </section>
+    <section>
+      <h2>右栏 · 预览 / Steps</h2>
+      <pre id="preview"></pre>
+      <p id="image-note">点左边一条后，这里显示该页已落地的本地图。QA 未过的页可能没有图。</p>
+      <div id="images"></div>
+      <p>已排除废图</p>
+      <div id="waste"></div>
+      <textarea id="steps" placeholder='[{"text":"...","images":[]}]'></textarea>
+      <pre id="evidence"></pre>
+      <button id="save">保存修改</button>
+      <button id="approve">Approve</button>
+      <button id="reject">Reject</button>
+    </section>
+  </main>
+  <div id="lightbox">
+    <img id="lightbox-img" alt="">
+    <div class="cap" id="lightbox-cap"></div>
+  </div>
+  <script src="/review.js"></script>
+</body>
+</html>

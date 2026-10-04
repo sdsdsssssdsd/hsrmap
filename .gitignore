@@ -1,0 +1,48 @@
+# ── 运行时数据：整个目录都属于「运行态」，不进源码树（a1-8 九）
+/data/
+/var/
+/logs/
+/artifacts/
+/reports/
+/submit/
+
+# ── 交付物与临时物
+*.bak
+*.tmp
+*.zip
+*.7z
+
+# ── 数据库与快照（运行态 SQLite 一律不入库）
+*.db
+*.sqlite
+*.sqlite-*
+*.db-wal
+*.db-shm
+*.db-journal
+
+# ── 环境变量（.env.example 是唯一例外，它只是键名清单）
+.env
+.env.*
+!.env.example
+
+# ── Python / 前端构建产物
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+node_modules/
+_bundle.js
+
+# ── phase1 里的生成图（参考数据仍保留，生成物由 calibration 产物提供）
+/phase1/raster/
+/phase1/calibration/alignment-preview.png
+
+# ── 编辑器
+.idea/
+.vscode/
+*.swp
+
+# 本仓库是发布包：web/dist 属于交付内容，故意不忽略（clone 即可运行）。

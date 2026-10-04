@@ -1,0 +1,2 @@
+根据章节与候选点列表打分。candidate 必须来自给定 candidates，禁止返回未知 Point。
+返回 JSON：{"candidate":"5171","confidence":0.0}

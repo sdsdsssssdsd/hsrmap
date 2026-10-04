@@ -1,0 +1,420 @@
+[
+  {
+    "source_point_id": 5171,
+    "source_map_id": 842,
+    "source_label_id": 686,
+    "semantic_label": "floating_grease_origin_retrace",
+    "source_coordinate": {
+      "x": 85.5,
+      "y": -81.5
+    },
+    "raster_coordinate": {
+      "x": 3912.5,
+      "y": 2135.5
+    },
+    "title": null,
+    "description": "完成此处「浮脂溯源·二次元ROTATE！」解谜获得。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/7e994204782771d9977673cb76e98fa5_8689809630462054891.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5170,
+    "source_map_id": 842,
+    "source_label_id": 686,
+    "semantic_label": "floating_grease_origin_retrace",
+    "source_coordinate": {
+      "x": -182.5,
+      "y": 238
+    },
+    "raster_coordinate": {
+      "x": 3644.5,
+      "y": 2455.0
+    },
+    "title": null,
+    "description": "完成此处「浮脂溯源·二次元ROTATE！」解谜获得。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/e23e5eee03c385a91f21d46597077ed6_4926146697660796839.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5169,
+    "source_map_id": 842,
+    "source_label_id": 686,
+    "semantic_label": "floating_grease_origin_retrace",
+    "source_coordinate": {
+      "x": -858.5,
+      "y": -1.5
+    },
+    "raster_coordinate": {
+      "x": 2968.5,
+      "y": 2215.5
+    },
+    "title": null,
+    "description": "完成此处「浮脂溯源·二次元ROTATE！」解谜获得。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/478913279cb06d50e36aa8bf822a85f3_201358600345588845.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5146,
+    "source_map_id": 842,
+    "source_label_id": 842,
+    "semantic_label": "floating_grease_notes",
+    "source_coordinate": {
+      "x": 301,
+      "y": 45.5
+    },
+    "raster_coordinate": {
+      "x": 4128.0,
+      "y": 2262.5
+    },
+    "title": null,
+    "description": "搜寻「浮脂记事」的幻造残片，救助其中失去色彩的动物。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/32db8f4814efe93d3960c253490f3054_7448304863739879092.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5699,
+    "source_map_id": 842,
+    "source_label_id": 958,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": 904.9733403416894,
+      "y": -216.84156252758112
+    },
+    "raster_coordinate": {
+      "x": 4731.973340341689,
+      "y": 2000.1584374724189
+    },
+    "title": null,
+    "description": "位于此处长椅上拾取。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/ce5f820e14ad42c6840fc6d8ed1a19ff_6735217955233528269.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5698,
+    "source_map_id": 842,
+    "source_label_id": 957,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": -362.05012279539187,
+      "y": 217.61624969902914
+    },
+    "raster_coordinate": {
+      "x": 3464.949877204608,
+      "y": 2434.616249699029
+    },
+    "title": null,
+    "description": "位于此处电箱上拾取。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/f3362ed6798e8c9921314e7b590c1272_4715809285350692981.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5697,
+    "source_map_id": 842,
+    "source_label_id": 956,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": -259.0501400738849,
+      "y": 224.48773520750956
+    },
+    "raster_coordinate": {
+      "x": 3567.949859926115,
+      "y": 2441.4877352075096
+    },
+    "title": null,
+    "description": "位于此处地面上拾取。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/1fb0b2a0d68b58155dfa473662433d2e_6559772195406084384.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5696,
+    "source_map_id": 842,
+    "source_label_id": 955,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": -18.04492196895717,
+      "y": 66.63693019191714
+    },
+    "raster_coordinate": {
+      "x": 3808.955078031043,
+      "y": 2283.636930191917
+    },
+    "title": null,
+    "description": "位于此处自行车上拾取。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/34897e25f93f19dcd923ef762f42f99f_8766335958033232636.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5695,
+    "source_map_id": 842,
+    "source_label_id": 954,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": 385.94519473296805,
+      "y": 30.62068123321933
+    },
+    "raster_coordinate": {
+      "x": 4212.945194732968,
+      "y": 2247.6206812332193
+    },
+    "title": null,
+    "description": "位于此处长凳上拾取。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/58c2e991c87fa8d3b928b615970dc514_2689126867884152523.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5694,
+    "source_map_id": 842,
+    "source_label_id": 953,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": -79.05871020648055,
+      "y": -401.3807959448443
+    },
+    "raster_coordinate": {
+      "x": 3747.9412897935194,
+      "y": 1815.6192040551557
+    },
+    "title": null,
+    "description": "位于此处航运时刻表上拾取。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/377653742c961ae7ef63ac1e1aaf44e2_351067379780484810.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5693,
+    "source_map_id": 842,
+    "source_label_id": 952,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": -638.049811782515,
+      "y": -20.482721231221603
+    },
+    "raster_coordinate": {
+      "x": 3188.950188217485,
+      "y": 2196.5172787687784
+    },
+    "title": null,
+    "description": "在此处与「小黄鸭零嘴」交互后获取。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/3ec8bf2b7a5c8ea671ff2deb890ea387_3929361697873864799.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5692,
+    "source_map_id": 842,
+    "source_label_id": 951,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": -524.0528527973074,
+      "y": -202.52112786087127
+    },
+    "raster_coordinate": {
+      "x": 3302.9471472026926,
+      "y": 2014.4788721391287
+    },
+    "title": null,
+    "description": "位于此处长凳上拾取。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/bdeda7e1f69ee0f0c32f5272aa90a5a9_2526150666050967623.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5691,
+    "source_map_id": 842,
+    "source_label_id": 950,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": -1109.0352805697876,
+      "y": -173.64767278163936
+    },
+    "raster_coordinate": {
+      "x": 2717.9647194302124,
+      "y": 2043.3523272183606
+    },
+    "title": null,
+    "description": "位于此处椅子上拾取。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/fc07aa45750e24ffd0d44ae16d6d32c7_4422077510335888670.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5260,
+    "source_map_id": 842,
+    "source_label_id": 836,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": 1842.5,
+      "y": -805.5
+    },
+    "raster_coordinate": {
+      "x": 5669.5,
+      "y": 1411.5
+    },
+    "title": null,
+    "description": "",
+    "assets": [],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5172,
+    "source_map_id": 842,
+    "source_label_id": 659,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": -1108,
+      "y": -247
+    },
+    "raster_coordinate": {
+      "x": 2719.0,
+      "y": 1970.0
+    },
+    "title": null,
+    "description": "位于此处站台边缘。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/64cc316ffe4984e2b864f349abf8b67f_7558300325652851983.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5166,
+    "source_map_id": 842,
+    "source_label_id": 660,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": 198.5,
+      "y": -473.5
+    },
+    "raster_coordinate": {
+      "x": 4025.5,
+      "y": 1743.5
+    },
+    "title": null,
+    "description": "位于此处建筑物门前。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/b66e3029dc835a26119c450be3a58fed_6198927402364808435.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5163,
+    "source_map_id": 842,
+    "source_label_id": 837,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": 208.5,
+      "y": -20.5
+    },
+    "raster_coordinate": {
+      "x": 4035.5,
+      "y": 2196.5
+    },
+    "title": null,
+    "description": "与此处狸猫互动开启「战狸品」解谜。\n",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/ebc0a881668c19e62056a3368ae83f0f_4338922740450120674.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5152,
+    "source_map_id": 842,
+    "source_label_id": 24,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": 1727.5,
+      "y": -771.5
+    },
+    "raster_coordinate": {
+      "x": 5554.5,
+      "y": 1445.5
+    },
+    "title": null,
+    "description": "洄歌庭",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/58d31371567650d43ba312836a5cba90_7378739141541372767.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5151,
+    "source_map_id": 842,
+    "source_label_id": 839,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": 905.5,
+      "y": -223.5
+    },
+    "raster_coordinate": {
+      "x": 4732.5,
+      "y": 1993.5
+    },
+    "title": null,
+    "description": "位于此处画板背面。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/a5018e9c3b66c5d6b5eafd3d30631397_9162579923071507278.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  },
+  {
+    "source_point_id": 5150,
+    "source_map_id": 842,
+    "source_label_id": 838,
+    "semantic_label": null,
+    "source_coordinate": {
+      "x": 821,
+      "y": -333.5
+    },
+    "raster_coordinate": {
+      "x": 4648.0,
+      "y": 1883.5
+    },
+    "title": null,
+    "description": "由无名尘灵维护的特殊游戏机。",
+    "assets": [
+      "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/d2679282e049951c3d61eb82ce4a024f_7887744354091062679.png"
+    ],
+    "error_px": 0.0,
+    "in_bounds": true
+  }
+]

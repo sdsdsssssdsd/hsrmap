@@ -1,0 +1,52 @@
+{
+ "generated_at": "2026-10-04T01:08:39+00:00",
+ "max_bytes": 2097152,
+ "note": "当前已知的仓库卫生违规（S3 起逐条清零）。check 只对新增违规失败。",
+ "entries": [
+  {
+   "path": ".env",
+   "rule": "secrets",
+   "kind": "forbidden"
+  },
+  {
+   "path": "artifacts/",
+   "rule": "runtime-data",
+   "kind": "forbidden"
+  },
+  {
+   "path": "data/",
+   "rule": "runtime-data",
+   "kind": "forbidden"
+  },
+  {
+   "path": "logs/",
+   "rule": "runtime-data",
+   "kind": "forbidden"
+  },
+  {
+   "path": "reports/",
+   "rule": "generated-reports",
+   "kind": "forbidden"
+  },
+  {
+   "path": "submit.zip",
+   "rule": "release-mirror",
+   "kind": "forbidden"
+  },
+  {
+   "path": "submit.zip.sha256",
+   "rule": "release-mirror",
+   "kind": "forbidden"
+  },
+  {
+   "path": "submit/",
+   "rule": "release-mirror",
+   "kind": "forbidden"
+  },
+  {
+   "path": "web/dist/",
+   "rule": "web-build",
+   "kind": "forbidden"
+  }
+ ]
+}

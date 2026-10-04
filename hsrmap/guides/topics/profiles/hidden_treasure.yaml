@@ -1,0 +1,32 @@
+topic_key: hidden_treasure
+display_name: 隐性战利品
+guide_kind: PUZZLE
+scope: POINT
+official_labels:
+  names:
+    - 隐性战利品
+    - 隐藏战利品
+priority: 20
+enabled: false
+unit_builder:
+  type: region_ordinal
+matcher:
+  profile: puzzle_point_v2
+layout:
+  profile: puzzle_steps_v1
+discovery:
+  queries: []
+notes: Wave 4 — Point-level topic classification only after Gate B. Do not crawl or invent.
+
+#: 这个主题的解谜是什么类型，以及文字攻略能不能承载它（决定搜索与证据策略）。
+evidence_form:
+  kind: COLLECTIBLE_SPOT
+  text_sufficient: null
+  reason: 已停用
+
+#: 完成一个点位需要走到哪一步（与 evidence_form.kind 正交）：
+#: LOCATE_ONLY = 到达即得；LOCATE_AND_SOLVE = 到达后还要解。点级证据可以上调。
+completion:
+  requirement: LOCATE_AND_SOLVE
+  solve_kind: OTHER
+  reason: 已停用，保留默认

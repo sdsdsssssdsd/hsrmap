@@ -1,0 +1,6 @@
+只抄写图上可见的中文。这是崩坏星穹铁道「梦境迷钟」攻略图。
+map_name_raw 必须来自图上可见的官方地图名。没有就填 null。
+楼层、HUD 地名、机关状态只抄可见文字。
+article_ordinal / ordinal_raw 只在图上写了「第N个」时填写。
+不要输出 map_id、source_point_id、point_id，也不要猜测官方点位编号。
+返回 JSON：{"map_name_raw":null,"visible_text":[],"floor_label":null,"hud_text":null,"article_ordinal":null,"ordinal_raw":null,"device_state":[],"instruction_text":[],"grounded":false}

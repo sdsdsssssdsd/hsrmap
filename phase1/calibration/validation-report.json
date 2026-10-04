@@ -1,0 +1,295 @@
+{
+  "map_id": 842,
+  "point_count": 20,
+  "max_error_px": 0.0,
+  "mean_error_px": 0.0,
+  "median_error_px": 0.0,
+  "pairwise_scale_error_px": 0.0,
+  "pass_threshold_px": 8,
+  "all_in_canvas": true,
+  "live_leaflet_matches": 20,
+  "reference_method": "Live official Leaflet map.project(latlng, 0) on #/map/842",
+  "passed": true,
+  "points": [
+    {
+      "point_id": 5171,
+      "predicted": [
+        3912.5,
+        2135.5
+      ],
+      "reference": [
+        3912.5,
+        2135.5
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5170,
+      "predicted": [
+        3644.5,
+        2455.0
+      ],
+      "reference": [
+        3644.5,
+        2455.0
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5169,
+      "predicted": [
+        2968.5,
+        2215.5
+      ],
+      "reference": [
+        2968.5,
+        2215.5
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5146,
+      "predicted": [
+        4128.0,
+        2262.5
+      ],
+      "reference": [
+        4128.0,
+        2262.5
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5699,
+      "predicted": [
+        4731.973340341689,
+        2000.1584374724189
+      ],
+      "reference": [
+        4731.973340341689,
+        2000.1584374724189
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5698,
+      "predicted": [
+        3464.949877204608,
+        2434.616249699029
+      ],
+      "reference": [
+        3464.949877204608,
+        2434.616249699029
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5697,
+      "predicted": [
+        3567.949859926115,
+        2441.4877352075096
+      ],
+      "reference": [
+        3567.949859926115,
+        2441.4877352075096
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5696,
+      "predicted": [
+        3808.955078031043,
+        2283.636930191917
+      ],
+      "reference": [
+        3808.955078031043,
+        2283.636930191917
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5695,
+      "predicted": [
+        4212.945194732968,
+        2247.6206812332193
+      ],
+      "reference": [
+        4212.945194732968,
+        2247.6206812332193
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5694,
+      "predicted": [
+        3747.9412897935194,
+        1815.6192040551557
+      ],
+      "reference": [
+        3747.9412897935194,
+        1815.6192040551557
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5693,
+      "predicted": [
+        3188.950188217485,
+        2196.5172787687784
+      ],
+      "reference": [
+        3188.950188217485,
+        2196.5172787687784
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5692,
+      "predicted": [
+        3302.9471472026926,
+        2014.4788721391287
+      ],
+      "reference": [
+        3302.9471472026926,
+        2014.4788721391287
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5691,
+      "predicted": [
+        2717.9647194302124,
+        2043.3523272183606
+      ],
+      "reference": [
+        2717.9647194302124,
+        2043.3523272183606
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5260,
+      "predicted": [
+        5669.5,
+        1411.5
+      ],
+      "reference": [
+        5669.5,
+        1411.5
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5172,
+      "predicted": [
+        2719.0,
+        1970.0
+      ],
+      "reference": [
+        2719.0,
+        1970.0
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5166,
+      "predicted": [
+        4025.5,
+        1743.5
+      ],
+      "reference": [
+        4025.5,
+        1743.5
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5163,
+      "predicted": [
+        4035.5,
+        2196.5
+      ],
+      "reference": [
+        4035.5,
+        2196.5
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5152,
+      "predicted": [
+        5554.5,
+        1445.5
+      ],
+      "reference": [
+        5554.5,
+        1445.5
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5151,
+      "predicted": [
+        4732.5,
+        1993.5
+      ],
+      "reference": [
+        4732.5,
+        1993.5
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    },
+    {
+      "point_id": 5150,
+      "predicted": [
+        4648.0,
+        1883.5
+      ],
+      "reference": [
+        4648.0,
+        1883.5
+      ],
+      "error_px": 0.0,
+      "in_bounds": true,
+      "reference_source": "official_leaflet_project"
+    }
+  ]
+}

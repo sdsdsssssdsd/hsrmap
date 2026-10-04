@@ -1,0 +1,2 @@
+根据提供的攻略截图或说明分类：location_map / puzzle_step / ui / other。禁止臆造文字。
+返回 JSON：{"label":"location_map"}

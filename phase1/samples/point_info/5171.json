@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5171,
+      "map_id": 842,
+      "label_id": 686,
+      "x_pos": 85.5,
+      "y_pos": -81.5,
+      "expansion": "",
+      "display_state": 1,
+      "version": 2,
+      "editor": "",
+      "editor_name": "呆头鹅波比",
+      "author": "",
+      "author_name": "LetterT",
+      "ctime": "2026-04-21 13:24:52",
+      "content": "完成此处「浮脂溯源·二次元ROTATE！」解谜获得。",
+      "img": "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/7e994204782771d9977673cb76e98fa5_8689809630462054891.png",
+      "url_list": [],
+      "record_id": "12702",
+      "point_num": 1,
+      "related_jump_id": "0",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-04-21 13:24:52"
+  }
+}

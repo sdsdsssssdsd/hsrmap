@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5694,
+      "map_id": 842,
+      "label_id": 953,
+      "x_pos": -79.05871020648055,
+      "y_pos": -401.3807959448443,
+      "expansion": "",
+      "display_state": 1,
+      "version": 2,
+      "editor": "",
+      "editor_name": "呆头鹅波比",
+      "author": "",
+      "author_name": "喵喵超级虎",
+      "ctime": "2026-08-26 14:50:46",
+      "content": "位于此处航运时刻表上拾取。",
+      "img": "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/377653742c961ae7ef63ac1e1aaf44e2_351067379780484810.png",
+      "url_list": [],
+      "record_id": "13472",
+      "point_num": 1,
+      "related_jump_id": "0",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-08-26 14:50:46"
+  }
+}

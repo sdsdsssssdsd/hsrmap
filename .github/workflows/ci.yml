@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.lock.txt
+      - name: tests
+        run: python -m pytest -q
+      - name: lint
+        run: python -m ruff check hsrmap tests tools
+      - name: repo hygiene
+        run: python -m hsrmap repo-hygiene
+      #: DoD 12 项：源码树那几项在 CI 里必须全过；需要真实数据的项在没有 data/ 时如实跳过。
+      - name: definition of done
+        run: python -m hsrmap dod

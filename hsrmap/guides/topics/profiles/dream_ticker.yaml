@@ -1,0 +1,44 @@
+topic_key: dream_ticker
+display_name: 梦境迷钟
+guide_kind: PUZZLE
+scope: POINT
+official_labels:
+  names:
+    - 梦境迷钟
+priority: 90
+enabled: true
+unit_builder:
+  type: region_ordinal
+matcher:
+  profile: ticker_point_v1
+  evidence:
+    official_image_similarity: 1.0
+    vision_scene: 0.7
+    hud_landmark_floor: 0.4
+    article_ordinal: 0.1
+layout:
+  profile: puzzle_steps_v1
+discovery:
+  queries:
+    - 崩坏星穹铁道 梦境迷钟 图文攻略
+    - "{map} 梦境迷钟"
+    - 梦境迷钟 全解谜
+vision_profile:
+  generic_roles:
+    - LOCATION_MAP
+    - PUZZLE_STEP
+    - RESULT
+  specialist_prompt: dream_ticker_v1
+
+#: 这个主题的解谜是什么类型，以及文字攻略能不能承载它（决定搜索与证据策略）。
+evidence_form:
+  kind: MODULE_PUZZLE
+  text_sufficient: true
+  reason: 步骤是把模块移动/旋转到指定位置，文字可以完整表达
+
+#: 完成一个点位需要走到哪一步（与 evidence_form.kind 正交）：
+#: LOCATE_ONLY = 到达即得；LOCATE_AND_SOLVE = 到达后还要解。点级证据可以上调。
+completion:
+  requirement: LOCATE_AND_SOLVE
+  solve_kind: MODULE_PUZZLE
+  reason: 迷钟要移动/旋转模块才修得好

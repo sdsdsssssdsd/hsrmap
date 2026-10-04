@@ -1,0 +1,14 @@
+{
+  "topic_key": "dimensional_trotter",
+  "level": 2,
+  "sections": [
+    {
+      "id": "trotter-scaly-1",
+      "source_page": "trotter_scaly.html",
+      "map_name": "鳞渊境",
+      "section_start": "鳞渊境",
+      "step_count": 1,
+      "image_roles": {}
+    }
+  ]
+}

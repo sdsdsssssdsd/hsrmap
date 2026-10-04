@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hsrmap"
+version = "3.0.0"
+description = "Guide Atlas V3：官方地图点位 / 攻略语料 / 完成度判定 / 证据账本与发布门禁"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn>=0.32",
+    "httpx>=0.27",
+    "pillow>=10",
+    "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+]
+
+[tool.setuptools]
+packages = ["hsrmap", "hsrmap_phase1"]
+
+[tool.pytest.ini_options]
+#: submit/ 是交付镜像（同一批测试的副本），archive/ 与 data/ 是运行态，都不参与收集。
+norecursedirs = ["submit", "artifacts", "archive", "data", "phase1", "web", "node_modules", ".venv", "monitor", "tools"]
+markers = [
+    "live: hits HoYoLAB; do not run in default CI",
+    "data: needs the real data/ tree (skipped unless --run-data-e2e)",
+    "e2e: end-to-end path over the real data (skipped unless --run-data-e2e)",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["submit", "archive", "data", "phase1", "web/dist", "logs"]
+
+[tool.ruff.lint]
+#: 先只拦「一定会出错」的一类（语法/未定义名/重复键），避免一次性淹掉历史代码；
+#: 新模块（runtime / paths / 证据模型 / 发布层）可以按目录逐步加严。
+select = ["E9", "F63", "F7", "F82"]

@@ -1,0 +1,35 @@
+{
+ "captured_at": "2026-10-03T23:19:05+08:00",
+ "closure": "PASS",
+ "closure_gates": null,
+ "completion": {
+  "points": 1006,
+  "done": 1006,
+  "locate_complete": 829,
+  "complete": 177,
+  "statuses": {
+   "NO_EVIDENCE": 0,
+   "SCOPE_ONLY": 0,
+   "LOCATE_MISSING": 0,
+   "LOCATE_COMPLETE": 829,
+   "SOLVE_MISSING": 0,
+   "COMPLETE": 177
+  },
+  "missing_solve": 0,
+  "missing_locate": 0
+ },
+ "status_matrix_sha256": "d5b8bda61715a6907b7141eaf3712e6d6c01521b542381d0c93a20e843e7e288",
+ "status_matrix_size": 1006,
+ "audit_counts": {
+  "IMAGE_ONLY_STEP": 10,
+  "CHROME_STEP": 25,
+  "DERIVED_LABEL": 1,
+  "IMAGE_TRANSCRIBED_STEP": 64
+ },
+ "corpus": {
+  "entries": 779,
+  "steps": 5706,
+  "assets": 2067,
+  "pages": 235
+ }
+}

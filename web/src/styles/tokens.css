@@ -1,0 +1,14 @@
+:root {
+  --sidebar-width: 376px;
+  --panel-bg: #f3f3f3;
+  --panel-bg-muted: #e8e8e8;
+  --text-primary: #1a1a1a;
+  --text-secondary: #6b6b6b;
+  --border-soft: #d5d5d5;
+  --selection-bg: #1b1b1b;
+  --selection-text: #f5f5f5;
+  --accent-gold: #c8a25a;
+  --control-bg-dark: #2a2a2a;
+  --canvas-bg: #ececec;
+  --font: "Segoe UI", "Microsoft YaHei", sans-serif;
+}

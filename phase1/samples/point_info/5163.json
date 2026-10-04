@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5163,
+      "map_id": 842,
+      "label_id": 837,
+      "x_pos": 208.5,
+      "y_pos": -20.5,
+      "expansion": "",
+      "display_state": 1,
+      "version": 2,
+      "editor": "",
+      "editor_name": "呆头鹅波比",
+      "author": "",
+      "author_name": "LetterT",
+      "ctime": "2026-04-21 13:24:52",
+      "content": "与此处狸猫互动开启「战狸品」解谜。\n",
+      "img": "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/ebc0a881668c19e62056a3368ae83f0f_4338922740450120674.png",
+      "url_list": [],
+      "record_id": "12694",
+      "point_num": 1,
+      "related_jump_id": "0",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-04-21 13:24:52"
+  }
+}

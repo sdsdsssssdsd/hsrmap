@@ -1,0 +1,3 @@
+只能根据提供的 DocumentBlocks 判断是否为崩铁浮脂溯源图文攻略。
+返回 JSON：{"relevant": true, "guide_type": "floating_grease"}
+没有依据时 relevant=false。禁止编造正文。

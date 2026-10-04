@@ -1,0 +1,18 @@
+{
+  "map_id": 842,
+  "source": "hoyolab-hsr",
+  "transform": {
+    "type": "affine",
+    "scale_x": 1.0,
+    "scale_y": 1.0,
+    "offset_x": 3827.0,
+    "offset_y": 2217.0,
+    "flip_x": false,
+    "flip_y": false
+  },
+  "source_origin": [
+    3827.0,
+    2217.0
+  ],
+  "notes": "Official bundle CRS: raster_x = x_pos + origin_x; raster_y = y_pos + origin_y. Leaflet marker is [y_pos, x_pos]. padding is not part of the point transform."
+}

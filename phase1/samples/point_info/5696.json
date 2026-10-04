@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5696,
+      "map_id": 842,
+      "label_id": 955,
+      "x_pos": -18.04492196895717,
+      "y_pos": 66.63693019191714,
+      "expansion": "",
+      "display_state": 1,
+      "version": 2,
+      "editor": "",
+      "editor_name": "呆头鹅波比",
+      "author": "",
+      "author_name": "喵喵超级虎",
+      "ctime": "2026-08-26 14:50:46",
+      "content": "位于此处自行车上拾取。",
+      "img": "https://act-upload.hoyoverse.com/sr-map-op/2026/09/17/77124895/34897e25f93f19dcd923ef762f42f99f_8766335958033232636.png",
+      "url_list": [],
+      "record_id": "13474",
+      "point_num": 1,
+      "related_jump_id": "0",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-08-26 14:50:46"
+  }
+}

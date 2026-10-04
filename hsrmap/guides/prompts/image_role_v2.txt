@@ -1,0 +1,3 @@
+只根据图片本身分类。允许 role：location_map / puzzle_step / route_map / reward / cover / advertisement / unrelated / unknown。
+自拍、广告、二维码、纯封面是废图。不要根据标题或 4.2 版本猜。
+返回 JSON：{"role":"puzzle_step","confidence":0.0}

@@ -1,0 +1,7 @@
+html, body { margin: 0; height: 100%; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
+header { display: flex; gap: 12px; align-items: center; padding: 8px 12px; border-bottom: 1px solid #ccc; height: 48px; box-sizing: border-box; }
+main { display: flex; height: calc(100vh - 48px); }
+#map { flex: 1; height: 100%; min-width: 0; }
+#detail { width: 320px; overflow: auto; padding: 12px; border-left: 1px solid #ccc; background: #fafafa; }
+#detail img { max-width: 100%; height: auto; }
+.marker-icon { border: 1px solid #222; background: #fff; }

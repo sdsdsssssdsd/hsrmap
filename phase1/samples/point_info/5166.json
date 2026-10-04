@@ -1,0 +1,31 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "info": {
+      "id": 5166,
+      "map_id": 842,
+      "label_id": 660,
+      "x_pos": 198.5,
+      "y_pos": -473.5,
+      "expansion": "",
+      "display_state": 1,
+      "version": 2,
+      "editor": "",
+      "editor_name": "呆头鹅波比",
+      "author": "",
+      "author_name": "LetterT",
+      "ctime": "2026-04-21 13:24:52",
+      "content": "位于此处建筑物门前。",
+      "img": "https://act-upload.hoyoverse.com/sr-map-op/2026/05/02/77124895/b66e3029dc835a26119c450be3a58fed_6198927402364808435.png",
+      "url_list": [],
+      "record_id": "12697",
+      "point_num": 1,
+      "related_jump_id": "0",
+      "video_url": "",
+      "day_night_status": 0
+    },
+    "correct_user_list": [],
+    "last_update_time": "2026-04-21 13:24:52"
+  }
+}

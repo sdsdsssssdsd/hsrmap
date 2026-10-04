@@ -1,0 +1,35 @@
+topic_key: magnetic_puzzle
+display_name: 磁流解阈
+guide_kind: PUZZLE
+scope: POINT
+seed_global: true
+official_labels:
+  names:
+    - 磁流解阈
+    - 磁流解阀
+priority: 88
+enabled: true
+unit_builder:
+  type: region_ordinal
+matcher:
+  profile: puzzle_point_v2
+layout:
+  profile: puzzle_steps_v1
+discovery:
+  queries:
+    - "{map} 磁流解阈"
+    - 磁流解阈 图文攻略
+notes: Official label exists and is selectable, but the current HoYo snapshot has 0 points. Do not invent targets.
+
+#: 这个主题的解谜是什么类型，以及文字攻略能不能承载它（决定搜索与证据策略）。
+evidence_form:
+  kind: MIXED
+  text_sufficient: null
+  reason: 未评估：机关位置需图，操作序列可能可写
+
+#: 完成一个点位需要走到哪一步（与 evidence_form.kind 正交）：
+#: LOCATE_ONLY = 到达即得；LOCATE_AND_SOLVE = 到达后还要解。点级证据可以上调。
+completion:
+  requirement: LOCATE_AND_SOLVE
+  solve_kind: MODULE_PUZZLE
+  reason: 机关解谜，需要操作步骤

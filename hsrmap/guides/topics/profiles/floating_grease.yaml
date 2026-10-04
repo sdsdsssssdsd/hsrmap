@@ -1,0 +1,42 @@
+topic_key: floating_grease
+display_name: 浮脂溯源·二次元ROTATE！
+guide_kind: PUZZLE
+scope: POINT
+official_labels:
+  names:
+    - 浮脂溯源·二次元ROTATE！
+    - 浮脂溯源
+priority: 100
+enabled: true
+unit_builder:
+  type: region_ordinal
+matcher:
+  profile: puzzle_point_v2
+layout:
+  profile: puzzle_steps_v1
+discovery:
+  queries:
+    - "{label} 图文攻略"
+    - "{map} {label}"
+vision_profile:
+  generic_roles:
+    - LOCATION_MAP
+    - PUZZLE_STEP
+    - RESULT
+  specialist_prompt: floating_grease_v1
+viewer:
+  origin_semantic: floating_grease_origin_retrace
+  notes_semantic: floating_grease_notes
+
+#: 这个主题的解谜是什么类型，以及文字攻略能不能承载它（决定搜索与证据策略）。
+evidence_form:
+  kind: INPUT_SEQUENCE
+  text_sufficient: true
+  reason: ROTATE 是顺/逆时针旋转，页面用第N处标序即可用文字表达
+
+#: 完成一个点位需要走到哪一步（与 evidence_form.kind 正交）：
+#: LOCATE_ONLY = 到达即得；LOCATE_AND_SOLVE = 到达后还要解。点级证据可以上调。
+completion:
+  requirement: LOCATE_AND_SOLVE
+  solve_kind: INPUT_SEQUENCE
+  reason: ROTATE 是到了之后才开始的解谜：进机关、按顺/逆时针回收颜料
