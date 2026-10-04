@@ -7,6 +7,7 @@ import type {
   TopicPayload,
   LabelGroup,
   MapInfo,
+  MapTransitionsPayload,
   PointDetail,
   PointItem,
   ProgressAtlasPayload,
@@ -40,6 +41,8 @@ export const api = {
   map: (id: string, refresh = false) => getJson<MapInfo>(`/api/v1/maps/${id}${refresh ? "?refresh=true" : ""}`),
   points: (id: string, refresh = false) => getJson<PointItem[]>(`/api/v1/maps/${id}/points${refresh ? "?refresh=true" : ""}`),
   labels: (id: string, refresh = false) => getJson<LabelGroup[]>(`/api/v1/maps/${id}/labels${refresh ? "?refresh=true" : ""}`),
+  //: M7.4（§十一/§十四）：这张图能去哪 + 导航上下文（没有图库时 available=false，不是错误）。
+  mapTransitions: (id: string) => getJson<MapTransitionsPayload>(`/api/v1/maps/${id}/transitions`),
   point: (id: number | string) => getJson<PointDetail>(`/api/v1/points/${id}`),
   search: (q: string) => getJson<SearchResult>(`/api/v1/search?q=${encodeURIComponent(q)}`),
   grease: () => getJson<GreaseTopic>("/api/v1/topics/floating-grease"),

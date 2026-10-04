@@ -39,7 +39,8 @@ def test_review_edit_then_approve(tmp_path, guide_dbs):
     )
     assert created.status_code == 200
     item_id = created.json()["id"]
-    listed = client.get("/api/v1/review/items").json()["items"]
+    #: 队列默认 slim：maps 非空时 items 只报 items_omitted，要看逐页记录得显式 include_items=1。
+    listed = client.get("/api/v1/review/items?include_items=1").json()["items"]
     assert listed[0]["status"] == "NEEDS_REVIEW"
     assert listed[0]["page_title"] == "海原市"
     html = client.get("/review")
@@ -84,7 +85,7 @@ def test_review_list_includes_local_page_images(tmp_path, guide_dbs):
     create_item(db, {"page_id": imported["page"]["id"], "source_point_id": "pending", "status": "AUTO_SUGGEST", "draft": {"steps": [{"text": "转", "images": []}]}})
     app = create_app(guide_path=guide_dbs / "guide.db", guide_assets=assets)
     client = TestClient(app)
-    item = client.get("/api/v1/review/items").json()["items"][0]
+    item = client.get("/api/v1/review/items?include_items=1").json()["items"][0]
     assert item["page_images"]
     sha = item["page_images"][0]["sha"]
     assert item["page_images"][0]["url"] == f"/guide-assets/{sha}"
@@ -125,7 +126,7 @@ def test_review_images_use_derived_regions(tmp_path, guide_dbs):
     )
     create_item(db, {"page_id": page_id, "source_point_id": "", "status": "AUTO_SUGGEST", "draft": {}})
     app = create_app(guide_path=guide_dbs / "guide.db", guide_assets=assets)
-    item = TestClient(app).get("/api/v1/review/items").json()["items"][0]
+    item = TestClient(app).get("/api/v1/review/items?include_items=1").json()["items"][0]
     labeled = [img for img in item["page_images"] if img["sha"] == sha]
     assert labeled[0]["map_name"] == "海原市"
     assert labeled[0]["role"] == "puzzle_step"
@@ -157,7 +158,8 @@ def test_review_one_guide_per_map(tmp_path, guide_dbs):
     keep = _page("https://news.17173.com/a", "keep-")
     _page("https://www.3dmgame.com/a", "dup-")
     app = create_app(guide_path=guide_dbs / "guide.db", guide_assets=assets)
-    body = TestClient(app).get("/api/v1/review/items").json()
+    #: slim 行只留计数（image_count），这一条要看整行：full=1 是老前端/CLI 的完整形状。
+    body = TestClient(app).get("/api/v1/review/items?full=1").json()
     maps = body["maps"]
     haiyuan = [row for row in maps if row["map_name"] == "海原市"]
     assert len(haiyuan) == 1

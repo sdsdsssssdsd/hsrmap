@@ -15,7 +15,9 @@ pytestmark = pytest.mark.data
 def test_rebuild_published_raw_matches_core_counts(tmp_path: Path):
     current = json.loads((DATA / "current.json").read_text(encoding="utf-8"))
     raw_dir = DATA / current["path"] / "raw"
-    published = CoreDatabase(DATA / current["core_db"])
+    #: 发布快照是冻结产物：这里只读计数，**必须只读打开**。可写打开会跑 schema 迁移，
+    #: 等于让测试改掉 data/（M7.1 的加性迁移让这个老写法立刻现形）。
+    published = CoreDatabase(DATA / current["core_db"], readonly=True, immutable=True)
     rebuilt = rebuild_from_raw(raw_dir, tmp_path / "rebuilt.db")
     expected = published.counts()
     actual = rebuilt.counts()

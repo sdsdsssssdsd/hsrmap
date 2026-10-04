@@ -58,7 +58,8 @@ def test_approve_map_label_without_inventing_point_id(tmp_path, guide_dbs):
         },
     )
     item_id = created.json()["id"]
-    listed = client.get("/api/v1/review/items?topic=origami-bird").json()
+    #: 队列默认 slim：要 draft+layout 就得显式 include_items=1 与 full=1（形状见 test_doctor）。
+    listed = client.get("/api/v1/review/items?topic=origami-bird&include_items=1&full=1").json()
     assert listed["items"][0]["draft"]["target_type"] == "MAP_LABEL"
     assert listed["items"][0]["layout"]["blocks"]
     approved = client.post(f"/api/v1/review/items/{item_id}/approve")

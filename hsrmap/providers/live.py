@@ -7,6 +7,7 @@ from typing import Any
 
 from hsrmap.detail_normalize import normalize_point_info
 from hsrmap.normalize import flatten_map_nodes, normalize_map_info, normalize_point
+from hsrmap.render_probe import TREE_MAP_NODE_TYPE
 from hsrmap.schema import check_payload
 from hsrmap.viewer_crs import get_max_bounds, get_raster_bounds
 
@@ -44,13 +45,21 @@ def live_asset_key(url: str) -> str:
 
 
 def _viewer_tree(flat: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """live 树：没有任何落库证据，probe 一律 UNKNOWN。
+
+    这里只能按官方树的结构提示（node_type=2）决定节点是否可点进去——那**不是**可渲染判定
+    （a1-8-1 §九）：真的点开时 `get_map()` 会去拉 map/info，没有 raster 就返回 None。
+    """
     by_id: dict[str, dict[str, Any]] = {}
     for row in flat:
+        renderable = row["is_renderable"]
+        if renderable is None:
+            renderable = row["node_type"] == TREE_MAP_NODE_TYPE
         by_id[row["source_id"]] = {
             "id": row["source_id"],
             "name": row["name"] or row["source_id"],
-            "type": "map" if row["is_renderable"] else "folder",
-            "renderable": bool(row["is_renderable"]),
+            "type": "map" if renderable else "folder",
+            "renderable": bool(renderable),
             "children": [],
         }
     roots: list[dict[str, Any]] = []

@@ -6,6 +6,7 @@ from pathlib import Path
 
 from hsrmap.database import CoreDatabase
 from hsrmap.normalize import flatten_label_nodes, flatten_map_nodes, normalize_map_info, normalize_point
+from hsrmap.render_probe import refresh_render_probes
 
 
 def rebuild_from_raw(raw_dir: Path, db_path: Path) -> CoreDatabase:
@@ -13,7 +14,8 @@ def rebuild_from_raw(raw_dir: Path, db_path: Path) -> CoreDatabase:
     db = CoreDatabase(db_path)
     tree = json.loads((raw_dir / "map_tree.json").read_text(encoding="utf-8"))
     labels = json.loads((raw_dir / "label_tree.json").read_text(encoding="utf-8"))
-    db.insert_map_nodes(flatten_map_nodes((tree.get("data") or {}).get("tree") or []))
+    map_nodes = flatten_map_nodes((tree.get("data") or {}).get("tree") or [])
+    db.insert_map_nodes(map_nodes)
     label_nodes, bindings = flatten_label_nodes((labels.get("data") or {}).get("tree") or [])
     db.insert_label_nodes(label_nodes)
     db.insert_semantic_bindings(bindings)
@@ -36,4 +38,8 @@ def rebuild_from_raw(raw_dir: Path, db_path: Path) -> CoreDatabase:
             for point in ((payload.get("data") or {}).get("point_list") or [])
         ]
         db.insert_points(points)
+    #: map/info 都落库之后再判可渲染（a1-8-1 §九）：证据就是刚写进去的 maps + map_fragments。
+    known_ids = {n["source_id"] for n in map_nodes}
+    known_ids.update(str(row["source_id"]) for row in db.conn.execute("SELECT source_id FROM maps"))
+    refresh_render_probes(db.conn, sorted(known_ids))
     return db

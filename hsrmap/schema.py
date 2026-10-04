@@ -16,6 +16,10 @@ REQUIRED_PATHS = {
         "$.data.info.id",
         "$.data.info.detail",
     ),
+    #: 容器（node_type=1）的 map/info **合法地**没有 raster detail（a1-8-1 §三：node_type 不是
+    #: 可渲染判据）。它的形状要求只剩 info 外壳；「这张图到底能不能渲染」由 render probe 判，
+    #: 「node_type=2 的候选必须落库」由 sync 的 missing_map_info 逐条兜住——这里没有放宽判定。
+    "map_info_container": ("$.retcode", "$.data", "$.data.info", "$.data.info.id"),
     "point_list": ("$.retcode", "$.data", "$.data.point_list"),
     "point_info": ("$.retcode", "$.data", "$.data.info", "$.data.info.id"),
 }

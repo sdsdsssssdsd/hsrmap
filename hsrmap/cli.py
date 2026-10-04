@@ -7,7 +7,7 @@ import shutil
 import sqlite3
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from hsrmap.database import CoreDatabase
 from hsrmap.detail_db import DetailDatabase
@@ -47,14 +47,33 @@ from hsrmap.validate import golden_point_errors, validate_offline
 
 
 def _load_current() -> dict:
+    """读当前快照指针，并**当场检查它指向的东西存在**。
+
+    指针写坏（或被别人写成哨兵值）时，以前会一路走到打开数据库才炸出一段 traceback；
+    读指针的地方就该给一条人话：说清楚「哪个文件、指向哪里、哪个不存在」。
+    """
     if not _P.CURRENT_PATH.exists():
-        raise SystemExit("no current snapshot")
-    return json.loads(_P.CURRENT_PATH.read_text(encoding="utf-8"))
+        raise SystemExit(f"没有当前快照指针：{_P.CURRENT_PATH}（先跑一次 hsrmap sync）")
+    try:
+        payload = json.loads(_P.CURRENT_PATH.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        raise SystemExit(f"当前快照指针不是合法 JSON：{_P.CURRENT_PATH}（{exc}）") from exc
+    if not isinstance(payload, dict) or not str(payload.get("core_db") or "").strip():
+        raise SystemExit(f"当前快照指针缺少 core_db：{_P.CURRENT_PATH} → {payload!r}")
+    core_db = _P.DATA / str(payload["core_db"])
+    if not core_db.is_file():
+        raise SystemExit(
+            f"当前快照指针指向的数据库不存在：{_P.CURRENT_PATH} → {core_db}"
+            "（快照目录被删了，还是指针被写成了别的值？）"
+        )
+    return payload
 
 
 def cmd_status(_: argparse.Namespace) -> int:
     current = _load_current()
-    db = CoreDatabase(_P.DATA / current["core_db"])
+    #: 冻结快照**只读**打开：status 是看一眼，不该顺手把 schema 迁移写进快照
+    #: （M7.1 加列之后这条尤其重要：可写打开会给快照补列，字节就变了）。
+    db = CoreDatabase(_P.DATA / current["core_db"], readonly=True)
     stats = build_statistics(db)
     print(json.dumps({"current": current, "counts": db.counts(), "stats_summary": {
         "maps": stats["maps"],
@@ -79,7 +98,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
         db_path = _P.SNAPSHOTS / args.snapshot / "core.db"
     else:
         db_path = _P.DATA / _load_current()["core_db"]
-    db = CoreDatabase(db_path)
+    #: 同上：校验只读快照。`--offline` 写的 PNG 落在 debug/ 目录，不需要 DB 可写。
+    db = CoreDatabase(db_path, readonly=True)
     golden = json.loads(_P.GOLDEN_PATH.read_text(encoding="utf-8"))
     errors = golden_point_errors(db, golden)
     result = {"golden": errors, "counts": db.counts()}
@@ -375,22 +395,38 @@ def _progress_remaining(args: argparse.Namespace) -> int:
     topics = [item for item in str(getattr(args, "topics", "") or "").replace(";", ",").split(",") if item.strip()]
     guide_db = _open_guide_db(guide_db_path, write=False)
     user_db = _open_user_db_readonly(user_db_path)
+    #: 图口径（a1-8-1 §二十）：有图库就带上「可渲染地图 / 深层地图 / 深层点位 / 未解析目标」，
+    #: 没有就如实不带 —— 剩余清单本身不依赖图（老快照 + 新 CLI 必须照常出清单）。
+    from hsrmap.graph_nav import open_graph_connection
+
+    graph_conn, graph_owned = open_graph_connection(None)
     try:
         report = remaining_atlas(
             guide_db=guide_db,
             user_db=user_db,
             topics=topics or None,
             import_map_mark=bool(getattr(args, "accept_map_mark", False)),
+            core_conn=graph_conn,
+            graph_conn=graph_conn,
         )
     finally:
         guide_db.close()
         if user_db is not None:
             user_db.close()
+        if graph_owned and graph_conn is not None:
+            graph_conn.close()
     if bool(getattr(args, "json", False)):
         print(json.dumps(report, ensure_ascii=False, indent=2))
         return 0
     print(render(report, limit=int(getattr(args, "limit", 12) or 12),
                  region=getattr(args, "region", None)))
+    graph = report.get("graph") or {}
+    if graph.get("available"):
+        print("")
+        print(f"图口径：可渲染地图 {graph['renderable_maps']} · 边 {graph['edges_total']}"
+              f"（可导航 {graph['navigable_edges']}）· 深层地图 {graph['deep_maps']}"
+              f" · 深层点位 {graph['points_on_deep_maps']}/{graph['points_total']}"
+              f" · 未解析可导航目标 {graph['unresolved_navigable_targets']}")
     return 0
 
 
@@ -643,6 +679,179 @@ def cmd_repo_hygiene(args: argparse.Namespace) -> int:
         }, ensure_ascii=False, indent=1), encoding="utf-8")
         print("json:", out)
     return 0 if report["ok"] else 2
+
+
+def cmd_graph(args: argparse.Namespace) -> int:
+    """Map Graph（a1-8-1）：离线回填 / Graph Audit / 孤儿地图发现器。
+
+    退出码契约：0 = 成功；1 = 执行或环境错误（没有快照、写不进去……）；
+    2 = 用法或门禁拒绝（想写冻结快照、--gate 判定不通过）。
+    """
+    from hsrmap.graph_backfill import (
+        BackfillError,
+        FrozenSnapshotError,
+        build_backfill_plan,
+        default_out_path,
+        dump_json,
+        render_write_result,
+        resolve_snapshot,
+        write_backfill,
+    )
+
+    sub = str(getattr(args, "graph_cmd", "") or "")
+    wants_json = bool(getattr(args, "json", False))
+
+    # ---------------------------------------------------------------- backfill
+    if sub == "backfill":
+        bundle = getattr(args, "bundle", None)
+        try:
+            #: 只有 backfill 需要快照；audit / orphans 自己解析 --db（缺库时回退快照只读）。
+            snapshot = resolve_snapshot(getattr(args, "snapshot", None))
+            plan = build_backfill_plan(snapshot, bundle_path=bundle)
+        except (BackfillError, OSError, ValueError) as exc:
+            print(f"graph backfill: {exc}", file=sys.stderr)
+            return 1
+        out = Path(getattr(args, "out", None) or default_out_path())
+        payload: dict[str, Any] = {
+            "command": "graph backfill",
+            "dry_run": not bool(getattr(args, "write", False)),
+            "out": str(out),
+            "plan": plan.as_dict(),
+        }
+        if not getattr(args, "write", False):
+            payload["result"] = None
+            payload["note"] = "dry-run：什么都没写。要落库请显式加 --write"
+            if wants_json:
+                print(dump_json(payload))
+            else:
+                print(plan.render(), end="")
+                print(f"  （dry-run：没有写任何文件。落库请加 --write，输出库 {out}）")
+            _write_optional_report(getattr(args, "report", None), payload)
+            return 0
+        try:
+            result = write_backfill(plan, out=out, force=bool(getattr(args, "force", False)))
+        except FrozenSnapshotError as exc:
+            print(f"graph backfill: 拒绝写入 —— {exc}", file=sys.stderr)
+            return 2
+        except (BackfillError, OSError, ValueError) as exc:
+            print(f"graph backfill: {exc}", file=sys.stderr)
+            return 1
+        payload["result"] = result
+        if wants_json:
+            print(dump_json(payload))
+        else:
+            print(plan.render(), end="")
+            print(render_write_result(result), end="")
+        _write_optional_report(getattr(args, "report", None), payload)
+        if not result.get("source_untouched", True):
+            print("graph backfill: 源库 sha256 变了 —— 冻结快照被改写，这是硬约束违规", file=sys.stderr)
+            return 1
+        return 0
+
+    # ------------------------------------------------------------------- audit
+    if sub == "audit":
+        from hsrmap.graph_audit import (
+            AuditOptions,
+            audit_graph,
+            default_report_path,
+            render_audit,
+            write_report,
+        )
+
+        try:
+            db_path, database, _readonly = _graph_db(getattr(args, "db", None), out_default=default_out_path())
+        except (BackfillError, OSError, sqlite3.Error) as exc:
+            print(f"graph audit: {exc}", file=sys.stderr)
+            return 1
+        try:
+            report = audit_graph(
+                database.conn,
+                options=AuditOptions(
+                    db_path=str(db_path),
+                    sample_limit=int(getattr(args, "limit", 10) or 10),
+                    canary_entry_map=getattr(args, "canary_map", None),
+                    canary_point_source_id=getattr(args, "canary_point", None),
+                ),
+            )
+        except (sqlite3.Error, OSError, ValueError) as exc:
+            print(f"graph audit: {exc}", file=sys.stderr)
+            return 1
+        finally:
+            database.close()
+        target = getattr(args, "out", None)
+        if target in (None, "") and not bool(getattr(args, "no_report", False)):
+            target = default_report_path()
+        if target not in (None, ""):
+            report["report_path"] = str(write_report(target, report))
+        if wants_json:
+            print(dump_json(report))
+        else:
+            print(render_audit(report))
+            if report.get("report_path"):
+                print(f"json: {report['report_path']}")
+        if bool(getattr(args, "gate", False)) and not report["gate"]["ok"]:
+            print("graph audit: 门禁不通过 —— " + ", ".join(report["gate"]["reasons"]), file=sys.stderr)
+            return 2
+        return 0
+
+    # ----------------------------------------------------------------- orphans
+    if sub == "orphans":
+        from hsrmap.graph_audit import AuditOptions, audit_graph, orphans_only, render_orphans
+
+        try:
+            db_path, database, _readonly = _graph_db(getattr(args, "db", None), out_default=default_out_path())
+        except (BackfillError, OSError, sqlite3.Error) as exc:
+            print(f"graph orphans: {exc}", file=sys.stderr)
+            return 1
+        try:
+            report = audit_graph(database.conn, options=AuditOptions(db_path=str(db_path)))
+        except (sqlite3.Error, OSError, ValueError) as exc:
+            print(f"graph orphans: {exc}", file=sys.stderr)
+            return 1
+        finally:
+            database.close()
+        payload = orphans_only(report)
+        if wants_json:
+            print(dump_json(payload))
+        else:
+            print(render_orphans(payload))
+        return 0
+
+    print(f"graph: 未知子命令 {sub!r}（可用：backfill / audit / orphans）", file=sys.stderr)
+    return 2
+
+
+def _write_optional_report(target: str | None, payload: Mapping[str, Any]) -> None:
+    if target in (None, ""):
+        return
+    from hsrmap.graph_backfill import dump_json
+
+    path = Path(target)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(dump_json(payload) + "\n", encoding="utf-8")
+    print(f"json: {path}")
+
+
+def _graph_db(spec: str | None, *, out_default: Path) -> tuple[Path, CoreDatabase, bool]:
+    """打开图谱库：显式 --db → 回填输出库 → 冻结快照（只读回退）。
+
+    **只读回退是故意的**：M7.2 之后的新库有 map_edges，老快照没有——那就诚实地报「还没有边」，
+    绝不为了跑审计去给快照补表。
+    """
+    from hsrmap.graph_backfill import BackfillError
+
+    if spec not in (None, ""):
+        path = Path(spec).expanduser().resolve()
+        if not path.is_file():
+            raise BackfillError(f"图谱库不存在：{path}")
+        return path, CoreDatabase(path, readonly=True, immutable=True), True
+    if out_default.is_file():
+        return out_default, CoreDatabase(out_default, readonly=True, immutable=True), True
+    from hsrmap.graph_backfill import resolve_snapshot
+
+    snapshot = resolve_snapshot()
+    return snapshot.core_db, snapshot.open_readonly(), True
+
 
 def cmd_runtime(args: argparse.Namespace) -> int:
     """打印当前运行时根目录与来源（a1-8 四.2 的可观测入口）。"""
@@ -2137,6 +2346,33 @@ def main(argv: list[str] | None = None) -> int:
     imp.add_argument("--raw")
     imp.add_argument("--assets")
     imp.set_defaults(func=cmd_guides)
+    graph = sub.add_parser("graph")
+    graph.add_argument("--data-dir", default=None, help="运行时数据目录（同顶层开关）")
+    graph.add_argument("--quiet", action="store_true", help="成功也不打印")
+    gsub = graph.add_subparsers(dest="graph_cmd", required=True)
+    graph_backfill = gsub.add_parser("backfill", help="从现有快照的 raw payload 离线算出地图边（默认 dry-run）")
+    graph_backfill.add_argument("--snapshot", default=None, help="快照 id 或目录（默认 current.json）")
+    graph_backfill.add_argument("--out", default=None, help="输出库（默认 <data>/graph/core.db；绝不允许写进 snapshots/）")
+    graph_backfill.add_argument("--write", action="store_true", help="真的写库；缺省只打印将要写什么")
+    graph_backfill.add_argument("--force", action="store_true", help="从快照重新拷一份输出库（丢弃已有图）")
+    graph_backfill.add_argument("--bundle", default=None, help="官方前端 bundle 文本：顺带跑一遍契约扫描")
+    graph_backfill.add_argument("--report", default=None, help="把计划 / 结果写成 JSON")
+    graph_backfill.add_argument("--json", action="store_true", help="把 JSON 打到标准输出")
+    graph_backfill.set_defaults(func=cmd_graph)
+    graph_audit = gsub.add_parser("audit", help="Graph Audit（a1-8-1 §十七）：报告 + 门禁输入")
+    graph_audit.add_argument("--db", default=None, help="图谱库（默认 <data>/graph/core.db，回退到快照只读）")
+    graph_audit.add_argument("--out", default=None, help="报告落地路径（默认 reports/map_graph_audit.json）")
+    graph_audit.add_argument("--no-report", action="store_true", help="只在标准输出打印，不写报告文件")
+    graph_audit.add_argument("--gate", action="store_true", help="门禁不通过时退 2（未解析 target / 孤儿 / 闭包未收敛）")
+    graph_audit.add_argument("--limit", type=int, default=10, help="报告里每类明细的条数上限")
+    graph_audit.add_argument("--canary-map", default=None, help="canary 入口图（默认 943）")
+    graph_audit.add_argument("--canary-point", default=None, help="canary 入口 point（默认 5637）")
+    graph_audit.add_argument("--json", action="store_true", help="把报告 JSON 打到标准输出")
+    graph_audit.set_defaults(func=cmd_graph)
+    graph_orphans = gsub.add_parser("orphans", help="孤儿地图发现器（a1-8-1 §十六）")
+    graph_orphans.add_argument("--db", default=None, help="图谱库（默认 <data>/graph/core.db，回退到快照只读）")
+    graph_orphans.add_argument("--json", action="store_true", help="把 JSON 打到标准输出")
+    graph_orphans.set_defaults(func=cmd_graph)
     args = parser.parse_args(argv)
     #: 子解析器的同名默认值会覆盖顶层参数，所以两个开关都以 argv 为准（a1-8 四.1）。
     chosen_dir = getattr(args, "data_dir", None) or data_dir

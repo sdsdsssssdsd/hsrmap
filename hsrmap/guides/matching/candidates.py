@@ -6,12 +6,30 @@ from typing import Any
 from hsrmap.guides.matching.spatial import parse_floor_label
 
 
+def _with_navigation(
+    points: list[dict[str, Any]],
+    navigation_conn: Any | None,
+) -> list[dict[str, Any]]:
+    """给候选点位补导航上下文（a1-8-1 §十九）。
+
+    **只加字段**：`navigation_conn` 为 None（缺省）时原样返回**同一个列表对象**，
+    命中/排序一个字节都不变；给了图库才多一个 `navigation_context` 字段，
+    深层地图的攻略才可能被绑上（「千星城中心城区2层二次元界JUMP」）。
+    """
+    if navigation_conn is None:
+        return points
+    from hsrmap.graph_nav import attach_navigation_context
+
+    return attach_navigation_context(points, navigation_conn)
+
+
 def query_candidates(
     map_name: str | None,
     official_points: list[dict[str, Any]],
     *,
     semantic: str | None = "浮脂溯源",
     label_names: list[str] | None = None,
+    navigation_conn: Any | None = None,
 ) -> list[dict[str, Any]]:
     if not map_name:
         return []
@@ -24,7 +42,7 @@ def query_candidates(
         if names and not any(token in label for token in names):
             continue
         hits.append(point)
-    return hits
+    return _with_navigation(hits, navigation_conn)
 
 
 def _region_hit(map_name: str, point: dict[str, Any]) -> bool:
@@ -76,6 +94,7 @@ def query_candidates_by_text(
     *,
     label_names: list[str] | None = None,
     min_tokens: int = 2,
+    navigation_conn: Any | None = None,
 ) -> list[dict[str, Any]]:
     """单元正文自己说清了「哪个区域、哪一层」时，找出唯一符合的点位。
 
@@ -119,4 +138,4 @@ def query_candidates_by_text(
     for qualifier in _QUALIFIERS:
         if qualifier in body and qualifier not in best_blob:
             return []
-    return [best]
+    return _with_navigation([best], navigation_conn)

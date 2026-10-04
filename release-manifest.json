@@ -1,8 +1,8 @@
 {
- "generated_at": "2026-10-04T04:43:47+00:00",
+ "generated_at": "2026-10-04T06:22:43+00:00",
  "root_name": "Hoyo",
- "files": 592,
- "bytes": 7287939,
+ "files": 618,
+ "bytes": 9909970,
  "entries": [
   {
    "path": ".env.example",
@@ -42,7 +42,7 @@
   },
   {
    "path": "README.md",
-   "bytes": 14774
+   "bytes": 18304
   },
   {
    "path": "docs/architecture/phase5c-vision-region-architecture.md",
@@ -51,6 +51,14 @@
   {
    "path": "docs/history/phase1-hoyolab-capture.md",
    "bytes": 2910
+  },
+  {
+   "path": "docs/images/map-graph-deep-map.png",
+   "bytes": 108140
+  },
+  {
+   "path": "docs/images/map-graph-transition.png",
+   "bytes": 371152
   },
   {
    "path": "docs/images/map-overview.png",
@@ -117,8 +125,12 @@
    "bytes": 5027
   },
   {
+   "path": "docs/runbooks/map-graph-m7.md",
+   "bytes": 18745
+  },
+  {
    "path": "docs/runbooks/progress-p6.md",
-   "bytes": 8835
+   "bytes": 9428
   },
   {
    "path": "docs/runbooks/publish-github.md",
@@ -127,6 +139,10 @@
   {
    "path": "docs/runbooks/serve-split.md",
    "bytes": 3662
+  },
+  {
+   "path": "docs/specs/11da7d58-64f1-43bf-9993-82fbe0683192.png",
+   "bytes": 1639270
   },
   {
    "path": "docs/specs/a1-1.md",
@@ -157,6 +173,10 @@
    "bytes": 14205
   },
   {
+   "path": "docs/specs/a1-8-1.md",
+   "bytes": 25401
+  },
+  {
    "path": "docs/specs/a1-8.md",
    "bytes": 27896
   },
@@ -170,7 +190,7 @@
   },
   {
    "path": "docs/specs/t0.md",
-   "bytes": 368
+   "bytes": 577
   },
   {
    "path": "docs/superpowers/plans/2026-10-02-guide-atlas-v3.md",
@@ -285,6 +305,18 @@
    "bytes": 2852
   },
   {
+   "path": "docs/superpowers/sdd/2026-10-02-phase-7-map-graph/m71-graph-schema.md",
+   "bytes": 6502
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-phase-7-map-graph/m72-discovery.md",
+   "bytes": 9822
+  },
+  {
+   "path": "docs/superpowers/sdd/2026-10-02-phase-7-map-graph/progress.md",
+   "bytes": 9157
+  },
+  {
    "path": "docs/superpowers/specs/2026-10-02-phase-5c-vision-region-design.md",
    "bytes": 13879
   },
@@ -318,11 +350,11 @@
   },
   {
    "path": "hsrmap/cli.py",
-   "bytes": 105695
+   "bytes": 118156
   },
   {
    "path": "hsrmap/database.py",
-   "bytes": 13740
+   "bytes": 20893
   },
   {
    "path": "hsrmap/detail_db.py",
@@ -353,12 +385,32 @@
    "bytes": 1269
   },
   {
+   "path": "hsrmap/discovery.py",
+   "bytes": 57811
+  },
+  {
    "path": "hsrmap/doctor.py",
    "bytes": 12335
   },
   {
    "path": "hsrmap/dod.py",
    "bytes": 24014
+  },
+  {
+   "path": "hsrmap/graph.py",
+   "bytes": 20887
+  },
+  {
+   "path": "hsrmap/graph_audit.py",
+   "bytes": 33718
+  },
+  {
+   "path": "hsrmap/graph_backfill.py",
+   "bytes": 36289
+  },
+  {
+   "path": "hsrmap/graph_nav.py",
+   "bytes": 8640
   },
   {
    "path": "hsrmap/guide_db.py",
@@ -582,7 +634,7 @@
   },
   {
    "path": "hsrmap/guides/matching/candidates.py",
-   "bytes": 5171
+   "bytes": 6010
   },
   {
    "path": "hsrmap/guides/matching/cv.py",
@@ -734,7 +786,7 @@
   },
   {
    "path": "hsrmap/guides/regions/units.py",
-   "bytes": 6715
+   "bytes": 7550
   },
   {
    "path": "hsrmap/guides/reingest.py",
@@ -766,7 +818,7 @@
   },
   {
    "path": "hsrmap/guides/review/service.py",
-   "bytes": 93568
+   "bytes": 95652
   },
   {
    "path": "hsrmap/guides/revive.py",
@@ -1126,11 +1178,11 @@
   },
   {
    "path": "hsrmap/normalize.py",
-   "bytes": 4888
+   "bytes": 5921
   },
   {
    "path": "hsrmap/paths.py",
-   "bytes": 2937
+   "bytes": 3478
   },
   {
    "path": "hsrmap/preflight.py",
@@ -1146,7 +1198,7 @@
   },
   {
    "path": "hsrmap/progress/atlas.py",
-   "bytes": 14731
+   "bytes": 17916
   },
   {
    "path": "hsrmap/progress/cookie.py",
@@ -1210,7 +1262,7 @@
   },
   {
    "path": "hsrmap/providers/live.py",
-   "bytes": 8651
+   "bytes": 9137
   },
   {
    "path": "hsrmap/providers/snapshot.py",
@@ -1218,15 +1270,19 @@
   },
   {
    "path": "hsrmap/rebuild.py",
-   "bytes": 1689
+   "bytes": 2095
   },
   {
    "path": "hsrmap/release.py",
    "bytes": 6025
   },
   {
+   "path": "hsrmap/render_probe.py",
+   "bytes": 9919
+  },
+  {
    "path": "hsrmap/reports.py",
-   "bytes": 5217
+   "bytes": 6812
   },
   {
    "path": "hsrmap/request_key.py",
@@ -1238,7 +1294,7 @@
   },
   {
    "path": "hsrmap/schema.py",
-   "bytes": 2149
+   "bytes": 2593
   },
   {
    "path": "hsrmap/serve.py",
@@ -1246,7 +1302,7 @@
   },
   {
    "path": "hsrmap/sync.py",
-   "bytes": 21160
+   "bytes": 52522
   },
   {
    "path": "hsrmap/transform.py",
@@ -1262,11 +1318,11 @@
   },
   {
    "path": "hsrmap/viewer_app.py",
-   "bytes": 33118
+   "bytes": 34777
   },
   {
    "path": "hsrmap/viewer_bind.py",
-   "bytes": 2412
+   "bytes": 2930
   },
   {
    "path": "hsrmap/viewer_crs.py",
@@ -1274,7 +1330,7 @@
   },
   {
    "path": "hsrmap/viewer_repo.py",
-   "bytes": 19924
+   "bytes": 43293
   },
   {
    "path": "hsrmap_phase1/__init__.py",
@@ -1698,7 +1754,7 @@
   },
   {
    "path": "tests/test_dod.py",
-   "bytes": 4222
+   "bytes": 4451
   },
   {
    "path": "tests/test_fingerprint.py",
@@ -1755,6 +1811,10 @@
   {
    "path": "tests/test_guide_candidates.py",
    "bytes": 6022
+  },
+  {
+   "path": "tests/test_guide_candidates_navigation.py",
+   "bytes": 3430
   },
   {
    "path": "tests/test_guide_cli.py",
@@ -1978,15 +2038,15 @@
   },
   {
    "path": "tests/test_guide_review_api.py",
-   "bytes": 15228
+   "bytes": 15517
   },
   {
    "path": "tests/test_guide_review_target.py",
-   "bytes": 5379
+   "bytes": 5517
   },
   {
    "path": "tests/test_guide_review_topic.py",
-   "bytes": 2182
+   "bytes": 2319
   },
   {
    "path": "tests/test_guide_revive.py",
@@ -2081,12 +2141,36 @@
    "bytes": 929
   },
   {
+   "path": "tests/test_map_graph.py",
+   "bytes": 27327
+  },
+  {
+   "path": "tests/test_map_graph_backfill.py",
+   "bytes": 26915
+  },
+  {
+   "path": "tests/test_map_graph_canary.py",
+   "bytes": 5853
+  },
+  {
+   "path": "tests/test_map_graph_deep_sync.py",
+   "bytes": 14288
+  },
+  {
+   "path": "tests/test_map_graph_discovery.py",
+   "bytes": 27506
+  },
+  {
+   "path": "tests/test_map_graph_nav.py",
+   "bytes": 7878
+  },
+  {
    "path": "tests/test_marker_css.py",
    "bytes": 643
   },
   {
    "path": "tests/test_normalize.py",
-   "bytes": 3294
+   "bytes": 5096
   },
   {
    "path": "tests/test_phase1_fixture.py",
@@ -2117,6 +2201,10 @@
    "bytes": 5147
   },
   {
+   "path": "tests/test_progress_graph_coverage.py",
+   "bytes": 3882
+  },
+  {
    "path": "tests/test_progress_probe.py",
    "bytes": 5165
   },
@@ -2141,12 +2229,16 @@
    "bytes": 1072
   },
   {
+   "path": "tests/test_published_write_boundary.py",
+   "bytes": 2849
+  },
+  {
    "path": "tests/test_raster.py",
    "bytes": 2190
   },
   {
    "path": "tests/test_rebuild.py",
-   "bytes": 1096
+   "bytes": 1342
   },
   {
    "path": "tests/test_release_build.py",
@@ -2165,8 +2257,12 @@
    "bytes": 766
   },
   {
+   "path": "tests/test_review_candidate_navigation.py",
+   "bytes": 2910
+  },
+  {
    "path": "tests/test_runtime_paths.py",
-   "bytes": 3264
+   "bytes": 7297
   },
   {
    "path": "tests/test_serve.py",
@@ -2213,6 +2309,10 @@
    "bytes": 1221
   },
   {
+   "path": "tests/test_viewer_graph_api.py",
+   "bytes": 15409
+  },
+  {
    "path": "tests/test_viewer_grease.py",
    "bytes": 1549
   },
@@ -2241,6 +2341,10 @@
    "bytes": 991
   },
   {
+   "path": "tools/m7_acceptance.py",
+   "bytes": 8765
+  },
+  {
    "path": "tools/privacy_allowlist.json",
    "bytes": 663
   },
@@ -2257,12 +2361,12 @@
    "bytes": 584
   },
   {
-   "path": "web/dist/app/index-B4JcFCsR.css",
-   "bytes": 26650
+   "path": "web/dist/app/index-Bq4r9gAN.js",
+   "bytes": 431120
   },
   {
-   "path": "web/dist/app/index-DbZudWh6.js",
-   "bytes": 426815
+   "path": "web/dist/app/index-DGwx5MNE.css",
+   "bytes": 27820
   },
   {
    "path": "web/dist/index.html",
@@ -2282,23 +2386,23 @@
   },
   {
    "path": "web/src/api/client.ts",
-   "bytes": 4116
+   "bytes": 4372
   },
   {
    "path": "web/src/api/types.ts",
-   "bytes": 8520
+   "bytes": 10554
   },
   {
    "path": "web/src/app/App.tsx",
-   "bytes": 61036
+   "bytes": 69561
   },
   {
    "path": "web/src/app/router.ts",
-   "bytes": 1075
+   "bytes": 3431
   },
   {
    "path": "web/src/app/store.ts",
-   "bytes": 1116
+   "bytes": 1360
   },
   {
    "path": "web/src/crs.ts",
@@ -2354,7 +2458,7 @@
   },
   {
    "path": "web/src/styles/layout.css",
-   "bytes": 13309
+   "bytes": 14809
   },
   {
    "path": "web/src/styles/tokens.css",

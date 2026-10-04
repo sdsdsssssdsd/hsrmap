@@ -27,8 +27,9 @@ def test_review_list_filters_by_topic(tmp_path, guide_dbs):
             "draft": {"map_name": "海原市", "topic_key": "floating_grease", "steps": []},
         },
     )
-    ticker = client.get("/api/v1/review/items?topic=dream-ticker").json()["items"]
-    grease = client.get("/api/v1/review/items?topic=floating-grease").json()["items"]
+    #: 队列默认 slim：maps 非空时 items 被省略，要逐页记录得显式 include_items=1。
+    ticker = client.get("/api/v1/review/items?topic=dream-ticker&include_items=1").json()["items"]
+    grease = client.get("/api/v1/review/items?topic=floating-grease&include_items=1").json()["items"]
     assert len(ticker) == 1
     assert ticker[0]["draft"]["topic_key"] == "dream_ticker"
     assert len(grease) == 1

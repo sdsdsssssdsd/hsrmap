@@ -20,6 +20,8 @@ from hsrmap.providers.live import live_asset_key
 from hsrmap.viewer_bind import SnapshotMismatchError, ViewerContext, bind_viewer
 from hsrmap.viewer_repo import (
     asset_path,
+    graph_payload,
+    map_transitions_payload,
     meta_payload,
     search_payload,
     settings_payload,
@@ -98,8 +100,17 @@ def create_app(
         app.state.guide = GuideDatabase.open_readwrite(working)
     else:
         app.state.guide = None
+    #: 发布快照的打开方式按进程分工：
+    #: * 只跑地图的进程（map-only）**只读**打开 —— 它绝不该动发布快照；
+    #: * 审核台进程要能「创建 / 通过」条目并同步进发布快照（`copy_entry` 写的就是这个连接），
+    #:   所以它必须**可写**打开。S9 把两边都改成只读之后，审核台的这条路径直接
+    #:   `attempt to write a readonly database`（测试侧无法修，是产品缺陷）。
+    #: 只读打开失败（库不存在）与可写打开失败（库不存在）都要如实变成 `None`。
     try:
-        app.state.published = GuideDatabase.open_readonly(published)
+        app.state.published = (
+            GuideDatabase.open_readwrite(published) if want_review
+            else GuideDatabase.open_readonly(published)
+        )
     except FileNotFoundError:
         app.state.published = None
     app.state.data_mode = data_mode
@@ -676,6 +687,22 @@ def create_app(
     @map_router.get("/api/v1/maps/tree")
     def map_tree(refresh: bool = False):
         return call_provider(lambda: get_provider().get_tree(refresh=refresh))
+
+    # ------------------------------------------------------------------ #
+    # Map Graph（a1-8-1 M7.4 §十一 / §十三 / §十四）：**只读**接口。
+    # 读取优先级见 hsrmap/viewer_repo.py 的 Map Graph 段（core.db → 旁挂库 → 如实降级）；
+    # 这里不建库、不写任何 DB，也不把深层地图塞回 tree（§十）。
+    # ------------------------------------------------------------------ #
+
+    @map_router.get("/api/v1/map/graph")
+    def map_graph():
+        """节点 + 边 + 审计摘要（孤儿 / unresolved / 结构类与导航类分开）。"""
+        return graph_payload(get_ctx())
+
+    @map_router.get("/api/v1/maps/{map_id}/transitions")
+    def map_transitions(map_id: str):
+        """这张图能去哪（POINT_JUMP / PORTAL / RELATED_MAP / MAP_GROUP / FLOOR …）。"""
+        return map_transitions_payload(get_ctx(), map_id)
 
     @map_router.get("/api/v1/maps/{map_id}/labels")
     def map_labels(map_id: str, refresh: bool = False):

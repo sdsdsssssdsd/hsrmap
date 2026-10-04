@@ -1,13 +1,13 @@
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Search, Settings, Star, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../api/client";
-import type { AtlasPayload, AtlasTopic, DataSource, EvidenceOverview, EvidenceStep, GuideEntry, GreaseTopic, PointEvidencePayload, PointItem, ProgressAtlasPayload, ProgressAtlasPoint, ProgressFilter, ProgressPointState, ProgressStatus, ProgressTotals, SearchResult, SettingsInfo, TopicPayload, TreeNode, UserPoint } from "../api/types";
+import type { AtlasPayload, AtlasTopic, DataSource, EvidenceOverview, EvidenceStep, GuideEntry, GreaseTopic, MapTransitionsPayload, PointEvidencePayload, PointItem, PointTransition, ProgressAtlasPayload, ProgressAtlasPoint, ProgressFilter, ProgressPointState, ProgressStatus, ProgressTotals, SearchResult, SettingsInfo, TopicPayload, TreeNode, UserPoint } from "../api/types";
 import { MapCanvas } from "../map/MapCanvas";
 import { MapController } from "../map/MapController";
 import { hidesCompletedPoint, matchProgressFilter } from "../map/progress";
 import { MapNav } from "../navigation/MapNav";
 import { ancestorIds, displayChildren, firstRenderable, indexTree, pathNames, rootIdOf } from "../navigation/tree";
-import { parseHash, writeHash } from "./router";
+import { EMPTY_ORIGINS, parseHash, popOrigin, pushOrigin, topOrigin, writeHash, type OriginStack } from "./router";
 import { useViewer } from "./store";
 
 function formatBytes(n: number) {
@@ -46,6 +46,26 @@ const PROGRESS_STATE_TEXT: Record<ProgressPointState, { mark: string; label: str
 };
 
 const GATE0_TEXT = "Gate 0 未通过：远端状态只展示，不参与完成判定";
+
+/** M7.5：抽屉里那颗入口按钮要的视图模型（点位自己的 transition，或本图出边的兜底）。 */
+interface TransitionView {
+  type: string;
+  targetMapId: string;
+  action: string;
+  name: string;
+  renderable: boolean;
+}
+
+/** action_label 缺失时的兜底文案（与后端 GRAPH_ACTION_LABELS 同口径）。 */
+const TRANSITION_ACTION_FALLBACK: Record<string, string> = {
+  POINT_JUMP: "前往对应地图",
+  PORTAL: "传送",
+  RELATED_MAP: "关联地图",
+  MAP_GROUP: "地图组",
+  FLOOR: "同区域楼层",
+  RETURN: "返回",
+  UNKNOWN_TRANSITION: "未知跳转",
+};
 
 /** 证据字段可能是空串，也可能写成 missing / NONE；只有确凿值才算 ✓。 */
 function hasEvidence(value: string | null | undefined): boolean {
@@ -178,6 +198,8 @@ export function App() {
   const [sourceOpen, setSourceOpen] = useState(false);
   const [mapHash, setMapHash] = useState<string | null>(null);
   const [liveBanner, setLiveBanner] = useState("");
+  //: M7.4/M7.5：本图的出边 + 导航上下文（没有图库时 available=false；界面照常，只是没有入口）。
+  const [mapTransitions, setMapTransitions] = useState<MapTransitionsPayload | null>(null);
   //: a1-9 Phase 6（P6.6）个人进度层：只读展示，Viewer 不联网、不发外网请求。
   const [progressStatus, setProgressStatus] = useState<ProgressStatus | null>(null);
   const [progressStates, setProgressStates] = useState<Record<string, ProgressPointState>>({});
@@ -206,7 +228,7 @@ export function App() {
       const fallback = firstRenderable(tree.find((n) => n.name.includes("空间站")) || tree[0]);
       const mapId = route.mapId && indexTree(tree).nodesById.get(route.mapId)?.renderable ? route.mapId : fallback;
       const worldId = mapId ? rootIdOf(mapId, parentById) : tree[0]?.id;
-      useViewer.getState().set({ tree, worldId, mapId: mapId || null, selectedPointId: route.pointId });
+      useViewer.getState().set({ tree, worldId, mapId: mapId || null, selectedPointId: route.pointId, origins: route.origins });
       if (mapId) writeHash({ mapId, pointId: route.pointId, labels: route.labels });
       const byId: Record<string, UserPoint> = {};
       for (const item of users.points) byId[item.source_point_id] = item;
@@ -224,7 +246,8 @@ export function App() {
     const onHash = () => {
       const route = parseHash();
       if (route.mapId) {
-        useViewer.getState().set({ mapId: route.mapId, selectedPointId: route.pointId });
+        //: 浏览器前进/后退也要把来源栈一起还原（URL 是导航栈的唯一事实来源）。
+        useViewer.getState().set({ mapId: route.mapId, selectedPointId: route.pointId, origins: route.origins });
       }
     };
     window.addEventListener("hashchange", onHash);
@@ -259,6 +282,15 @@ export function App() {
       }
       if (pendingProgress.current && pendingProgress.current.mapId === mapId) pendingProgress.current = null;
       void api.mapRevision(mapId).then((rev) => setMapHash(rev.hash));
+      //: M7.5：跳转信息是**附加**的——拿不到就是「没有跳转信息」，绝不让它拖垮地图本身。
+      void api
+        .mapTransitions(mapId)
+        .then((body) => {
+          if (!cancelled) setMapTransitions(body);
+        })
+        .catch(() => {
+          if (!cancelled) setMapTransitions(null);
+        });
       void api.dataSource().then(setDataSource);
     }).catch(() => {
       if (cancelled) return;
@@ -291,12 +323,60 @@ export function App() {
     return () => clearInterval(timer);
   }, [state.mapId, mapHash]);
 
-  function openMap(mapId: string, pointId?: string | null, labels?: string[] | null) {
-    writeHash({ mapId, pointId, labels });
-    state.set({ mapId, selectedPointId: pointId || null, worldOpen: false, searchOpen: false });
+  /**
+   * 直接导航（树 / 搜索 / 清单）：**清空来源栈**——那是「新的一次进入」，不是跳转。
+   * 跳转（前往对应地图）走 enterTransition，它会把来源压进 navigation stack。
+   */
+  function openMap(mapId: string, pointId?: string | null, labels?: string[] | null, origins?: OriginStack) {
+    const nextOrigins = origins ?? EMPTY_ORIGINS;
+    writeHash({ mapId, pointId, labels, origins: nextOrigins });
+    state.set({ mapId, selectedPointId: pointId || null, origins: nextOrigins, worldOpen: false, searchOpen: false });
+    setMapTransitions(null);
     setGreaseOpen(false);
     setAtlasOpen(false);
     setActiveTopic(null);
+  }
+
+  /**
+   * M7.5「前往对应地图」：把**当前地图 + 当前点位**压进 navigation stack（§十二），
+   * 再切到 target map；返回时按栈精确回到来源地图与来源点位。
+   */
+  function enterTransition(targetMapId: string) {
+    const current = useViewer.getState();
+    if (!current.mapId || !targetMapId || targetMapId === current.mapId) return;
+    const sourcePoint = current.detail?.core.point_id || current.selectedPointId || null;
+    openMap(targetMapId, null, null, pushOrigin(current.origins, current.mapId, sourcePoint));
+  }
+
+  /** M7.5「← 返回」：弹栈回来源地图 + 来源点位（打开抽屉 + 高亮）。没有栈时退回图上的入口边。 */
+  function returnToOrigin() {
+    const current = useViewer.getState();
+    if (current.origins.mapIds.length > 0) {
+      const { mapId, pointId, rest } = popOrigin(current.origins);
+      if (!mapId) return;
+      openMap(mapId, pointId, null, rest);
+      return;
+    }
+    const navigation = current.detail?.navigation;
+    if (navigation && navigation.navigation_kind === "deep" && navigation.entry_map_id) {
+      openMap(navigation.entry_map_id, navigation.entry_point_id || null, null, EMPTY_ORIGINS);
+    }
+  }
+
+  /**
+   * M7.5「跳转标点层」：回到这个点**自己所属的标点层**（runbook §1：point/info.map_id，不是边），
+   * 并把该点选中 / 高亮。已经在那一层时就只重新聚焦，不再切图。
+   */
+  function jumpToLayer() {
+    const current = useViewer.getState();
+    const core = current.detail?.core;
+    if (!core) return;
+    const point = current.points.find((item) => String(item.id) === core.point_id || item.source_id === core.source_id);
+    if (point) {
+      void openDetail(point);
+      return;
+    }
+    if (core.map_id) openMap(core.map_id, core.point_id, null, current.origins);
   }
 
   function activateNode(node: TreeNode) {
@@ -524,6 +604,55 @@ export function App() {
     const found = state.points.find((point) => String(point.id) === selected || point.source_id === selected);
     return found ? found.source_id : selected;
   }, [state.selectedPointId, state.points]);
+
+  //: M7.5：抽屉里的入口视图模型——优先点位自己的 transition（§十三），否则用本图出边里
+  //: source_point_id 对得上的那一条（live 数据源 / 老库的兜底，口径与后端一致）。
+  const transitionView = useMemo<TransitionView | null>(() => {
+    const detail = state.detail;
+    if (!detail) return null;
+    const own = detail.transition;
+    if (own) {
+      const target = detail.transition_targets?.find((item) => item.target_map_id === own.target_map_id);
+      return {
+        type: own.type,
+        targetMapId: own.target_map_id,
+        action: own.action || TRANSITION_ACTION_FALLBACK[own.type] || "跳转",
+        name: target?.name || own.target_map_id,
+        //: 没有 transition_targets（live 数据源）时不拦：进不去由地图加载自己如实报错。
+        renderable: target ? target.renderable : true,
+      };
+    }
+    const fromMap = mapTransitions?.transitions.find(
+      (item) => item.navigable && item.source_point_id && item.source_point_id === detail.core.source_id,
+    );
+    if (fromMap) {
+      return {
+        type: fromMap.type,
+        targetMapId: fromMap.target_map_id,
+        action: fromMap.action || TRANSITION_ACTION_FALLBACK[fromMap.type] || "跳转",
+        name: fromMap.target_name || fromMap.target_map_id,
+        renderable: fromMap.renderable,
+      };
+    }
+    return null;
+  }, [state.detail, mapTransitions]);
+
+  /** M7.5 返回栈的栈顶；栈为空但图上说「这是深层图」时，退回它的入口（§十九 entry_*）。 */
+  const originBack = useMemo(() => {
+    const top = topOrigin(state.origins);
+    if (top) {
+      return { mapId: top, pointId: state.origins.pointIds[state.origins.pointIds.length - 1] || null, depth: state.origins.mapIds.length };
+    }
+    const navigation = mapTransitions?.navigation;
+    if (navigation && navigation.navigation_kind === "deep" && navigation.entry_map_id) {
+      return { mapId: navigation.entry_map_id, pointId: navigation.entry_point_id || null, depth: 0 };
+    }
+    return null;
+  }, [state.origins, mapTransitions]);
+  const originName = originBack ? index.nodesById.get(originBack.mapId)?.name || originBack.mapId : "";
+  const navigationTrail = [...state.origins.mapIds, ...(state.mapId ? [state.mapId] : [])]
+    .map((id) => index.nodesById.get(id)?.name || id)
+    .join(" › ");
 
   return (
     <div className={`app${state.sidebarOpen ? "" : " sidebar-closed"}`}>
@@ -882,6 +1011,22 @@ export function App() {
         <button className="sidebar-handle" onClick={() => state.set({ sidebarOpen: !state.sidebarOpen })}>
           {state.sidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
         </button>
+        {/* M7.5（§十二）：怎么进来的就怎么回去——回到来源地图 + 来源点位，不是父地图默认中心。 */}
+        {originBack && (
+          <button
+            className="origin-back"
+            onClick={returnToOrigin}
+            title={
+              originBack.depth > 0
+                ? `导航栈 ${navigationTrail}（返回 ${originBack.mapId}${originBack.pointId ? " / 点位 " + originBack.pointId : ""}）`
+                : `入口地图 ${originBack.mapId}（跳转目标自己的入口边）`
+            }
+          >
+            <ChevronLeft size={16} />
+            <span>返回 {originName}</span>
+            {originBack.depth > 1 && <span className="origin-depth">· 第 {originBack.depth} 级</span>}
+          </button>
+        )}
         {/* P6.6：地图过滤档只过滤标记，不重建画布、不影响选中逻辑。 */}
         <div className="progress-filter" role="group" aria-label="进度过滤">
           <div className="seg">
@@ -1144,6 +1289,32 @@ export function App() {
             </button>
             <h2>{state.detail.labels.map((l) => l.name).join(" / ") || "点位"}</h2>
             <p>{pathNames(state.detail.core.map_id, index.nodesById, index.parentById).join(" / ")}</p>
+            {/* M7.5（§十/§十二/§十三）：有跳转才显示入口；没有边时这一块整个不存在。 */}
+            {transitionView && (
+              <div className="drawer-transition" data-transition-type={transitionView.type}>
+                <p className="trans-note">这是一个关联子地图入口（{transitionView.type}）</p>
+                <div className="trans-actions">
+                  <button
+                    className="trans-go"
+                    disabled={!transitionView.renderable}
+                    title={
+                      transitionView.renderable
+                        ? `进入 ${transitionView.name}（返回时回到 ${state.detail.core.map_id} 的这个点）`
+                        : `目标地图 ${transitionView.targetMapId} 还没有同步到本地`
+                    }
+                    onClick={() => enterTransition(transitionView.targetMapId)}
+                  >
+                    {transitionView.action} → {transitionView.name}
+                  </button>
+                  <button className="trans-layer" onClick={jumpToLayer} title="回到这个点所属的标点层并选中">
+                    跳转标点层
+                  </button>
+                </div>
+                {!transitionView.renderable && (
+                  <p className="meta">目标地图 {transitionView.targetMapId} 还没有同步到本地（进了也看不到栅格）</p>
+                )}
+              </div>
+            )}
             <div className="drawer-actions">
               <label>
                 <input type="checkbox" checked={!!userPoint?.completed} onChange={(e) => void saveProgress({ completed: e.target.checked })} />

@@ -6,6 +6,7 @@ import json
 import sqlite3
 from pathlib import Path
 
+from hsrmap.database import SCHEMA_VERSION as CORE_SCHEMA_VERSION
 from hsrmap.dod import (
     DATA_ITEMS,
     DOD_ITEMS,
@@ -113,7 +114,9 @@ def test_stamp_versions_fills_only_recognised_families(tmp_path):
         report = stamp_versions()
         assert [item["family"] for item in report["stamped"]] == ["core"]
         assert report["legacy"] == ["unknown.db"]
-        assert _schema_version(core) == "user_version=1"
+        #: 补的是**当前** core schema 版本（M7.1 起是 2），不是写死的历史数字。
+        assert CORE_SCHEMA_VERSION >= 2
+        assert _schema_version(core) == f"user_version={CORE_SCHEMA_VERSION}"
         #: 认不出家族的库不许乱写版本号
         assert _schema_version(unknown) is None
         #: 幂等

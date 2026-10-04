@@ -42,7 +42,67 @@ export interface PointDetail {
   core: { point_id: string; source_id: string; map_id: string; x: number; y: number };
   labels: { id: string; name: string }[];
   detail: { state: string; text: string | null; images: { url: string; role: string }[] };
+  //: M7.4（§十三/§十四）：没有图库 / 这个点没有跳转时是 null + []，界面据此不显示入口按钮。
+  transition?: PointTransition | null;
+  transition_targets?: TransitionTarget[];
+  navigation?: NavigationContext | null;
 }
+
+/** M7.4（a1-8-1 §十三）：点位上的跳转，形状就是 PointTransition.as_viewer()。 */
+export interface PointTransition {
+  type: string;
+  target_map_id: string;
+  action: string | null;
+}
+
+/** §十四 的 transition_targets：同一个跳转，额外带目标名字与「本地能不能进」。 */
+export interface TransitionTarget extends PointTransition {
+  map_id: string;
+  name: string;
+  renderable: boolean;
+  source_point_id: string;
+}
+
+/** M7.4 §十一 / §十九：这张图是怎么走进来的（导航路径 ≠ 树路径）。 */
+export interface NavigationContext {
+  map_id: string;
+  map_name: string;
+  navigation_kind: "tree" | "deep";
+  entry_map_id: string;
+  entry_point_id: string;
+  entry_edge_type: string;
+  entries: { entry_map_id: string; entry_point_id: string; edge_type: string; discovery_source: string }[];
+  navigation_path: string[];
+  tree_path: string[];
+}
+
+/** 一条出边（不含 TREE_CHILD：父子关系走 /api/v1/maps/tree）。 */
+export interface MapTransition {
+  type: string;
+  target_map_id: string;
+  target_name: string;
+  action: string;
+  source_point_id: string | null;
+  renderable: boolean;
+  navigable: boolean;
+  discovery_source: string;
+  confidence: number;
+}
+
+/** GET /api/v1/maps/{id}/transitions：这张图能去哪 + 它是怎么进来的。 */
+export interface MapTransitionsPayload {
+  map_id: string;
+  name: string;
+  known: boolean;
+  available: boolean;
+  message: string | null;
+  reason: string;
+  source: { origin: string; available: boolean; file: string | null; message: string };
+  transitions: MapTransition[];
+  counts: { total: number; navigable: number; renderable_targets: number };
+  navigation: NavigationContext;
+}
+
 
 export interface GreaseTopic {
   origin: GreaseBucket;

@@ -8,11 +8,21 @@ from typing import Any, Iterable
 
 
 #: 核心快照库的 schema 版本（a1-8 十六.7：每个库都要有明确的版本）。
-SCHEMA_VERSION = 1
+#: v2 = M7.1 Map Graph（a1-8-1 §四/§九/§十三）：map_edges / point_transitions 两张新表，
+#: 以及 map_nodes 的 tree_leaf / render_probe_state / discovery_method 三个可空新列。
+#: v3 = M7.3 Deep Sync（a1-8-1 §七/§十五）：maps 的 display_name / name_source 两个可空新列
+#: （容器 map/info 的 children[].name 是真名的唯一来源；**不覆盖** map_nodes.name）。
+#: 迁移是**加性**的（CREATE TABLE IF NOT EXISTS + ADD COLUMN），v1 / v2 的老库照常打开。
+SCHEMA_VERSION = 3
 
 SCHEMA = """
 PRAGMA foreign_keys = ON;
 
+-- v1 的列 + M7.1 的加性新列（老库由 _migrate() 用 ALTER TABLE 补上）：
+--   tree_leaf           树事实：这个节点没有 children（与 is_renderable 是两个维度，a1-8-1 §三）
+--   render_probe_state  可渲染探测的状态 VALID / INVALID / UNKNOWN（a1-8-1 §九）
+--   discovery_method    这个节点是怎么进图谱的：TREE / POINT_JUMP / ...（a1-8-1 §九）
+-- is_renderable 的取值域也因此变成 1 / 0 / NULL：NULL = 还没探测过（不猜）。
 CREATE TABLE IF NOT EXISTS map_nodes (
     id INTEGER PRIMARY KEY,
     source_id TEXT NOT NULL UNIQUE,
@@ -26,6 +36,10 @@ CREATE TABLE IF NOT EXISTS map_nodes (
     raw_json TEXT
 );
 
+-- M7.3（a1-8-1 §七 / §十五）加的两列：
+--   display_name  真名 —— 唯一来源是**容器**（node_type=1）的 map/info → data.info.children[].name；
+--                 name 保留 map/info 自己那一份，map_nodes.name 是官方树的原始名，三者互不覆盖；
+--   name_source   这个 display_name 是哪来的（见 hsrmap/sync.py 的 NAME_SOURCE_* 常量）。
 CREATE TABLE IF NOT EXISTS maps (
     id INTEGER PRIMARY KEY,
     source_id TEXT NOT NULL UNIQUE,
@@ -39,6 +53,8 @@ CREATE TABLE IF NOT EXISTS maps (
     fragment_count INTEGER,
     map_info_sha256 TEXT,
     coordinate_transform TEXT,
+    display_name TEXT,
+    name_source TEXT,
     FOREIGN KEY(node_id) REFERENCES map_nodes(id)
 );
 
@@ -54,6 +70,54 @@ CREATE TABLE IF NOT EXISTS map_fragments (
     metadata_json TEXT,
     raw_json TEXT,
     FOREIGN KEY(map_id) REFERENCES maps(id)
+);
+
+-- M7.1 Map Graph（a1-8-1 §四）：地图之间怎么过去。edge_type 的取值见 hsrmap/graph.py
+-- 的模块级常量（TREE_CHILD / FLOOR / POINT_JUMP / RELATED_MAP / MAP_GROUP / PORTAL / RETURN /
+-- UNKNOWN_TRANSITION）；语义不明也必须先记 UNKNOWN_TRANSITION，不许丢 target（§五）。
+CREATE TABLE IF NOT EXISTS map_edges (
+    id INTEGER PRIMARY KEY,
+
+    source_map_id TEXT NOT NULL,
+    target_map_id TEXT NOT NULL,
+
+    edge_type TEXT NOT NULL,
+
+    source_point_id TEXT,
+    source_label_id TEXT,
+
+    discovery_source TEXT NOT NULL,
+    confidence REAL NOT NULL DEFAULT 1.0,
+
+    bidirectional INTEGER NOT NULL DEFAULT 0,
+
+    raw_json TEXT,
+    discovered_at TEXT,
+
+    UNIQUE(
+        source_map_id,
+        target_map_id,
+        edge_type,
+        source_point_id
+    )
+);
+
+-- SQLite 的 UNIQUE 认为 NULL 互不相等，所以 source_point_id IS NULL 的那一类边要再压一个
+-- 部分唯一索引，否则「同一张地图、同一类、没有点位来源」的边会被反复插进来。
+CREATE UNIQUE INDEX IF NOT EXISTS idx_map_edges_unsourced
+    ON map_edges(source_map_id, target_map_id, edge_type)
+    WHERE source_point_id IS NULL;
+
+-- M7.1（a1-8-1 §十三）：点位上的跳转。point_id = points.id（core 主键）。
+CREATE TABLE IF NOT EXISTS point_transitions (
+    point_id INTEGER NOT NULL,
+    target_map_source_id TEXT NOT NULL,
+
+    transition_type TEXT NOT NULL,
+    action_label TEXT,
+    raw_json TEXT,
+
+    PRIMARY KEY(point_id, target_map_source_id)
 );
 
 CREATE TABLE IF NOT EXISTS label_nodes (
@@ -133,11 +197,49 @@ CREATE INDEX IF NOT EXISTS idx_points_source ON points(source_id);
 CREATE INDEX IF NOT EXISTS idx_pl_point ON point_labels(point_id);
 CREATE INDEX IF NOT EXISTS idx_pl_label ON point_labels(label_id);
 CREATE INDEX IF NOT EXISTS idx_frag_map ON map_fragments(map_id);
+CREATE INDEX IF NOT EXISTS idx_map_edges_source ON map_edges(source_map_id);
+CREATE INDEX IF NOT EXISTS idx_map_edges_target ON map_edges(target_map_id);
+CREATE INDEX IF NOT EXISTS idx_point_transitions_target ON point_transitions(target_map_source_id);
 """
+
+#: M7.1 的加性迁移：老库缺这几列时用 ALTER TABLE 补上（可空，不猜默认值）。
+MAP_NODE_ADDED_COLUMNS: tuple[tuple[str, str], ...] = (
+    ("tree_leaf", "INTEGER"),
+    ("render_probe_state", "TEXT"),
+    ("discovery_method", "TEXT"),
+)
+
+#: M7.3 的加性迁移（maps 表，同样是可空 + 不猜默认值）。
+#: v2 的老库（例如 M7.2 的旁挂图库 data/graph/core.db）打开后这两列是 NULL，
+#: 读取端必须按「还没有真名」处理，回退到 maps.name / map_nodes.name。
+MAP_ADDED_COLUMNS: tuple[tuple[str, str], ...] = (
+    ("display_name", "TEXT"),
+    ("name_source", "TEXT"),
+)
+
+
+def table_columns(conn: sqlite3.Connection, table: str) -> set[str]:
+    """表的列名集合；表不存在时返回空集合（老库兼容要靠它判断，不靠 try/except）。"""
+    return {str(row[1]) for row in conn.execute(f"PRAGMA table_info({table})")}
+
+
+def has_table(conn: sqlite3.Connection, table: str) -> bool:
+    row = conn.execute("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?", (table,)).fetchone()
+    return row is not None
 
 
 def _dump(obj: Any) -> str:
     return json.dumps(obj, ensure_ascii=False)
+
+
+def _tri_state(value: Any) -> int | None:
+    """三态落库：True → 1，False → 0，None → NULL。
+
+    NULL 表示「还没探测过」，与 0（有证据说不是）必须分开（a1-8-1 §九）。
+    """
+    if value is None:
+        return None
+    return 1 if value else 0
 
 
 class CoreDatabase:
@@ -159,9 +261,24 @@ class CoreDatabase:
         self.conn.row_factory = sqlite3.Row
         self.conn.execute("PRAGMA foreign_keys = ON")
         self.conn.executescript(SCHEMA)
+        self._migrate()
         #: 明确写进 SQLite 自己的版本位（a1-8 十六.7）：任何工具都能一眼看出这个库的 schema 版本。
         self.conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
         self.conn.commit()
+
+    def _migrate(self) -> None:
+        """加性迁移（M7.1 map_nodes / M7.3 maps）：只 ADD COLUMN 补新列，绝不改/删老列、
+        绝不给老行编造探测结论，也绝不编造真名。
+
+        v1 / v2 的老库（例如 data/snapshots/20261001T105105Z/core.db 与 M7.2 的
+        data/graph/core.db）打开后新列是 NULL，读取端必须按「老库回退」处理
+        （见 hsrmap/graph.py::load_map_nodes 与 hsrmap/graph_nav.py::_name_index）。
+        """
+        for table, columns in (("map_nodes", MAP_NODE_ADDED_COLUMNS), ("maps", MAP_ADDED_COLUMNS)):
+            existing = table_columns(self.conn, table)
+            for name, decl in columns:
+                if name not in existing:
+                    self.conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {decl}")
 
     def close(self) -> None:
         self.conn.close()
@@ -175,8 +292,9 @@ class CoreDatabase:
             self.conn.execute(
                 """
                 INSERT OR REPLACE INTO map_nodes
-                (source_id, parent_source_id, node_type, name, depth, sort_order, is_renderable, raw_json)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (source_id, parent_source_id, node_type, name, depth, sort_order, is_renderable,
+                 tree_leaf, render_probe_state, discovery_method, raw_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     node["source_id"],
@@ -185,7 +303,10 @@ class CoreDatabase:
                     node.get("name"),
                     node.get("depth"),
                     node.get("sort_order"),
-                    1 if node.get("is_renderable") else 0,
+                    _tri_state(node.get("is_renderable")),
+                    _tri_state(node.get("tree_leaf")),
+                    node.get("render_probe_state"),
+                    node.get("discovery_method"),
                     _dump(node.get("raw_json")),
                 ),
             )
@@ -297,6 +418,29 @@ class CoreDatabase:
         self.conn.commit()
         return map_id
 
+    def update_map_names(self, items: Iterable[dict[str, Any]]) -> int:
+        """把真名写进 maps.display_name（M7.3）。**只动这两列**：
+
+        - 不碰 maps.name（那是 map/info 自己那一份）；
+        - 不碰 map_nodes.name（官方树的原始名，a1-8-1 §七 明令不许覆盖）；
+        - 没被点名的 maps 行原样不动；旧值不会被空串冲掉。
+
+        返回真正被更新的行数（不在 maps 里的 id 不算）。
+        """
+        with self._lock:
+            updated = 0
+            for item in items:
+                display = str(item.get("display_name") or "").strip()
+                if not display:
+                    continue
+                cur = self.conn.execute(
+                    "UPDATE maps SET display_name = ?, name_source = ? WHERE source_id = ?",
+                    (display, item.get("name_source"), str(item["source_id"])),
+                )
+                updated += int(cur.rowcount or 0)
+            self.conn.commit()
+            return updated
+
     def insert_points(self, points: Iterable[dict[str, Any]]) -> None:
         with self._lock:
             self._insert_points(points)
@@ -368,6 +512,10 @@ class CoreDatabase:
 
     def counts(self) -> dict[str, int]:
         def n(table: str) -> int:
+            #: 老库（M7.1 之前）没有 map_edges / point_transitions：那是「还没有边」，
+            #: 不是错误——只读快照上绝不能因为多了两个计数就炸（a1-8-1 §二十四）。
+            if not has_table(self.conn, table):
+                return 0
             return int(self.conn.execute(f"SELECT COUNT(*) AS n FROM {table}").fetchone()["n"])
 
         return {
@@ -377,4 +525,6 @@ class CoreDatabase:
             "points": n("points"),
             "fragments": n("map_fragments"),
             "assets": n("assets"),
+            "map_edges": n("map_edges"),
+            "point_transitions": n("point_transitions"),
         }

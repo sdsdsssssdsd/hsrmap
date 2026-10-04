@@ -29,9 +29,17 @@ REGISTRY_PATH = PHASE1 / "endpoint_registry.json"
 GOLDEN_PATH = PHASE1 / "calibration" / "points_normalized.json"
 GOLDEN_GUIDES_PATH = PHASE1 / "calibration" / "golden_guides.json"
 
+#: 同步的 ±20% 数据漂移基线。M7.3 只**增补**了新口径的常量，没有动老值：
+#: - renderable_maps / labels 是 v1 就有的（624 / 1016，口径取消 node_type 猜测后**没有变**）；
+#: - tree_nodes / points / map_edges / point_transitions 是 M7.3 起纳入门禁的图不变量。
+#: 重标定的判据见 docs/runbooks/map-graph-m7.md §6.6：数字没动就不是「放宽」，是把新口径也守起来。
 BASELINE = {
     "renderable_maps": 624,
     "labels": 1016,
+    "tree_nodes": 923,
+    "points": 5330,
+    "map_edges": 1341,
+    "point_transitions": 187,
 }
 
 #: 运行态常量 → 运行时根目录上的属性名（惰性求值，不缓存）。

@@ -304,3 +304,35 @@ button { font: inherit; }
 .pp-na { color: var(--text-secondary); }
 .pp-kind, .pp-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pp-title { color: var(--text-secondary); }
+
+/* a1-8-1 M7.5：Map Graph 导航——入口按钮 + 返回栈（怎么进来的就怎么回去）。 */
+.origin-back {
+  position: absolute; left: 16px; top: 16px; z-index: 40;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 0; border-radius: 18px; padding: 8px 14px 8px 10px;
+  background: var(--control-bg-dark); color: #fff; cursor: pointer; font-size: 13px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+}
+.origin-back:hover { background: #2f2f2f; }
+.origin-back .origin-depth {
+  margin-left: 4px; padding: 1px 6px; border-radius: 8px; font-size: 11px;
+  background: rgba(255, 255, 255, .18);
+}
+.drawer-transition {
+  margin: 10px 0 4px; padding: 8px 10px;
+  border: 1px solid var(--border-soft); border-left: 3px solid #c8a25a;
+  background: var(--panel-bg-muted);
+}
+.drawer-transition .trans-note { margin: 0 0 6px; font-size: 12px; color: var(--text-secondary); }
+.drawer-transition .trans-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.drawer-transition .trans-go {
+  border: 0; border-radius: 4px; padding: 8px 12px; cursor: pointer;
+  background: var(--control-bg-dark); color: #fff; font-size: 13px;
+}
+.drawer-transition .trans-go:disabled { background: #b9b9b9; cursor: not-allowed; }
+.drawer-transition .trans-layer {
+  border: 1px solid var(--border-soft); border-radius: 4px; padding: 8px 12px;
+  background: #fff; color: var(--text-primary); cursor: pointer; font-size: 13px;
+}
+.drawer-transition .meta { margin: 6px 0 0; }
+

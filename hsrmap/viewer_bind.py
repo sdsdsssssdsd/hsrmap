@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from hsrmap.database import CoreDatabase
 from hsrmap.detail_db import DetailDatabase
@@ -26,8 +27,16 @@ class ViewerContext:
     detail: DetailDatabase | None
     detail_state: str
     core_manifest_sha256: str | None = None
+    #: Map Graph（M7.4）：`viewer_repo.graph_handle()` 惰性挂上来的只读图句柄。
+    #: core.db 里有 map_edges 时它就是 core 自己的连接（owned=False，不重复关），
+    #: 否则是旁挂库 data/graph/core.db 的只读连接（owned=True，由这里负责关）。
+    graph: Any = None
 
     def close(self) -> None:
+        handle = self.graph
+        if getattr(handle, "owned", False) and getattr(handle, "conn", None) is not None:
+            handle.conn.close()
+        self.graph = None
         self.core.close()
         if self.detail is not None:
             self.detail.close()

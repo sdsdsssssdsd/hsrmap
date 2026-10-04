@@ -2,9 +2,27 @@ from __future__ import annotations
 
 import json
 import re
+import sqlite3
+import threading
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from hsrmap.database import has_table, table_columns
+from hsrmap.graph import (
+    NAVIGABLE_EDGE_TYPES,
+    STRUCTURAL_EDGE_TYPES,
+    TREE_CHILD,
+    closure,
+    edge_type_counts,
+    known_map_ids,
+    load_edges,
+    load_map_nodes,
+    load_point_transitions,
+    unresolved_targets,
+)
+from hsrmap.graph_audit import incoming_degree, reachable_from, reciprocal_cycles, self_loops, tree_roots
+from hsrmap.graph_nav import navigation_context
 from hsrmap.paths import ASSETS
 from hsrmap.viewer_bind import ViewerContext
 from hsrmap.viewer_crs import get_max_bounds, get_raster_bounds
@@ -181,16 +199,23 @@ def point_detail(ctx: ViewerContext, core_point_id: int) -> dict[str, Any] | Non
                     "text": rec["plain_text"] or None,
                     "images": images,
                 }
+    #: §十三 / §十四：点位上的跳转（没有图库时是 None / []，前端据此不显示入口按钮）。
+    transition, transition_targets = point_transitions_payload(ctx, int(row["id"]), str(row["source_id"]))
+    map_source = map_row["source_id"] if map_row else None
     return {
         "core": {
             "point_id": str(row["id"]),
             "source_id": row["source_id"],
-            "map_id": map_row["source_id"] if map_row else None,
+            "map_id": map_source,
             "x": float(row["x_pos"]),
             "y": float(row["y_pos"]),
         },
         "labels": labels,
         "detail": detail,
+        "transition": transition,
+        "transition_targets": transition_targets,
+        #: §十一 / §十九：这张图是怎么走进来的（导航路径 ≠ 树路径），前端「返回入口」要用。
+        "navigation": navigation_payload(ctx, map_source) if map_source else None,
     }
 
 
@@ -557,4 +582,512 @@ def update_check_payload() -> dict[str, Any]:
         "snapshot_command": "python -m hsrmap sync",
         "live": "use /api/v1/data-source",
     }
+
+
+# --------------------------------------------------------------------------- #
+# Map Graph（M7.4，a1-8-1 §十 / §十一 / §十三 / §十四）
+#
+# **读取优先级（runbook §6.2）**：
+#   1. `core.db` 里有 `map_edges`        → 用它（M7.1 之后的新快照）；
+#   2. 否则用旁挂派生库 `<data>/graph/core.db`（M7.2 的离线回填产物）；
+#   3. 都没有 → 如实返回「没有跳转信息」，`available: false`。
+#
+# **只读**：旁挂库一律 `mode=ro` 打开，绝不允许因为「想读图」建出一个新库——文件不存在就是
+# 「没有跳转信息」，不是「顺手建一个空的」。core.db 也不写（它是快照 / 冻结文物）。
+#
+# 深层地图**不进 tree**（§十）：`map_tree_payload` 的父子关系原样保留，跳转只通过
+# transitions / point.transition 表达。
+# --------------------------------------------------------------------------- #
+
+#: 旁挂派生库的位置，与 `hsrmap.graph_backfill.default_out_path()` 同口径（那边是唯一的写入口）。
+GRAPH_DIR_NAME = "graph"
+GRAPH_DB_NAME = "core.db"
+
+#: 这次读到的图是从哪一层来的（前端与审计都要能一眼看出降级到了哪一层）。
+GRAPH_ORIGIN_CORE = "core.db"
+GRAPH_ORIGIN_DERIVED = "graph/core.db"
+GRAPH_ORIGIN_NONE = "none"
+
+#: 「没有跳转信息」的如实说法（降级不是错误，但必须说清楚）。
+GRAPH_UNAVAILABLE_MESSAGE = "没有跳转信息"
+
+#: 边型 → 中文动作。`point_transitions.action_label` 缺失时用它兜底，前端永远有文案可用。
+GRAPH_ACTION_LABELS: dict[str, str] = {
+    "TREE_CHILD": "子地图",
+    "FLOOR": "同区域楼层",
+    "POINT_JUMP": "前往对应地图",
+    "RELATED_MAP": "关联地图",
+    "MAP_GROUP": "地图组",
+    "PORTAL": "传送",
+    "RETURN": "返回",
+    "UNKNOWN_TRANSITION": "未知跳转",
+}
+
+#: 图句柄是**每进程一次**的惰性资源：并发首个请求可能同时进来，加个锁避免开出两条连接。
+_GRAPH_LOCK = threading.Lock()
+
+
+@dataclass
+class GraphHandle:
+    """一次「图从哪读」的解析结果。
+
+    `conn is None` = 没有跳转信息（不是错误）：`message` 里写清楚为什么。
+    `owned=True` 的连接由本层负责关闭（`ViewerContext.close()`）。
+    """
+
+    conn: sqlite3.Connection | None
+    origin: str
+    path: Path | None = None
+    owned: bool = False
+    message: str = ""
+
+    @property
+    def available(self) -> bool:
+        return self.conn is not None
+
+    def as_source(self) -> dict[str, Any]:
+        """对外只说「哪一层 / 哪个文件」，不暴露绝对路径。"""
+        return {
+            "origin": self.origin,
+            "available": self.available,
+            "file": None if self.path is None else Path(self.path).name,
+            "message": self.message,
+        }
+
+
+def graph_db_path() -> Path:
+    """旁挂图谱库的路径。运行目录按**调用时**解析（a1-8 四.2），不缓存。"""
+    from hsrmap import paths
+
+    return Path(paths.DATA) / GRAPH_DIR_NAME / GRAPH_DB_NAME
+
+
+def _open_graph_readonly(path: Path) -> sqlite3.Connection:
+    """只读打开：`mode=ro` 对不存在的文件直接报错，**不会**建库。"""
+    conn = sqlite3.connect(f"file:{Path(path).as_posix()}?mode=ro", uri=True, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def _resolve_graph(ctx: ViewerContext, graph_path: Path | None) -> GraphHandle:
+    if has_table(ctx.core.conn, "map_edges"):
+        return GraphHandle(
+            ctx.core.conn,
+            GRAPH_ORIGIN_CORE,
+            Path(getattr(ctx.core, "path", "") or "") or None,
+            owned=False,
+            message="core.db 自带 map_edges（M7.1 之后的新快照）",
+        )
+    path = Path(graph_path) if graph_path is not None else graph_db_path()
+    if not path.is_file():
+        return GraphHandle(
+            None,
+            GRAPH_ORIGIN_NONE,
+            path,
+            owned=False,
+            message=f"{GRAPH_UNAVAILABLE_MESSAGE}：core.db 里没有 map_edges，{path.name} 也不存在"
+            "（要边就先跑 python -m hsrmap graph backfill --write）",
+        )
+    try:
+        conn = _open_graph_readonly(path)
+    except sqlite3.Error as exc:  # 打不开也要降级，不是 500
+        return GraphHandle(None, GRAPH_ORIGIN_NONE, path, owned=False, message=f"{GRAPH_UNAVAILABLE_MESSAGE}：图谱库打不开（{exc}）")
+    if not has_table(conn, "map_edges"):
+        conn.close()
+        return GraphHandle(None, GRAPH_ORIGIN_NONE, path, owned=False, message=f"{GRAPH_UNAVAILABLE_MESSAGE}：{path.name} 里没有 map_edges 表")
+    return GraphHandle(conn, GRAPH_ORIGIN_DERIVED, path, owned=True, message="旁挂图谱库（M7.2 离线回填产物，只读打开）")
+
+
+def graph_handle(ctx: ViewerContext, *, graph_path: Path | None = None) -> GraphHandle:
+    """解析并缓存「这张图的边从哪来」。`graph_path` 显式给出时不走缓存（测试用）。"""
+    if graph_path is not None:
+        return _resolve_graph(ctx, graph_path)
+    cached = getattr(ctx, "graph", None)
+    if isinstance(cached, GraphHandle):
+        return cached
+    with _GRAPH_LOCK:
+        cached = getattr(ctx, "graph", None)
+        if isinstance(cached, GraphHandle):
+            return cached
+        handle = _resolve_graph(ctx, None)
+        ctx.graph = handle  # type: ignore[attr-defined] - ViewerContext 上的缓存槽（见 viewer_bind）
+        return handle
+
+
+def _map_index(conn: sqlite3.Connection) -> dict[str, dict[str, Any]]:
+    """`map_id → {name, renderable, in_tree}`（两条 SQL，不做逐点查询）。
+
+    名字口径与 `hsrmap.graph_nav` 一致：`maps.display_name` → `maps.name` → 树名 → 空串
+    （M7.3 才会写 display_name；缺列 / 缺表都回退，绝不编名字）。
+    可渲染口径与 M7.1 的 probe 一致：`maps` 落库 + 至少一个带 remote_url 的 fragment + canvas 有效。
+    """
+    index: dict[str, dict[str, Any]] = {}
+    if has_table(conn, "maps"):
+        columns = table_columns(conn, "maps")
+        display = "display_name" if "display_name" in columns else "NULL AS display_name"
+        has_fragments = has_table(conn, "map_fragments")
+        join = "LEFT JOIN map_fragments f ON f.map_id = m.id" if has_fragments else ""
+        fragments = "COUNT(f.id)" if has_fragments else "0"
+        with_url = "SUM(CASE WHEN COALESCE(f.remote_url, '') <> '' THEN 1 ELSE 0 END)" if has_fragments else "0"
+        for row in conn.execute(
+            f"""
+            SELECT m.source_id, m.name, {display}, m.canvas_width, m.canvas_height,
+                   {fragments} AS fragments, COALESCE({with_url}, 0) AS with_url
+            FROM maps m {join}
+            GROUP BY m.source_id
+            """
+        ):
+            name = str(row["display_name"] or "").strip() or str(row["name"] or "").strip()
+            index[str(row["source_id"])] = {
+                "name": name,
+                "renderable": int(row["with_url"] or 0) > 0
+                and float(row["canvas_width"] or 0) > 0
+                and float(row["canvas_height"] or 0) > 0,
+                #: 这一条来自 maps 表（已经同步过的可渲染地图），不是树节点。
+                "synced": True,
+                "in_tree": False,
+            }
+    if has_table(conn, "map_nodes"):
+        for row in conn.execute("SELECT source_id, name FROM map_nodes"):
+            entry = index.setdefault(str(row[0]), {"name": "", "renderable": False, "synced": False, "in_tree": True})
+            if not entry["name"]:
+                entry["name"] = str(row[1] or "").strip()
+            entry["in_tree"] = True
+    return index
+
+
+def _map_name(index: dict[str, dict[str, Any]], map_id: str) -> str:
+    return str((index.get(str(map_id)) or {}).get("name") or "")
+
+
+def _renderable_ids(index: dict[str, dict[str, Any]]) -> set[str]:
+    return {map_id for map_id, item in index.items() if item.get("renderable")}
+
+
+def _synced_ids(index: dict[str, dict[str, Any]]) -> set[str]:
+    """已经同步过 map/info 的地图（§二十四 的 synced_renderable_maps 候选）。"""
+    return {map_id for map_id, item in index.items() if item.get("synced")}
+
+
+def _transition_labels(conn: sqlite3.Connection) -> dict[tuple[str, str], str]:
+    """`(source_point_id, target_map_id) → 官方动作文案`（point_transitions.action_label）。"""
+    labels: dict[tuple[str, str], str] = {}
+    if not (has_table(conn, "point_transitions") and has_table(conn, "points")):
+        return labels
+    for row in conn.execute(
+        """
+        SELECT p.source_id AS point_source_id, t.target_map_source_id, t.action_label
+        FROM point_transitions t
+        JOIN points p ON p.id = t.point_id
+        """
+    ):
+        if row["action_label"]:
+            labels[(str(row["point_source_id"]), str(row["target_map_source_id"]))] = str(row["action_label"])
+    return labels
+
+
+def _graph_point_agrees(conn: sqlite3.Connection, core_point_id: int, source_id: str) -> bool:
+    """旁挂库和当前快照的 `points.id` 必须指同一个点。
+
+    指不上（老图库配新快照）时**宁可不说**，也不报一条错位的跳转。
+    """
+    if not has_table(conn, "points"):
+        return False
+    row = conn.execute("SELECT source_id FROM points WHERE id = ?", (int(core_point_id),)).fetchone()
+    return row is not None and str(row[0]) == str(source_id)
+
+
+def _empty_audit() -> dict[str, Any]:
+    return {
+        "tree_nodes": 0,
+        "renderable_maps": 0,
+        "deep_maps": 0,
+        "edges_total": 0,
+        "by_type": {},
+        "structural": {"edge_types": sorted(STRUCTURAL_EDGE_TYPES), "edges": 0, "distinct_targets": 0,
+                       "targets_renderable": 0, "missing_targets": [], "missing_total": 0},
+        "navigable": {"edge_types": sorted(NAVIGABLE_EDGE_TYPES), "edges": 0, "distinct_targets": 0,
+                      "targets_renderable": 0, "missing_targets": [], "missing_total": 0},
+        "unresolved_targets": {"total": 0, "navigable_total": 0, "sample": []},
+        "orphan_renderables": {"total": 0, "sample": []},
+        "unreachable_renderables": {"total": 0, "sample": []},
+        "closure": {"converged": False, "visited": 0, "frontier": 0, "cycles": 0},
+        "cycles": {"expected_reciprocal": 0, "unexpected": 0, "self_loops": 0},
+        "gate": {"ok": True, "checks": {}, "reasons": []},
+    }
+
+
+def graph_audit_summary(ctx: ViewerContext, edges: list[Any], *, sample_limit: int = 10) -> dict[str, Any]:
+    """§十七 的审计摘要（只读）：孤儿 / unresolved / **结构类与导航类分开**（§6.3 口径）。
+
+    结构类边（TREE_CHILD / RELATED_MAP / MAP_GROUP / FLOOR）的目标本来就是树里的容器节点，
+    单独统计、不算「跳不过去」；导航类边（POINT_JUMP / PORTAL / RETURN / UNKNOWN_TRANSITION）
+    的目标必须是可渲染地图——缺口留在 `missing_targets` 里。
+    """
+    nodes = load_map_nodes(ctx.core.conn)
+    tree_ids = {str(node["source_id"]) for node in nodes}
+    index = _map_index(ctx.core.conn)
+    renderable = _renderable_ids(index)
+    known = known_map_ids(ctx.core.conn)
+    roots = tree_roots(nodes)
+    root_set = set(roots)
+    reachable = set(reachable_from(edges, roots))
+    degree = incoming_degree(edges)
+    no_incoming = sorted(map_id for map_id in renderable if degree.get(map_id, 0) == 0 and map_id not in root_set)
+    unreachable = sorted(renderable - reachable)
+    orphans = sorted(set(no_incoming) | (set(unreachable) - root_set))
+    unresolved = unresolved_targets(edges, known)
+    unresolved_nav = unresolved_targets(edges, known, navigable_only=True)
+    cycles = reciprocal_cycles(edges)
+    closure_result = closure(edges, seeds=sorted(known))
+    counts = edge_type_counts(edges)
+    deep_maps = sorted(renderable - tree_ids)
+
+    def group(types: frozenset[str]) -> dict[str, Any]:
+        subset = [edge for edge in edges if edge.edge_type in types]
+        targets = {str(edge.target_map_id) for edge in subset}
+        missing = sorted(target for target in targets if target not in renderable)
+        return {
+            "edge_types": sorted(types),
+            "edges": len(subset),
+            "distinct_targets": len(targets),
+            "targets_renderable": len(targets) - len(missing),
+            "missing_targets": missing[:sample_limit],
+            "missing_total": len(missing),
+        }
+
+    structural = group(STRUCTURAL_EDGE_TYPES)
+    navigable = group(NAVIGABLE_EDGE_TYPES)
+    checks = {
+        "unresolved_targets_empty": not unresolved,
+        "orphan_renderables_empty": not orphans,
+        "render_requiring_targets_renderable": navigable["missing_total"] == 0,
+        "closure_converged": bool(closure_result.converged),
+    }
+    return {
+        "tree_nodes": len(nodes),
+        "renderable_maps": len(renderable),
+        "deep_maps": len(deep_maps),
+        "deep_map_ids": deep_maps[:sample_limit],
+        "edges_total": len(edges),
+        "by_type": {edge_type: value for edge_type, value in counts.items() if value},
+        "structural": structural,
+        "navigable": navigable,
+        "unresolved_targets": {
+            "total": len(unresolved),
+            "navigable_total": len(unresolved_nav),
+            "sample": [
+                {
+                    "source_map_id": edge.source_map_id,
+                    "target_map_id": edge.target_map_id,
+                    "edge_type": edge.edge_type,
+                    "source_point_id": edge.source_point_id,
+                }
+                for edge in unresolved[:sample_limit]
+            ],
+        },
+        "orphan_renderables": {"total": len(orphans), "sample": orphans[:sample_limit]},
+        "unreachable_renderables": {"total": len(unreachable), "sample": unreachable[:sample_limit]},
+        "closure": {
+            "converged": bool(closure_result.converged),
+            "visited": len(closure_result.visited),
+            "frontier": len(closure_result.frontier),
+            "cycles": len(closure_result.cycles),
+        },
+        "cycles": {
+            "expected_reciprocal": len(cycles["expected_reciprocal"]),
+            "unexpected": len(cycles["unexpected"]),
+            "self_loops": len(self_loops(edges)),
+        },
+        "gate": {"ok": all(checks.values()), "checks": checks, "reasons": [key for key, ok in checks.items() if not ok]},
+    }
+
+
+def graph_payload(ctx: ViewerContext, *, graph_path: Path | None = None, sample_limit: int = 10) -> dict[str, Any]:
+    """`GET /api/v1/map/graph`：节点 + 边 + 审计摘要（带 available 降级字段）。
+
+    节点描述的是**这个 Viewer 能打开的地图宇宙**（快照的 map_nodes + 已同步的深层地图），
+    边来自图谱层（core.db 或旁挂库）。没有图时如实返回 `available: false`，不抛错。
+    """
+    handle = graph_handle(ctx, graph_path=graph_path)
+    index = _map_index(ctx.core.conn)
+    nodes: list[dict[str, Any]] = []
+    for item in load_map_nodes(ctx.core.conn):
+        map_id = str(item["source_id"])
+        entry = index.get(map_id) or {}
+        stored = item.get("is_renderable")
+        nodes.append(
+            {
+                "id": map_id,
+                "name": item.get("name") or map_id,
+                "parent_id": item.get("parent_source_id"),
+                "type": "map" if item.get("is_renderable") else "folder",
+                "renderable": bool(entry["renderable"]) if map_id in index else (None if stored is None else bool(stored)),
+                "in_tree": True,
+                "tree_leaf": item.get("tree_leaf"),
+                "render_probe_state": item.get("render_probe_state"),
+                "discovery_method": item.get("discovery_method"),
+            }
+        )
+    tree_ids = {node["id"] for node in nodes}
+    for map_id in sorted(set(index) - tree_ids):
+        nodes.append(
+            {
+                "id": map_id,
+                "name": _map_name(index, map_id) or map_id,
+                "parent_id": None,
+                "type": "map" if index[map_id]["renderable"] else "folder",
+                "renderable": bool(index[map_id]["renderable"]),
+                "in_tree": False,
+                "tree_leaf": None,
+                "render_probe_state": None,
+                "discovery_method": None,
+            }
+        )
+    base: dict[str, Any] = {
+        "api_version": 1,
+        "snapshot": ctx.snapshot_id,
+        "source": handle.as_source(),
+        "available": handle.available,
+        "message": None if handle.available else GRAPH_UNAVAILABLE_MESSAGE,
+        "counts": {
+            "nodes": len(nodes),
+            "tree_nodes": len(tree_ids),
+            "deep_maps": len(nodes) - len(tree_ids),
+            "renderable_maps": len(_renderable_ids(index)),
+            "maps": len(_synced_ids(index)),
+            "edges": 0,
+            "point_transitions": 0,
+        },
+        "nodes": nodes,
+        "edges": [],
+        "audit": _empty_audit(),
+    }
+    if handle.conn is None:
+        return base
+    edges = load_edges(handle.conn)
+    base["edges"] = [
+        {
+            "source_map_id": str(edge.source_map_id),
+            "target_map_id": str(edge.target_map_id),
+            "edge_type": edge.edge_type,
+            "source_point_id": edge.source_point_id,
+            "source_label_id": edge.source_label_id,
+            "discovery_source": edge.discovery_source,
+            "confidence": edge.confidence,
+            "bidirectional": edge.bidirectional,
+            "navigable": edge.edge_type in NAVIGABLE_EDGE_TYPES,
+        }
+        for edge in edges
+    ]
+    base["counts"]["edges"] = len(edges)
+    base["counts"]["point_transitions"] = (
+        int(handle.conn.execute("SELECT COUNT(*) FROM point_transitions").fetchone()[0])
+        if has_table(handle.conn, "point_transitions")
+        else 0
+    )
+    base["audit"] = graph_audit_summary(ctx, edges, sample_limit=sample_limit)
+    return base
+
+
+def navigation_payload(ctx: ViewerContext, map_id: str, handle: GraphHandle | None = None) -> dict[str, Any]:
+    """§十一 / §十九 的导航上下文：这张图**是怎么走进来的**（没有图库时退化为纯树路径）。"""
+    resolved = handle if handle is not None else graph_handle(ctx)
+    conn = resolved.conn if resolved.conn is not None else ctx.core.conn
+    return navigation_context(conn, str(map_id))
+
+
+def map_transitions_payload(
+    ctx: ViewerContext,
+    map_id: str,
+    *,
+    graph_path: Path | None = None,
+) -> dict[str, Any]:
+    """`GET /api/v1/maps/{map_id}/transitions`：这张图能去哪。
+
+    每条 `{type, target_map_id, target_name, action, source_point_id, renderable}`。
+    **不含 TREE_CHILD**：树的父子关系走 `/api/v1/maps/tree`，这里只表达「跳转」（§十）。
+    """
+    wanted = str(map_id)
+    handle = graph_handle(ctx, graph_path=graph_path)
+    index = _map_index(ctx.core.conn)
+    in_tree = bool((index.get(wanted) or {}).get("in_tree"))
+    payload: dict[str, Any] = {
+        "map_id": wanted,
+        "name": _map_name(index, wanted) or wanted,
+        "known": bool(in_tree or wanted in index),
+        "available": handle.available,
+        "message": None if handle.available else GRAPH_UNAVAILABLE_MESSAGE,
+        "reason": handle.message,
+        "source": handle.as_source(),
+        "transitions": [],
+        "counts": {"total": 0, "navigable": 0, "renderable_targets": 0},
+        "navigation": navigation_payload(ctx, wanted, handle),
+    }
+    if handle.conn is None:
+        return payload
+    labels = _transition_labels(handle.conn)
+    renderable = _renderable_ids(index)
+    entries: list[dict[str, Any]] = []
+    for edge in load_edges(handle.conn, source_map_id=wanted):
+        if edge.edge_type == TREE_CHILD:
+            continue
+        target = str(edge.target_map_id)
+        point_id = None if edge.source_point_id is None else str(edge.source_point_id)
+        entries.append(
+            {
+                "type": edge.edge_type,
+                "target_map_id": target,
+                "target_name": _map_name(index, target) or target,
+                "action": labels.get((point_id or "", target)) or GRAPH_ACTION_LABELS.get(edge.edge_type, "跳转"),
+                "source_point_id": point_id,
+                "renderable": target in renderable,
+                "navigable": edge.edge_type in NAVIGABLE_EDGE_TYPES,
+                "discovery_source": edge.discovery_source,
+                "confidence": edge.confidence,
+            }
+        )
+    entries.sort(key=lambda item: (not item["navigable"], item["type"], item["target_map_id"], item["source_point_id"] or ""))
+    payload["transitions"] = entries
+    payload["counts"] = {
+        "total": len(entries),
+        "navigable": sum(1 for item in entries if item["navigable"]),
+        "renderable_targets": sum(1 for item in entries if item["renderable"]),
+    }
+    return payload
+
+
+def point_transitions_payload(
+    ctx: ViewerContext,
+    core_point_id: int,
+    source_id: str,
+) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+    """§十三 / §十四：点位上的跳转。返回 `(transition, transition_targets)`。
+
+    `transition` 就是 `PointTransition.as_viewer()` 的形状（前端不需要认识 related_jump_id）；
+    `transition_targets` 是 §十四 的数组，额外带 `name` / `renderable` 供界面判断能不能进。
+    """
+    handle = graph_handle(ctx)
+    if handle.conn is None:
+        return None, []
+    if not _graph_point_agrees(handle.conn, core_point_id, source_id):
+        return None, []
+    found = load_point_transitions(handle.conn, [int(core_point_id)])
+    if not found:
+        return None, []
+    index = _map_index(ctx.core.conn)
+    renderable = _renderable_ids(index)
+    targets: list[dict[str, Any]] = []
+    for item in found:
+        target = item.target_map_source_id
+        targets.append(
+            {
+                **item.as_viewer(),
+                "map_id": target,
+                "name": _map_name(index, target) or target,
+                "renderable": target in renderable,
+                "source_point_id": str(source_id),
+            }
+        )
+    return found[0].as_viewer(), targets
 

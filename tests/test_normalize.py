@@ -6,11 +6,12 @@ from hsrmap.normalize import (
     normalize_map_info,
     normalize_point,
 )
+from hsrmap.render_probe import DISCOVERY_TREE, UNKNOWN, VALID, RenderProbe
 from hsrmap.transform import TRANSFORM_VERSION, source_to_raster
 
 
-def test_flatten_map_nodes_marks_type2_leaves_renderable_without_hardcoded_count():
-    tree = [
+def _sample_tree() -> list[dict]:
+    return [
         {
             "id": 502,
             "name": "二相乐园",
@@ -29,12 +30,52 @@ def test_flatten_map_nodes_marks_type2_leaves_renderable_without_hardcoded_count
             ],
         }
     ]
-    nodes = flatten_map_nodes(tree)
+
+
+def test_flatten_map_nodes_keeps_tree_leaf_and_renderable_independent():
+    """a1-8-1 §三：`is_renderable` 不再等于 `node_type == 2 and not children`。"""
+    nodes = flatten_map_nodes(_sample_tree())
     by_id = {n["source_id"]: n for n in nodes}
     assert len(nodes) == 2
-    assert by_id["502"]["is_renderable"] is False
-    assert by_id["842"]["is_renderable"] is True
+
+    # 树事实：谁有 children 谁就不是叶子。
+    assert by_id["502"]["tree_leaf"] is False
+    assert by_id["842"]["tree_leaf"] is True
+
+    # 可渲染是**探测结论**，不是结构猜测：没有证据时必须是 None（UNKNOWN），不是 True/False。
+    assert by_id["502"]["is_renderable"] is None
+    assert by_id["842"]["is_renderable"] is None
+    assert by_id["842"]["render_probe_state"] == UNKNOWN
+    assert by_id["842"]["discovery_method"] == DISCOVERY_TREE
     assert by_id["842"]["parent_source_id"] == "841"
+
+
+def test_flatten_map_nodes_can_be_fed_probe_evidence():
+    """有证据时按证据落值：node_type=1 的也能是 VALID，node_type=2 的也能是 UNKNOWN。"""
+    probes = {"842": RenderProbe("842", VALID, ("test",))}
+    nodes = flatten_map_nodes(_sample_tree(), probes=probes)
+    by_id = {n["source_id"]: n for n in nodes}
+    assert by_id["842"]["is_renderable"] is True
+    assert by_id["842"]["render_probe_state"] == VALID
+    assert by_id["502"]["is_renderable"] is None
+
+
+def test_flatten_map_nodes_node_with_children_can_still_be_renderable():
+    """§三 的 A 地图：既有 children，自己也有 raster。两个维度必须能同时为 True/False。"""
+    tree = [
+        {
+            "id": 100,
+            "name": "A 地图",
+            "node_type": 2,
+            "depth": 1,
+            "parent_id": 0,
+            "children": [{"id": 101, "name": "B", "node_type": 2, "depth": 2, "parent_id": 100, "children": []}],
+        }
+    ]
+    nodes = flatten_map_nodes(tree, probes={"100": RenderProbe("100", VALID, ("map/info 成功",))})
+    by_id = {n["source_id"]: n for n in nodes}
+    assert by_id["100"]["tree_leaf"] is False
+    assert by_id["100"]["is_renderable"] is True
 
 
 def test_normalize_map_and_point_use_origin_translation_v1():

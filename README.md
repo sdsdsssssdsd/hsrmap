@@ -109,6 +109,59 @@ Aggregated as `direct` / `transcription` / `inference` / `missing`, and shown in
 
 ---
 
+## Map graph (Phase 7): the map universe is a reachability graph, not a tree
+
+The official map is not just a tree of floors. Some points are *doors*: a point on one map carries a
+`related_jump_id` that opens a completely different map (the "二次元界JUMP → 前往对应地图" popup), and
+containers, related maps and day/night twins add horizontal moves on top of the parent/child tree.
+
+The reconnaissance finding that shaped this phase: **those deeper maps were already in the snapshot.**
+All 923 tree nodes matched the live API node-for-node, and 187/187 jump targets already had rasters
+locally. What was missing was the *name*, the *edge*, and the *entry*:
+
+| Gap | Before | Now |
+| --- | --- | --- |
+| Name | 341/624 renderable maps had no name in the tree (the real name only lives in the parent container's `map/info.children[].name`) | `maps.display_name` + `name_source`, filled by syncing `map/info` for **all** 923 nodes |
+| Edge | `related_jump_id` sat unused inside `points.raw_json` | `map_edges` (TREE_CHILD / FLOOR / POINT_JUMP / RELATED_MAP / MAP_GROUP / PORTAL / RETURN / **UNKNOWN_TRANSITION**) + `point_transitions` |
+| Entry | the viewer had no transition and no way back | `/api/v1/maps/{id}/transitions`, point `transition`, navigation stack with `origin_map_id` — the deep map is entered by transition, **never** re-parented into the tree |
+
+Design rules that are enforced, not aspirational:
+
+* `renderable` no longer means "tree leaf": it is a **probe** over stored evidence (`map/info`
+  detail + at least one slice URL) with an explicit `UNKNOWN` state; `preview` is *not* evidence;
+* an id is only a map if **probed** to be one — 180 of the 187 jump targets are also label ids and 150
+  are also point ids, so numeric ranges must never be used to guess semantics;
+* unknown semantics are recorded as `UNKNOWN_TRANSITION` and **kept** — not knowing what an edge means
+  is not a reason to drop its target;
+* the publish invariant only applies to navigable edges:
+  `∀ edge ∈ NAVIGABLE_EDGE_TYPES: target ∈ synced_renderable_maps`, otherwise **PUBLISH = FAIL**
+  (structural edges point at container nodes by design and are reported separately);
+* cycles are legal (day/night pairs point at each other); traversal converges via `visited`, it does
+  not require a DAG.
+
+```bash
+python -m hsrmap graph backfill [--out <db>] [--write]   # five extractors + ID reference scanner, dry-run by default
+python -m hsrmap graph audit --gate                       # orphans, cycles, closure, naming gap, canary, publish gate
+python -m hsrmap graph orphans                            # maps reachable from nowhere
+python -m hsrmap progress remaining                       # ends with the graph line: renderable maps / edges / unresolved
+```
+
+A point that is a door says so, and the door can be walked back:
+
+![Deep-map entry](docs/images/map-graph-transition.png)
+
+The deep map is drawn on its own (it never appears in the left-hand tree), and the return affordance
+carries the exact entry point — pressing it reopens the entry map *and* the entry point's drawer:
+
+![Deep map with return](docs/images/map-graph-deep-map.png)
+
+A permanent regression canary pins the case that started it all — entry map 943 → point 5637 →
+target map 979 → renderable → readable → return — and now runs against **every** available graph
+source (the sidecar backfill DB and, after a sync, the snapshot's own `core.db`).
+Runbook: [`docs/runbooks/map-graph-m7.md`](docs/runbooks/map-graph-m7.md).
+
+---
+
 ## Personal progress layer (Phase 6)
 
 Everything above is credentials-free. Phase 6 adds an **opt-in, read-only** view of *your own*

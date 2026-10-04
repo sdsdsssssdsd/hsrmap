@@ -5,7 +5,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from hsrmap.database import CoreDatabase
+from hsrmap.database import CoreDatabase, table_columns
 from hsrmap.paths import BASELINE
 
 
@@ -80,11 +80,44 @@ def build_statistics(db: CoreDatabase) -> dict[str, Any]:
         }
 
     zero_maps = sum(1 for n in per_map if n == 0)
+    #: 名字覆盖（M7.3）：真名在 maps.display_name，**不覆盖** map_nodes.name。
+    #: 老库（v1/v2）没有这一列 → 只能报 0，绝不回算（详见 hsrmap/graph.py::load_map_nodes 的回退口径）。
+    map_columns = table_columns(db.conn, "maps")
+    if "display_name" in map_columns:
+        with_display = int(
+            db.conn.execute("SELECT COUNT(*) n FROM maps WHERE COALESCE(TRIM(display_name), '') <> ''").fetchone()["n"]
+        )
+        unnamed = int(
+            db.conn.execute(
+                """
+                SELECT COUNT(*) n FROM maps m LEFT JOIN map_nodes t ON t.source_id = m.source_id
+                WHERE COALESCE(TRIM(m.display_name), '') = ''
+                  AND COALESCE(TRIM(m.name), '') = ''
+                  AND COALESCE(TRIM(t.name), '') = ''
+                """
+            ).fetchone()["n"]
+        )
+    else:
+        with_display = 0
+        unnamed = int(
+            db.conn.execute(
+                """
+                SELECT COUNT(*) n FROM maps m LEFT JOIN map_nodes t ON t.source_id = m.source_id
+                WHERE COALESCE(TRIM(m.name), '') = '' AND COALESCE(TRIM(t.name), '') = ''
+                """
+            ).fetchone()["n"]
+        )
     return {
         "maps": {
             "raw_tree_nodes": int(db.conn.execute("SELECT COUNT(*) n FROM map_nodes").fetchone()["n"]),
-            "folder_nodes": int(db.conn.execute("SELECT COUNT(*) n FROM map_nodes WHERE is_renderable = 0").fetchone()["n"]),
+            #: is_renderable 现在是三态（NULL = 还没探测过，a1-8-1 §九）：数「非地图节点」时
+            #: 必须把 NULL 一起算进去，否则老库/未探测的行会凭空消失。
+            "folder_nodes": int(
+                db.conn.execute("SELECT COUNT(*) n FROM map_nodes WHERE COALESCE(is_renderable, 0) = 0").fetchone()["n"]
+            ),
             "renderable_maps": len(maps),
+            "maps_with_display_name": with_display,
+            "maps_without_any_name": unnamed,
         },
         "labels": {
             "total": len(labels),

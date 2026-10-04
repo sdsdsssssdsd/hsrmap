@@ -326,6 +326,65 @@ def progress_sets(
     }
 
 
+def graph_coverage(core_conn: Any, graph_conn: Any | None = None) -> dict[str, Any]:
+    """进度层的**图口径**（a1-8-1 §二十/§二十四）：可渲染地图集合 + 深层地图 + 点位分布。
+
+    「进度查询使用 graph map set，而非 tree leaf set」在这里落地：tree leaf 只是结构事实，
+    玩家真正走得进去的地图是`可渲染地图 ∪ 可导航边的目标`。缺表/缺图库时如实返回 0，不抛异常。
+    """
+    from hsrmap.graph import (
+        NAVIGABLE_EDGE_TYPES,
+        known_map_ids,
+        load_edges,
+        unresolved_targets,
+    )
+
+    conn = graph_conn if graph_conn is not None else core_conn
+    if conn is None:
+        return {"available": False, "reason": "没有可用的地图库"}
+    try:
+        renderable = {str(item) for item in known_map_ids(conn, renderable_only=True)}
+        edges = list(load_edges(conn))
+    except Exception as exc:  # noqa: BLE001 - 老库没有图结构：如实说「没有」，别让清单整体失败
+        return {"available": False, "reason": f"{type(exc).__name__}: {str(exc)[:120]}"}
+
+    navigable = [edge for edge in edges if str(edge.edge_type) in NAVIGABLE_EDGE_TYPES]
+    deep = {
+        str(edge.target_map_id): str(edge.source_map_id)
+        for edge in navigable
+        if str(edge.target_map_id) and str(edge.target_map_id) not in renderable
+    }
+    points_on_deep = 0
+    points_total = 0
+    if core_conn is not None:
+        try:
+            #: `points.map_id` 是指向 `maps.id` 的整数外键，不是地图 source_id：必须 join 回 source_id
+            #: 才能和边里的 target_map_id 对上（这里错过一次，会让「深层点位」永远统计成 0）。
+            rows = core_conn.execute(
+                "SELECT m.source_id AS map_source_id, COUNT(*) AS n"
+                " FROM points p JOIN maps m ON m.id = p.map_id GROUP BY m.source_id"
+            ).fetchall()
+        except Exception:  # noqa: BLE001 - 没有 points/maps 表就当 0
+            rows = []
+        for row in rows:
+            count = int(row[1] or 0)
+            points_total += count
+            if str(row[0]) in deep:
+                points_on_deep += count
+    unresolved = unresolved_targets(edges, renderable, navigable_only=True)
+    return {
+        "available": True,
+        "renderable_maps": len(renderable),
+        "edges_total": len(edges),
+        "navigable_edges": len(navigable),
+        "deep_maps": len(deep),
+        "points_total": points_total,
+        "points_on_deep_maps": points_on_deep,
+        "unresolved_navigable_targets": len(unresolved),
+        "note": "deep_maps = 可导航边指向、但自身不在可渲染集合里的目标（发布门禁看 unresolved_navigable_targets）",
+    }
+
+
 def remaining_atlas(
     *,
     guide_db: Any,
@@ -336,8 +395,14 @@ def remaining_atlas(
     verified: Iterable[str] | None = None,
     ctx: Any = None,
     collectibles: Iterable[Mapping[str, Any]] | None = None,
+    graph_conn: Any | None = None,
+    core_conn: Any | None = None,
 ) -> dict[str, Any]:
-    """Remaining Atlas：官方可收集 − 有效完成。"""
+    """Remaining Atlas：官方可收集 − 有效完成。
+
+    `graph_conn` / `core_conn` 给了就顺带带上**图口径**（可渲染地图数 / 深层地图 / 深层点位），
+    没给就如实不带 —— 清单本身不依赖图，缺图也能算。
+    """
     allowed = sorted(allowed_semantics(import_map_mark=import_map_mark, verified=verified))
     gate = {
         "allowed_remote_semantics": allowed,
@@ -349,7 +414,7 @@ def remaining_atlas(
     else:
         sets = progress_sets(user_db, profile_id=profile_id, import_map_mark=import_map_mark, verified=verified)
     pool = list(collectibles) if collectibles is not None else collect_official(topics=topics, ctx=ctx)
-    return assemble(
+    atlas = assemble(
         collectibles=pool,
         completion=completion_index(guide_db) if guide_db is not None else {},
         effective_completed=sets["local"] | sets["accepted"],
@@ -357,3 +422,6 @@ def remaining_atlas(
         conflict=sets["conflict"],
         gate=gate,
     )
+    if graph_conn is not None or core_conn is not None:
+        atlas["graph"] = graph_coverage(core_conn, graph_conn)
+    return atlas

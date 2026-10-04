@@ -351,9 +351,43 @@ def attach_official_thumbs(payload: dict[str, Any], ctx=None) -> dict[str, Any]:
     return payload
 
 
+def navigation_for_candidates(
+    cands: list[dict[str, Any]],
+    navigation_conn: Any | None,
+) -> list[dict[str, Any]]:
+    """a1-8-1 §十九：**只给深层地图**上的候选点补一个紧凑的 `navigation` 块。
+
+    三条自我约束：
+
+    * 没有图库（`navigation_conn` 为 None）→ 原样返回，一个字段都不加；
+    * 普通（树上的）地图 → 也不加 —— 审核页首屏已经被 `slim` 压过一次，不能因为
+      大多数点位用不上的东西把载荷重新吹大；
+    * 只放绑定真正需要的四样：`entry_map_id / entry_point_id / path`，不放整份上下文。
+    """
+    if not cands or navigation_conn is None:
+        return cands
+    from hsrmap.graph_nav import attach_navigation_context
+
+    enriched = attach_navigation_context(cands, navigation_conn)
+    out: list[dict[str, Any]] = []
+    for row in enriched:
+        context = row.pop("navigation_context", None) or {}
+        if context.get("navigation_kind") == "deep":
+            row["navigation"] = {
+                "kind": "deep",
+                "entry_map_id": str(context.get("entry_map_id") or ""),
+                "entry_point_id": str(context.get("entry_point_id") or ""),
+                "path": [str(item) for item in (context.get("navigation_path") or [])],
+            }
+        out.append(row)
+    return out
+
+
 def collapse_by_map(
     items: list[dict[str, Any]],
     official_points: list[dict[str, Any]] | None = None,
+    *,
+    navigation_conn: Any | None = None,
 ) -> list[dict[str, Any]]:
     by_map: dict[str, list[dict[str, Any]]] = {}
     for item in items:
@@ -396,6 +430,8 @@ def collapse_by_map(
             label_names=labels,
         ) or draft_cands
         cands = [_enrich_candidate(row, official_points) for row in cands]
+        #: §十九：候选点位带上「怎么走进这张图」（只对深层地图，见 navigation_for_candidates）。
+        cands = navigation_for_candidates(cands, navigation_conn)
         maps.append(
             {
                 "map_name": name,
@@ -476,7 +512,16 @@ def list_review_payload(
     if topic:
         key = topic.replace("-", "_")
         items = [item for item in items if _item_topic(item, db) == key]
-    maps = collapse_by_map(items, official_points)
+    #: §十九：审核页也要能看出「这个点在某张深层地图上」。图库按 runbook §6.2 的优先级找，
+    #: 找不到就什么都不加（老快照 + 新代码照常出队列，不报错、不建库）。
+    from hsrmap.graph_nav import open_graph_connection
+
+    graph_conn, graph_owned = open_graph_connection(None)
+    try:
+        maps = collapse_by_map(items, official_points, navigation_conn=graph_conn)
+    finally:
+        if graph_owned and graph_conn is not None:
+            graph_conn.close()
     if slim:
         maps = slim_map_rows(maps)
     payload: dict[str, Any] = {

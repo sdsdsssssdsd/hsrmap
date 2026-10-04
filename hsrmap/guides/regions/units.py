@@ -5,6 +5,24 @@ from typing import Any
 
 from hsrmap.guides.matching.spatial import parse_floor_label, parse_spatial_anchor
 
+
+def section_floor_label(section: Any) -> Any:
+    """从「区域名 + 原始 heading」里解析楼层。
+
+    区域解析命中官方 region 名时，heading 里的楼层会被切掉
+    （`匹诺康尼 / 「白日梦」酒店-梦境 / 1层` → `map_name="「白日梦」酒店-梦境"`），
+    只从 `map_name` 解析就永远拿不到楼层；而 heading 原文还留在 `section["texts"]` 里。
+    楼层是点位匹配的硬条件（1 层的稿子不能挂到 3 层的点位上），所以两处一起看。
+    """
+    name = str((section or {}).get("map_name") or "")
+    direct = parse_floor_label(name)
+    if direct is not None:
+        return direct
+    texts = (section or {}).get("texts") or []
+    if isinstance(texts, str):
+        texts = [texts]
+    return parse_floor_label(" ".join(str(item) for item in texts))
+
 _TEXT_ORDINAL = re.compile(r"第\s*(\d+)\s*个|点位\s*(\d+)")
 
 
@@ -43,7 +61,7 @@ def build_guide_units(sections: list[dict[str, Any]], observations: list[dict[st
                     "status": "UNRESOLVED_REGION_BATCH",
                     "article_ordinal": _section_ordinal(section),
                     "spatial_anchor": None,
-                    "floor_label": parse_floor_label(str(section.get("map_name") or "")),
+                    "floor_label": section_floor_label(section),
                     "images": [],
                     "steps": _steps(section),
                     "source_block_ids": section.get("block_ids") or [],

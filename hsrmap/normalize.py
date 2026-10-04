@@ -1,15 +1,32 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, Mapping
 
+from hsrmap.render_probe import DISCOVERY_TREE, UNKNOWN, RenderProbe
 from hsrmap_phase1.labels import SEMANTIC_NAME_RULES
 from hsrmap_phase1.raster import raster_spec_from_detail
 from hsrmap_phase1.tree import _parse_detail, has_raster_detail
 from hsrmap.transform import TRANSFORM_VERSION, source_to_raster, transform_invariant_ok
 
 
-def flatten_map_nodes(tree: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def flatten_map_nodes(
+    tree: list[dict[str, Any]],
+    *,
+    probes: Mapping[str, RenderProbe] | None = None,
+) -> list[dict[str, Any]]:
+    """把官方 map/tree 拍平成 map_nodes 行。
+
+    a1-8-1 §三 取消了 `is_renderable = node_type == 2 and not children`：那两个概念必须拆成
+    两个**独立维度**：
+
+    - `tree_leaf`       树事实：这个节点没有 children；
+    - `is_renderable`   可渲染探测的结论：True / False / **None（UNKNOWN：还没有证据）**。
+
+    `node_type == 2` 只是官方「这是一张地图」的结构提示，用来决定初始 frontier 去问哪些
+    map/info（见 hsrmap/render_probe.py::tree_map_candidates），**不再**参与可渲染判定（§九）。
+    没有喂 probes 时 `is_renderable` 就是 None —— 没问过官方就不猜。
+    """
     out: list[dict[str, Any]] = []
 
     def walk(nodes: list[dict[str, Any]] | None, inherited_parent: Any = None) -> None:
@@ -21,18 +38,20 @@ def flatten_map_nodes(tree: list[dict[str, Any]]) -> list[dict[str, Any]]:
             source_id = node.get("id")
             parent = node.get("parent_id", inherited_parent)
             children = node.get("children") or []
-            node_type = node.get("node_type")
-            is_renderable = node_type == 2 and not children
             raw = {k: v for k, v in node.items() if k != "children"}
+            probe = None if probes is None else probes.get(str(source_id))
             out.append(
                 {
                     "source_id": str(source_id),
                     "parent_source_id": None if parent in (None, 0, "0") else str(parent),
-                    "node_type": node_type,
+                    "node_type": node.get("node_type"),
                     "name": node.get("name"),
                     "depth": node.get("depth"),
                     "sort_order": index,
-                    "is_renderable": bool(is_renderable),
+                    "tree_leaf": not children,
+                    "is_renderable": None if probe is None else probe.renderable,
+                    "render_probe_state": UNKNOWN if probe is None else probe.state,
+                    "discovery_method": DISCOVERY_TREE,
                     "raw_json": raw,
                 }
             )
