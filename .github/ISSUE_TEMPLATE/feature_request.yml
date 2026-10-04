@@ -1,0 +1,42 @@
+name: Feature request
+description: A new capability, a new topic, or a change in behaviour
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What can't you do today? Describe the player-facing or engineering gap.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should happen instead? If it touches judgement or publishing, say how.
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of change
+      options:
+        - New topic profile (a new collectible type)
+        - Judgement / completion model
+        - Evidence or audit rules
+        - Publishing or release pipeline
+        - Web UI
+        - Tooling / CLI
+    validations:
+      required: true
+  - type: textarea
+    id: semantics
+    attributes:
+      label: Semantic impact
+      description: |
+        Does this change the six-state result for existing points? If yes, the project requires a
+        shadow comparison: the frozen baseline is docs/runbooks/baseline-hygiene.json and the
+        matrix hash must stay identical. Explain how you would prove that.
+    validations:
+      required: false

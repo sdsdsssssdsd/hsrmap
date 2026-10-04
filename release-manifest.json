@@ -1,12 +1,28 @@
 {
- "generated_at": "2026-10-04T03:38:24+00:00",
+ "generated_at": "2026-10-04T03:44:07+00:00",
  "root_name": "Hoyo",
- "files": 557,
- "bytes": 6396238,
+ "files": 563,
+ "bytes": 6411941,
  "entries": [
   {
    "path": ".env.example",
    "bytes": 19
+  },
+  {
+   "path": ".github/ISSUE_TEMPLATE/bug_report.yml",
+   "bytes": 2235
+  },
+  {
+   "path": ".github/ISSUE_TEMPLATE/config.yml",
+   "bytes": 441
+  },
+  {
+   "path": ".github/ISSUE_TEMPLATE/feature_request.yml",
+   "bytes": 1292
+  },
+  {
+   "path": ".github/pull_request_template.md",
+   "bytes": 490
   },
   {
    "path": ".github/workflows/ci.yml",
@@ -15,6 +31,10 @@
   {
    "path": ".gitignore",
    "bytes": 783
+  },
+  {
+   "path": "CONTRIBUTING.md",
+   "bytes": 4863
   },
   {
    "path": "LICENSE",
@@ -38,7 +58,7 @@
   },
   {
    "path": "docs/images/monitor.png",
-   "bytes": 151939
+   "bytes": 154005
   },
   {
    "path": "docs/images/point-evidence.png",
@@ -46,7 +66,7 @@
   },
   {
    "path": "docs/images/review-console.png",
-   "bytes": 197363
+   "bytes": 199063
   },
   {
    "path": "docs/runbooks/baseline-hygiene.json",
@@ -2119,6 +2139,10 @@
   {
    "path": "tools/privacy_scan.py",
    "bytes": 3126
+  },
+  {
+   "path": "tools/screenshot.ps1",
+   "bytes": 2616
   },
   {
    "path": "tools/windows/open-review.html",

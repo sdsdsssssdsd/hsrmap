@@ -1,0 +1,70 @@
+name: Bug report
+description: Something is broken or behaves differently than documented
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Most issues here come down to what the engine decided versus
+        what it should have decided, so the diagnostics below are the fastest path to a fix.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you run, what did you expect, what did you get?
+      placeholder: |
+        Command: python -m hsrmap guides completeness --markdown
+        Expected: point 3556 is COMPLETE
+        Got: SOLVE_MISSING
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands, in order. Include the output of python -m hsrmap runtime.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: |
+        Paste the checks that apply; these are the ones that make a report actionable:
+        python -m hsrmap doctor, python -m hsrmap dod, python -m hsrmap repo-hygiene,
+        python -m hsrmap guides closure-check.
+      render: text
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: Commit or release
+      description: Git commit hash, or the generated_at field of your release-manifest.json
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Judgement (stages / six-state model)
+        - Evidence (claims / audit / grounding)
+        - Publishing (diff / gates / snapshot)
+        - Web (offline map / review console)
+        - CLI / runtime directories
+        - Hygiene / release / packaging
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I ran python -m hsrmap doctor and pasted its output
+          required: false
+        - label: This is not a request for game data (this repository ships no data)
+          required: true
